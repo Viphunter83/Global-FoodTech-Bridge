@@ -20,6 +20,8 @@ export interface BlockchainStatus {
     status: string;
     txHash?: string;
     verified: boolean;
+    handover?: boolean;
+    violation?: string | null;
 }
 
 export interface Alert {
@@ -74,6 +76,8 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
             status: data.exists ? 'Notarized' : 'Pending',
             verified: data.exists,
             txHash: data.txHash,
+            handover: data.handover,
+            violation: data.violation
         };
     } catch (e) {
         console.error('Failed to fetch blockchain status:', e);
@@ -109,6 +113,44 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
         return await res.json();
     } catch (e) {
         console.error('Failed to notarize batch:', e);
+        return { status: 'error', error: String(e) };
+    }
+}
+
+export async function finalizeHandover(batchId: string): Promise<{ status: string; txHash?: string; error?: string }> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/handover`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batchId }),
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            return { status: 'error', error: 'Failed to hand over' };
+        }
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to finalize handover', e);
+        return { status: 'error', error: String(e) };
+    }
+}
+
+export async function reportViolation(batchId: string, details: string): Promise<{ status: string; txHash?: string; error?: string }> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/violation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batchId, details }),
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            return { status: 'error', error: 'Failed to report violation' };
+        }
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to report violation', e);
         return { status: 'error', error: String(e) };
     }
 }

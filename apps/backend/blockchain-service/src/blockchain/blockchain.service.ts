@@ -15,11 +15,12 @@ export class BlockchainService implements OnModuleInit {
     private notaryWallet: Wallet;
     private contract: Contract;
     private isMockMode: boolean = false;
+    // Map stores: BatchID -> { registered: boolean, handover: boolean, violation: string | null }
+    private mockStore = new Map<string, { registered: boolean; handover: boolean; violation: string | null }>();
 
     constructor(private configService: ConfigService) { }
 
     onModuleInit() {
-        // ... (lines 20-40 unchanged) ...
         const rpcUrl = this.configService.get<string>('RPC_URL');
         const privateKey = this.configService.get<string>('PRIVATE_KEY');
         const contractAddress = this.configService.get<string>('CONTRACT_ADDRESS');
@@ -42,14 +43,17 @@ export class BlockchainService implements OnModuleInit {
     }
 
     async notarizeBatch(batchId: string, dataHash: string): Promise<string> {
-        // ... (lines 43-63 unchanged) ...
         this.logger.log(`Notarizing Batch ${batchId} with hash ${dataHash}`);
 
         if (this.isMockMode) {
             this.logger.log('[MOCK] Transaction sent to blockchain');
+            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
+            state.registered = true;
+            this.mockStore.set(batchId, state);
             return `0xMOCK_TX_HASH_${Date.now()}`;
         }
 
+        // ... Real implementation ...
         try {
             const tx = await this.contract.registerBatch(batchId, dataHash);
             this.logger.log(`Transaction sent: ${tx.hash}. Waiting for confirmation...`);
@@ -64,11 +68,40 @@ export class BlockchainService implements OnModuleInit {
         }
     }
 
-    async getBatchStatus(batchId: string): Promise<{ exists: boolean; txHash?: string; timestamp?: number }> {
+    async registerViolation(batchId: string, details: string): Promise<string> {
         if (this.isMockMode) {
-            // Mock: Returns false unless ID is special, or just return mock data for testing
-            // For improved UX during MVP without real blockchain:
-            return { exists: true, txHash: '0xMOCK_EXISTING_HASH', timestamp: Date.now() };
+            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
+            state.violation = details;
+            this.mockStore.set(batchId, state);
+            return `0xMOCK_VIOLATION_TX_${Date.now()}`;
+        }
+        // Real implementation would call contract.reportViolation(...)
+        return '0x...';
+    }
+
+    async finalizeHandover(batchId: string): Promise<string> {
+        if (this.isMockMode) {
+            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
+            state.handover = true;
+            this.mockStore.set(batchId, state);
+            return `0xMOCK_HANDOVER_TX_${Date.now()}`;
+        }
+        // Real implementation would call contract.finishHandover(...)
+        return '0x...';
+    }
+
+    async getBatchStatus(batchId: string): Promise<{ exists: boolean; txHash?: string; timestamp?: number; handover?: boolean; violation?: string | null }> {
+        if (this.isMockMode) {
+            const state = this.mockStore.get(batchId);
+            if (!state || !state.registered) return { exists: false };
+
+            return {
+                exists: true,
+                txHash: `0xMOCK_TX_${batchId.substring(0, 8)}`,
+                timestamp: Date.now(),
+                handover: state.handover,
+                violation: state.violation
+            };
         }
 
         try {
@@ -82,13 +115,11 @@ export class BlockchainService implements OnModuleInit {
 
             return {
                 exists: true,
-                // Note: The smart contract doesn't store the TX Hash of creation inside the struct.
-                // We'd need to query events to get the TX hash, but that's expensive for an MVP.
-                // We will return a placeholder or null for txHash if reading from state.
-                // Alternatively, if existing implementation stores it elsewhere, use that.
-                // For now, let's omit txHash in retrieval or use a generic valid-looking string if strictly needed by UI.
                 txHash: '0x(verified-on-chain)',
-                timestamp: Number(result[2]) * 1000
+                timestamp: Number(result[2]) * 1000,
+                // Real contract fields for handover/violation would be mapped here
+                handover: false,
+                violation: null
             };
         } catch (error) {
             this.logger.error(`Failed to get batch status for ${batchId}`, error);

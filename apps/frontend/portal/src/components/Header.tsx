@@ -18,6 +18,9 @@ export function Header() {
                         <Link href="/batches/new" className="transition-colors hover:text-foreground/80 text-foreground/60">
                             Create Batch
                         </Link>
+                        <Link href="/how-it-works" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                            How it Works
+                        </Link>
                     </nav>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">

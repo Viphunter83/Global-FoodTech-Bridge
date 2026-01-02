@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { DashboardQR } from '@/components/ui/DashboardQR';
-import { NotarizeButton } from '@/components/ui/NotarizeButton';
+import { BlockchainControls } from '@/components/ui/BlockchainControls';
 
 export default async function BatchDetailsPage({ params }: { params: { id: string } }) {
     const { id } = params;
@@ -141,11 +141,9 @@ export default async function BatchDetailsPage({ params }: { params: { id: strin
                                 </a>
                             )}
 
-                            {!blockchain.verified && (
-                                <div className="pt-2">
-                                    <NotarizeButton batchId={batch.id} />
-                                </div>
-                            )}
+                            <div className="pt-4 border-t border-gray-100">
+                                <BlockchainControls batchId={batch.id} blockchainStatus={blockchain} />
+                            </div>
                         </div>
                     </div>
 

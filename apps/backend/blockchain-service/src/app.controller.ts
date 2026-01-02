@@ -17,4 +17,16 @@ export class AppController {
     async getStatus(@Param('batchId') batchId: string) {
         return this.blockchainService.getBatchStatus(batchId);
     }
+
+    @Post('violation')
+    async reportViolation(@Body() body: { batchId: string; details: string }) {
+        const txHash = await this.blockchainService.registerViolation(body.batchId, body.details);
+        return { status: 'success', txHash };
+    }
+
+    @Post('handover')
+    async handover(@Body() body: { batchId: string }) {
+        const txHash = await this.blockchainService.finalizeHandover(body.batchId);
+        return { status: 'success', txHash };
+    }
 }
