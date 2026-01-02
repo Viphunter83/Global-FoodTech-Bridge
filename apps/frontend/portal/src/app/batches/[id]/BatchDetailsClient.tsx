@@ -6,6 +6,7 @@ import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle } from 'luci
 import { DashboardQR } from '@/components/ui/DashboardQR';
 import { BlockchainControls } from '@/components/ui/BlockchainControls';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { ComplianceReportButton } from '@/components/ui/ComplianceReportButton';
 
 interface BatchDetailsClientProps {
     batch: any;
@@ -51,9 +52,12 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                     </div>
 
                     {blockchain.verified && (
-                        <div className="flex items-center rounded-full bg-green-100 px-4 py-2 text-green-700 ring-1 ring-green-600/20">
-                            <ShieldCheck className="mr-2 h-5 w-5" />
-                            <span className="text-sm font-medium">{t('bc_secured_title')}</span>
+                        <div className="flex items-center gap-3">
+                            <ComplianceReportButton batch={batch} telemetry={telemetry} alerts={alerts} blockchain={blockchain} />
+                            <div className="flex items-center rounded-full bg-green-100 px-4 py-2 text-green-700 ring-1 ring-green-600/20">
+                                <ShieldCheck className="mr-2 h-5 w-5" />
+                                <span className="text-sm font-medium">{t('bc_secured_title')}</span>
+                            </div>
                         </div>
                     )}
                 </div>

@@ -48,7 +48,6 @@ export type TranslationKey =
     | 'try_live_demo'
     | 'prev_step'
     | 'next_step'
-    | 'verified_badge'
     | 'menu_create_batch'
     | 'menu_how_it_works'
     | 'role_persona'
@@ -81,7 +80,17 @@ export type TranslationKey =
     | 'notary_authority_label'
     | 'smart_contract_name'
     | 'view_explorer_link'
-    | 'scan_share';
+    | 'scan_share'
+    | 'verify_page_title'
+    | 'verified_badge'
+    | 'product_details_tab'
+    | 'provenance_tab'
+    | 'ingredients_label'
+    | 'nutrition_label'
+    | 'halal_cert_label'
+    | 'report_issue_btn'
+    | 'consumer_feedback_title'
+    | 'btn_download_report';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -132,7 +141,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         try_live_demo: 'Try Live Demo',
         prev_step: 'Previous',
         next_step: 'Next Step',
-        verified_badge: 'VERIFIED',
         menu_create_batch: 'Create Batch',
         menu_how_it_works: 'How it Works',
         role_persona: 'Persona:',
@@ -165,7 +173,17 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         notary_authority_label: 'Notary Authority',
         smart_contract_name: 'Global FoodTech Bridge Smart Contract',
         view_explorer_link: 'View on Block Explorer →',
-        scan_share: 'Scan to Share'
+        scan_share: 'Scan to Share',
+        verify_page_title: 'Product Verification',
+        verified_badge: 'Authentic & Verified',
+        product_details_tab: 'Product Details',
+        provenance_tab: 'Journey',
+        ingredients_label: 'Ingredients',
+        nutrition_label: 'Nutrition Facts',
+        halal_cert_label: 'Halal Certificate',
+        report_issue_btn: 'Report Quality Issue',
+        consumer_feedback_title: 'Consumer Feedback',
+        btn_download_report: 'Download Compliance Report'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -215,7 +233,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         try_live_demo: 'Попробовать демо',
         prev_step: 'Назад',
         next_step: 'Далее',
-        verified_badge: 'ПРОВЕРЕНО',
         menu_create_batch: 'Создать партию',
         menu_how_it_works: 'Как это работает',
         role_persona: 'Роль:',
@@ -248,7 +265,17 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         notary_authority_label: 'Нотариус',
         smart_contract_name: 'Смарт-контракт Global FoodTech Bridge',
         view_explorer_link: 'Смотреть в Block Explorer →',
-        scan_share: 'Сканируйте чтобы поделиться'
+        scan_share: 'Сканируйте чтобы поделиться',
+        verify_page_title: 'Проверка подлинности',
+        verified_badge: 'Подлинно и проверено',
+        product_details_tab: 'О продукте',
+        provenance_tab: 'Путь (История)',
+        ingredients_label: 'Состав',
+        nutrition_label: 'Пищевая ценность',
+        halal_cert_label: 'Сертификат Халяль',
+        report_issue_btn: 'Сообщить о проблеме',
+        consumer_feedback_title: 'Обратная связь',
+        btn_download_report: 'Скачать отчет о соответствии (PDF)'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -298,7 +325,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         try_live_demo: 'جرب العرض المباشر',
         prev_step: 'السابق',
         next_step: 'الخطوة التالية',
-        verified_badge: 'تم التحقق',
         menu_create_batch: 'إنشاء دفعة',
         menu_how_it_works: 'كيف يعمل',
         role_persona: 'الدور:',
@@ -331,6 +357,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         notary_authority_label: 'سلطة التوثيق',
         smart_contract_name: 'العقد الذكي Global FoodTech Bridge',
         view_explorer_link: 'عرض في Block Explorer ←',
-        scan_share: 'مسح للمشاركة'
+        scan_share: 'مسح للمشاركة',
+        verify_page_title: 'التحقق من المنتج',
+        verified_badge: 'أصلي وموثق',
+        product_details_tab: 'تفاصيل المنتج',
+        provenance_tab: 'الرحلة',
+        ingredients_label: 'المكونات',
+        nutrition_label: 'حقائق غذائية',
+        halal_cert_label: 'شهادة الحلال',
+        report_issue_btn: 'الإبلاغ عن مشكلة جودة',
+        consumer_feedback_title: 'ملاحظات المستهلك',
+        btn_download_report: 'تحميل تقرير الامتثال'
     }
 };

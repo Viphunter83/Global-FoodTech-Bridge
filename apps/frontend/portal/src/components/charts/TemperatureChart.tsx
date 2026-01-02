@@ -9,6 +9,7 @@ import {
     Tooltip,
     ResponsiveContainer,
     ReferenceLine,
+    ReferenceArea,
 } from 'recharts';
 import { format } from 'date-fns';
 import { Telemetry } from '@/lib/api';
@@ -28,37 +29,45 @@ export function TemperatureChart({ data }: { data: Telemetry[] }) {
         <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={formattedData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
                     <XAxis
                         dataKey="time"
                         stroke="#9ca3af"
                         fontSize={12}
                         tickLine={false}
+                        minTickGap={30}
                     />
                     <YAxis
                         stroke="#9ca3af"
                         fontSize={12}
                         tickLine={false}
                         unit="°C"
+                        domain={[-25, -5]}
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         labelFormatter={(label, payload) => {
-                            // Safe access to nested property to prevent crash
                             if (payload && payload.length > 0 && payload[0]?.payload?.fullDate) {
                                 return payload[0].payload.fullDate;
                             }
                             return label;
                         }}
                     />
-                    <ReferenceLine y={-18} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Max Limit (-18°C)', fill: '#ef4444', fontSize: 12 }} />
+                    {/* Zones */}
+                    <ReferenceArea y1={-50} y2={-18} fill="#dcfce7" fillOpacity={0.4} /> {/* Green Zone */}
+                    <ReferenceArea y1={-18} y2={-10} fill="#fef9c3" fillOpacity={0.4} /> {/* Yellow Zone */}
+                    <ReferenceArea y1={-10} y2={10} fill="#fee2e2" fillOpacity={0.4} />   {/* Red Zone */}
+
+                    <ReferenceLine y={-18} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Max Limit (-18°C)', fill: '#ef4444', fontSize: 12, position: 'insideTopRight' }} />
+
                     <Line
                         type="monotone"
                         dataKey="temperature_celsius"
                         stroke="#2563eb"
                         strokeWidth={2}
-                        dot={{ r: 4, fill: '#2563eb' }}
+                        dot={false}
                         activeDot={{ r: 6 }}
+                        isAnimationActive={true}
                     />
                 </LineChart>
             </ResponsiveContainer>

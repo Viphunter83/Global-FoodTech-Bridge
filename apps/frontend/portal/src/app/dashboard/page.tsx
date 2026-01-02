@@ -7,9 +7,10 @@ import { RoleSwitcher } from '@/components/ui/RoleSwitcher';
 import { DashboardMap } from '@/components/ui/DashboardMap';
 import { TelemetryChart } from '@/components/ui/TelemetryChart';
 import { BlockchainControls } from '@/components/ui/BlockchainControls';
-import { Package, Plus, Search, Calendar, MapPin, Truck } from 'lucide-react';
-import { getBlockchainStatus, getTelemetry, BlockchainStatus, Telemetry } from '@/lib/api';
+import { Package, Plus, Search, Calendar, MapPin, Truck, AlertTriangle } from 'lucide-react';
+import { getBlockchainStatus, getTelemetry, getAlerts, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 // Mock Data for Dashboard Listing
 const MOCK_BATCHES = [
@@ -20,33 +21,41 @@ const MOCK_BATCHES = [
 
 export default function DashboardPage() {
     const { t } = useLanguage();
+    const { role } = useAuth();
     const [batches, setBatches] = useState(MOCK_BATCHES);
     const [selectedId, setSelectedId] = useState<string>(MOCK_BATCHES[0].id);
     const [blockchainStatus, setBlockchainStatus] = useState<BlockchainStatus | null>(null);
     const [telemetryData, setTelemetryData] = useState<Telemetry[]>([]);
+    const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingStatus, setLoadingStatus] = useState(false);
 
-    // Fetch blockchain status and telemetry when selected batch changes
+    // Fetch blockchain status, telemetry, and alerts when selected batch changes
     useEffect(() => {
         if (!selectedId) return;
 
         async function fetchData() {
             setLoadingStatus(true);
-            const [status, telemetry] = await Promise.all([
+            const [status, telemetry, alertsData] = await Promise.all([
                 getBlockchainStatus(selectedId),
-                getTelemetry(selectedId)
+                getTelemetry(selectedId),
+                getAlerts(selectedId)
             ]);
             setBlockchainStatus(status);
             setTelemetryData(telemetry);
+            setAlerts(alertsData);
             setLoadingStatus(false);
         }
 
         fetchData();
 
-        // Poll for telemetry updates every 5 seconds
+        // Poll for updates every 5 seconds
         const interval = setInterval(async () => {
-            const telemetry = await getTelemetry(selectedId);
+            const [telemetry, alertsData] = await Promise.all([
+                getTelemetry(selectedId),
+                getAlerts(selectedId)
+            ]);
             setTelemetryData(telemetry);
+            setAlerts(alertsData);
         }, 5000);
 
         return () => clearInterval(interval);
@@ -73,25 +82,18 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
-            {/* Dashboard Toolbar */}
-            <div className="flex items-center justify-between border-b bg-white dark:bg-gray-950 px-6 py-3 shadow-sm">
-                <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
-                    <Package className="h-6 w-6" />
-                    <span>SupplyChain<span className="text-gray-900 dark:text-gray-100">OS</span></span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <RoleSwitcher />
-                </div>
-            </div>
+            {/* Dashboard Toolbar Removed (Duplicate of Global Header) */}
 
             <main className="grid flex-1 gap-4 p-4 md:grid-cols-[300px_1fr] md:gap-8 md:p-8">
                 {/* Left Sidebar: Batch List */}
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between px-2">
                         <h2 className="text-lg font-semibold">{t('dashboard_active_batches')}</h2>
-                        <Button size="sm" variant="outline" onClick={handleCreateBatch}>
-                            <Plus className="h-4 w-4 mr-1" /> {t('dashboard_new')}
-                        </Button>
+                        {role === 'MANUFACTURER' && (
+                            <Button size="sm" variant="outline" onClick={handleCreateBatch}>
+                                <Plus className="h-4 w-4 mr-1" /> {t('dashboard_new')}
+                            </Button>
+                        )}
                     </div>
 
                     <div className="grid gap-2">
@@ -130,8 +132,11 @@ export default function DashboardPage() {
                                 <Package className="h-4 w-4 text-gray-500" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {loadingStatus ? 'Loading...' : (blockchainStatus?.verified ? t('status_connection_secured') : t('status_connection_pending'))}
+                                <div className={`text-2xl font-bold ${blockchainStatus?.violation ? 'text-red-600' : ''}`}>
+                                    {loadingStatus ? 'Loading...' : (
+                                        blockchainStatus?.violation ? t('bc_violation_title') :
+                                            (blockchainStatus?.verified ? t('status_connection_secured') : t('status_connection_pending'))
+                                    )}
                                 </div>
                                 <p className="text-xs text-gray-500">
                                     {blockchainStatus?.txHash ? `Tx: ${blockchainStatus.txHash.substring(0, 10)}...` : 'Not yet notarized'}
@@ -161,6 +166,35 @@ export default function DashboardPage() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Alerts Banner - SIMPLIFIED STYLES */}
+                    {alerts.length > 0 && (
+                        <div
+                            className="rounded-xl border-2 border-red-500 bg-red-100 p-4 mb-6"
+                            style={{ display: 'block', visibility: 'visible', opacity: 1, zIndex: 9999 }}
+                        >
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <AlertTriangle className="h-6 w-6 text-red-700" aria-hidden="true" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-lg font-bold text-red-800">{t('sla_violations_title')}</h3>
+                                    <div className="mt-2 text-base text-red-900">
+                                        <ul role="list" className="list-disc space-y-1 pl-5">
+                                            {alerts.slice(0, 3).map((alert: any) => (
+                                                <li key={alert.id}>
+                                                    <span className="font-semibold">{new Date(alert.created_at).toLocaleTimeString()}:</span> {alert.message}
+                                                </li>
+                                            ))}
+                                            {alerts.length > 3 && (
+                                                <li>...and {alerts.length - 3} more</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Interactive Map & Controls */}
                     <div className="grid gap-6 md:grid-cols-3">
@@ -193,13 +227,6 @@ export default function DashboardPage() {
                                         blockchainStatus={blockchainStatus}
                                     />
                                 )}
-
-                                <div className="pt-4 border-t border-gray-100">
-                                    <div className="text-xs text-gray-400 mb-2">Technician Data</div>
-                                    <div className="bg-slate-100 p-2 rounded text-xs font-mono break-all text-gray-600">
-                                        Batch ID: <br />{selectedId}
-                                    </div>
-                                </div>
                             </CardContent>
                         </Card>
                     </div>
