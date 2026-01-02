@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: gfb_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gfb_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount migrations to run on init (Optional: usually handled by app or migration tool)
+      - ./apps/backend/passport-service/migrations:/docker-entrypoint-initdb.d/passport
+      - ./apps/backend/iot-service/migrations:/docker-entrypoint-initdb.d/iot
+    networks:
+      - gfb_net
+
+  passport-service:
+    build:
+      context: ./apps/backend/passport-service
+      dockerfile: Dockerfile
+    container_name: gfb_passport_service
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/gfb_db?sslmode=disable
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - gfb_net
+
+  iot-service:
+    build:
+      context: ./apps/backend/iot-service
+      dockerfile: Dockerfile
+    container_name: gfb_iot_service
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/gfb_db?sslmode=disable
+      - PORT=8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+    networks:
+      - gfb_net
+
+  blockchain-service:
+    build:
+      context: ./apps/backend/blockchain-service
+      dockerfile: Dockerfile
+    container_name: gfb_blockchain_service
+    environment:
+      - PORT=3000
+      - RPC_URL=
+      - PRIVATE_KEY=
+      - CONTRACT_ADDRESS=
+    ports:
+      - "3000:3000"
+    networks:
+      - gfb_net
+
+  frontend-portal:
+    build:
+      context: ./apps/frontend/portal
+      dockerfile: Dockerfile
+    container_name: gfb_frontend
+    environment:
+      - PORT=3001
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - "3001:3001"
+    links:
+      - passport-service
+      - iot-service
+      - blockchain-service
+    networks:
+      - gfb_net
+
+networks:
+  gfb_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
