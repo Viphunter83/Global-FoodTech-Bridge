@@ -8,8 +8,11 @@ import { PackagePlus, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { AlertTriangle } from 'lucide-react'; // Import AlertIcon
 
 export default function CreateBatchPage() {
+    const { role } = useAuth(); // Get current role
     const [isLoading, setIsLoading] = useState(false);
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
     const [recentBatches, setRecentBatches] = useState<string[]>([]);
@@ -35,6 +38,12 @@ export default function CreateBatchPage() {
 
     async function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+
+        if (role !== 'MANUFACTURER') {
+            setError('Only MANUFACTURER role can create batches.');
+            return;
+        }
+
         setIsLoading(true);
         setCreatedBatchId(null);
         setError(null);
@@ -51,9 +60,14 @@ export default function CreateBatchPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-User-Role': role, // Send role header
                 },
                 body: JSON.stringify(data),
             });
+
+            if (response.status === 403) {
+                throw new Error('Access Denied: You do not have permission to create batches.');
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to create batch');
@@ -110,6 +124,22 @@ export default function CreateBatchPage() {
                     </div>
                 ) : (
                     <form onSubmit={onSubmit} className="space-y-4">
+                        {role !== 'MANUFACTURER' && (
+                            <div className="rounded-md bg-yellow-50 p-4 mb-4 border border-yellow-200">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <AlertTriangle className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <h3 className="text-sm font-medium text-yellow-800">Permission Warning</h3>
+                                        <div className="mt-2 text-sm text-yellow-700">
+                                            <p>You are currently logged in as <strong>{role}</strong>.</p>
+                                            <p>Only <strong>MANUFACTURER</strong> can create new batches.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                 Manufacturer ID

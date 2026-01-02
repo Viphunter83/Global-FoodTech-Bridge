@@ -4,8 +4,8 @@ export interface BatchDetails {
     product_type: string;
     batch_size: number;
     created_at: string;
-    min_temp?: number;
-    max_temp?: number;
+    min_temp?: number | null;
+    max_temp?: number | null;
 }
 
 export interface Telemetry {
@@ -85,9 +85,30 @@ export async function getAlerts(id: string): Promise<Alert[]> {
     try {
         const res = await fetch(`${IOT_URL}/telemetry/${id}/alerts`, { cache: 'no-store' });
         if (!res.ok) return [];
-        return res.json();
+        const data = await res.json();
+        return data || [];
     } catch (e) {
         console.error('Failed to fetch alerts:', e);
         return [];
+    }
+}
+
+export async function notarizeBatch(batchId: string, dataHash: string = "hash"): Promise<{ status: string; txHash?: string; error?: string }> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/notarize`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batchId, dataHash }),
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            return { status: 'error', error: 'Failed to notarize' };
+        }
+
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to notarize batch:', e);
+        return { status: 'error', error: String(e) };
     }
 }

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { PackageSearch, LayoutDashboard } from 'lucide-react';
 import { Button } from './ui/Button';
+import { RoleSwitcher } from './ui/RoleSwitcher';
 
 export function Header() {
     return (
@@ -24,6 +25,7 @@ export function Header() {
                         {/* Search could go here */}
                     </div>
                     <nav className="flex items-center gap-2">
+                        <RoleSwitcher />
                         <Link href="https://github.com/GlobalFoodTechBridge" target="_blank" rel="noreferrer">
                             <Button variant="ghost" size="icon" className="h-8 w-8 px-0">
                                 <span className="sr-only">GitHub</span>

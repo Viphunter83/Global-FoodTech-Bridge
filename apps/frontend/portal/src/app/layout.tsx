@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     description: "Supply Chain Manager",
 };
 
+import { AuthProvider } from "@/components/providers/AuthProvider";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -18,10 +20,12 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={inter.className}>
-                <div className="relative flex min-h-screen flex-col">
-                    <Header />
-                    <div className="flex-1">{children}</div>
-                </div>
+                <AuthProvider>
+                    <div className="relative flex min-h-screen flex-col">
+                        <Header />
+                        <div className="flex-1">{children}</div>
+                    </div>
+                </AuthProvider>
             </body>
         </html>
     );

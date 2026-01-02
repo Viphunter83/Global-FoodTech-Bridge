@@ -24,12 +24,40 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Post("/telemetry", h.ingestTelemetry)
+		// Protected Routes (Logistics or Manufacturer)
+		r.Group(func(r chi.Router) {
+			r.Use(h.RoleMiddleware("LOGISTICS", "MANUFACTURER"))
+			r.Post("/telemetry", h.ingestTelemetry)
+		})
+
+		// Public Routes
 		r.Get("/telemetry/{batchId}", h.getReadings)
 		r.Get("/telemetry/{batchId}/alerts", h.getAlerts)
 	})
 
 	return r
+}
+
+func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role := r.Header.Get("X-User-Role")
+			
+			allowed := false
+			for _, allowedRole := range allowedRoles {
+				if role == allowedRole {
+					allowed = true
+					break
+				}
+			}
+
+			if !allowed {
+				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func (h *Handler) ingestTelemetry(w http.ResponseWriter, r *http.Request) {

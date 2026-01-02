@@ -24,11 +24,30 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Post("/batches", h.createBatch)
+		// Protected Routes
+		r.Group(func(r chi.Router) {
+			r.Use(h.RoleMiddleware("MANUFACTURER"))
+			r.Post("/batches", h.createBatch)
+		})
+		
+		// Public Routes
 		r.Get("/batches/{id}", h.getBatch)
 	})
 
 	return r
+}
+
+func (h *Handler) RoleMiddleware(requiredRole string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role := r.Header.Get("X-User-Role")
+			if role != requiredRole {
+				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func (h *Handler) createBatch(w http.ResponseWriter, r *http.Request) {
