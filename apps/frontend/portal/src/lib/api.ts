@@ -235,12 +235,12 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
     }
 }
 
-export async function finalizeHandover(batchId: string): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function finalizeHandover(batchId: string, toAddress: string = "0xRetailerDefault"): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/handover`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ batchId }),
+            body: JSON.stringify({ batchId, toAddress }),
             cache: 'no-store'
         });
 

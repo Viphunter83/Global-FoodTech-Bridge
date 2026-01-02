@@ -7,7 +7,7 @@ import { RoleSwitcher } from '@/components/ui/RoleSwitcher';
 import { DashboardMap } from '@/components/ui/DashboardMap';
 import { TelemetryChart } from '@/components/ui/TelemetryChart';
 import { BlockchainControls } from '@/components/ui/BlockchainControls';
-import { Package, Plus, Search, Calendar, MapPin, Truck, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Search, Calendar, MapPin, Truck, AlertTriangle, Trash2 } from 'lucide-react';
 import { getBlockchainStatus, getTelemetry, getAlerts, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -80,6 +80,16 @@ export default function DashboardPage() {
         setSelectedId(newId);
     };
 
+    const deleteBatch = (id: string) => {
+        const newBatches = batches.filter(b => b.id !== id);
+        setBatches(newBatches);
+        if (selectedId === id && newBatches.length > 0) {
+            setSelectedId(newBatches[0].id);
+        } else if (newBatches.length === 0) {
+            setSelectedId('');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
             {/* Dashboard Toolbar Removed (Duplicate of Global Header) */}
@@ -102,16 +112,29 @@ export default function DashboardPage() {
                                 key={batch.id}
                                 onClick={() => setSelectedId(batch.id)}
                                 className={`
-                                    flex flex-col items-start gap-1 rounded-lg border p-3 text-left text-sm transition-all hover:bg-slate-100 cursor-pointer
+                                    group flex flex-col items-start gap-1 rounded-lg border p-3 text-left text-sm transition-all hover:bg-slate-100 cursor-pointer relative
                                     ${selectedId === batch.id ? "bg-slate-100 border-blue-500 ring-1 ring-blue-500" : "bg-white border-slate-200"}
                                 `}
                             >
                                 <div className="flex w-full flex-col gap-1">
-                                    <div className="flex items-center">
+                                    <div className="flex items-center justify-between w-full">
                                         <div className="flex items-center gap-2">
                                             <div className="font-semibold">{batch.product}</div>
                                         </div>
-                                        <div className="ml-auto text-xs text-gray-500">{batch.date}</div>
+                                        {batch.status === 'Draft' && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteBatch(batch.id);
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        <div className={`ml-auto text-xs ${batch.status === 'Draft' ? 'mr-6' : ''} text-gray-500`}>{batch.date}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 font-mono truncate w-full" title={batch.id}>
                                         UUID: {batch.id.substring(0, 8)}...

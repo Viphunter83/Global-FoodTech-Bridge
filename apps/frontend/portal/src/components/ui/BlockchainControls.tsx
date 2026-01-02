@@ -115,10 +115,22 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
     // 4. Initial State (Not Notarized)
     if (role === 'MANUFACTURER') {
         return (
-            <Button onClick={handleNotarize} className="w-full bg-purple-600 hover:bg-purple-700">
-                <ShieldCheck className="mr-2 h-4 w-4" />
-                {t('btn_notarize')}
-            </Button>
+            <div className="flex flex-col gap-3">
+                <Button
+                    variant="outline"
+                    onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${batchId}`, '_blank')}
+                    className="w-full"
+                >
+                    <div className="flex items-center justify-center">
+                        <svg className="mr-2 h-4 w-4" fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><rect height="18" rx="2" ry="2" width="18" x="3" y="3" /><path d="M7 7h3v3H7z" /><path d="M14 7h3v3h-3z" /><path d="M7 14h3v3H7z" /><path d="M14 14h3v3h-3z" /></svg>
+                        {t('btn_print_qr')}
+                    </div>
+                </Button>
+                <Button onClick={handleNotarize} className="w-full bg-purple-600 hover:bg-purple-700">
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    {t('btn_notarize')}
+                </Button>
+            </div>
         );
     }
 

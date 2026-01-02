@@ -9,13 +9,14 @@ export class AppController {
 
     @Post('notarize')
     async notarize(@Body() body: { batchId: string; dataHash: string }) {
-        const txHash = await this.blockchainService.notarizeBatch(body.batchId, body.dataHash);
+        // 'dataHash' is now treated as 'tokenURI' for NFT metadata
+        const txHash = await this.blockchainService.createBatch(body.batchId, body.dataHash);
         return { status: 'success', txHash };
     }
 
     @Get('status/:batchId')
     async getStatus(@Param('batchId') batchId: string) {
-        return this.blockchainService.getBatchStatus(batchId);
+        return this.blockchainService.getBatchPublicData(batchId);
     }
 
     @Post('violation')
@@ -25,8 +26,12 @@ export class AppController {
     }
 
     @Post('handover')
-    async handover(@Body() body: { batchId: string }) {
-        const txHash = await this.blockchainService.finalizeHandover(body.batchId);
+    async handover(@Body() body: { batchId: string; toAddress: string }) {
+        // Now requires toAddress for NFT transfer
+        // If not provided in legacy call, we might fallback or error.
+        // For now, let's require it, but if missing in mock mode we might fake it.
+        const target = body.toAddress || "0xRetailerAddressDefault";
+        const txHash = await this.blockchainService.transferCustody(body.batchId, target);
         return { status: 'success', txHash };
     }
 }

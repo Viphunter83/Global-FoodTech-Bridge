@@ -90,7 +90,8 @@ export type TranslationKey =
     | 'halal_cert_label'
     | 'report_issue_btn'
     | 'consumer_feedback_title'
-    | 'btn_download_report';
+    | 'btn_download_report'
+    | 'btn_print_qr';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -183,7 +184,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         halal_cert_label: 'Halal Certificate',
         report_issue_btn: 'Report Quality Issue',
         consumer_feedback_title: 'Consumer Feedback',
-        btn_download_report: 'Download Compliance Report'
+        btn_download_report: 'Download Compliance Report',
+        btn_print_qr: 'Print Label / QR'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -275,7 +277,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         halal_cert_label: 'Сертификат Халяль',
         report_issue_btn: 'Сообщить о проблеме',
         consumer_feedback_title: 'Обратная связь',
-        btn_download_report: 'Скачать отчет о соответствии (PDF)'
+        btn_download_report: 'Скачать отчет о соответствии (PDF)',
+        btn_print_qr: 'Печать этикетки / QR'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -367,6 +370,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         halal_cert_label: 'شهادة الحلال',
         report_issue_btn: 'الإبلاغ عن مشكلة جودة',
         consumer_feedback_title: 'ملاحظات المستهلك',
-        btn_download_report: 'تحميل تقرير الامتثال'
+        btn_download_report: 'تحميل تقرير الامتثال',
+        btn_print_qr: 'طباعة الملصق / QR'
     }
 };

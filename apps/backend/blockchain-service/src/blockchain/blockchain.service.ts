@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { ethers, JsonRpcProvider, Wallet, Contract } from 'ethers';
 
 const REGISTRY_ABI = [
-    "function registerBatch(string memory batchUUID, string memory dataHash) public",
+    "function createBatch(string memory batchUUID, string memory tokenURI) public",
+    "function transferCustody(address to, uint256 tokenId) public",
     "function reportViolation(string memory batchUUID, string memory details) public",
-    "function finalizeHandover(string memory batchUUID) public",
-    "event BatchRegistered(string batchUUID, string dataHash, address indexed notary, uint256 timestamp)",
-    "event BatchHandover(string batchUUID, address indexed notary, uint256 timestamp)",
-    "event BatchViolation(string batchUUID, string details, address indexed notary, uint256 timestamp)",
-    "function records(string memory batchUUID) public view returns (string memory ipfsHash, address notary, uint256 timestamp, bool exists, bool handedOver, string memory violationDetails)"
+    "function getBatchData(string memory batchUUID) public view returns (address currentOwner, string memory uri, string memory violation, bool isViolated, uint256 timestamp)",
+    "event BatchCreated(uint256 indexed tokenId, string batchUUID, address indexed producer, uint256 timestamp)",
+    "event BatchCustodyTransferred(uint256 indexed tokenId, address from, address to, uint256 timestamp)",
+    "event ViolationReported(uint256 indexed tokenId, string details, address indexed reporter, uint256 timestamp)"
 ];
 
 @Injectable()
@@ -19,8 +19,9 @@ export class BlockchainService implements OnModuleInit {
     private notaryWallet: Wallet;
     private contract: Contract;
     private isMockMode: boolean = false;
-    // Map stores: BatchID -> { registered: boolean, handover: boolean, violation: string | null }
-    private mockStore = new Map<string, { registered: boolean; handover: boolean; violation: string | null }>();
+
+    // Mock Store: BatchUUID -> { owner: string, uri: string, violation: string | null, timestamp: number }
+    private mockStore = new Map<string, { owner: string; uri: string; violation: string | null; timestamp: number }>();
 
     constructor(private configService: ConfigService) { }
 
@@ -46,42 +47,43 @@ export class BlockchainService implements OnModuleInit {
         }
     }
 
-    async notarizeBatch(batchId: string, dataHash: string): Promise<string> {
-        this.logger.log(`Notarizing Batch ${batchId} with hash ${dataHash}`);
+    /**
+     * Mints a new Batch NFT.
+     * Replaces old 'registerBatch'.
+     */
+    async createBatch(batchId: string, ipfsUri: string): Promise<string> {
+        this.logger.log(`Creating Batch NFT ${batchId} with URI ${ipfsUri}`);
 
         if (this.isMockMode) {
-            this.logger.log('[MOCK] Transaction sent to blockchain');
-            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
-            state.registered = true;
-            this.mockStore.set(batchId, state);
-            return `0xMOCK_TX_HASH_${Date.now()}`;
+            this.logger.log('[MOCK] Minting Batch NFT...');
+            this.mockStore.set(batchId, {
+                owner: '0xProducerAddress', // In mock, we assume caller is producer
+                uri: ipfsUri,
+                violation: null,
+                timestamp: Date.now()
+            });
+            return `0xMOCK_MINT_TX_${Date.now()}`;
         }
 
         try {
-            const tx = await this.contract.registerBatch(batchId, dataHash);
-            this.logger.log(`Transaction sent: ${tx.hash}. Waiting for confirmation...`);
-
-            const receipt = await tx.wait();
-            this.logger.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-
+            const tx = await this.contract.createBatch(batchId, ipfsUri);
+            this.logger.log(`Mint Transaction sent: ${tx.hash}`);
+            await tx.wait();
             return tx.hash;
         } catch (error) {
-            this.logger.error('Blockchain transaction failed', error);
-            throw new Error(`Blockchain registration failed: ${error.message}`);
+            this.logger.error('Blockchain minting failed', error);
+            throw new Error(`Blockchain minting failed: ${error.message}`);
         }
     }
 
     async registerViolation(batchId: string, details: string): Promise<string> {
         if (this.isMockMode) {
             this.logger.warn(`[MOCK] Reporting Violation for ${batchId}: ${details}`);
-            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
-            state.violation = details;
-            // Ensure batch exists in mock store even if not registered via flow (for testing)
-            if (!state.registered) {
-                this.logger.warn(`[MOCK] Batch ${batchId} was not registered, auto-registering for test.`);
-                state.registered = true;
+            const state = this.mockStore.get(batchId);
+            if (state) {
+                state.violation = details;
+                this.mockStore.set(batchId, state);
             }
-            this.mockStore.set(batchId, state);
             return `0xMOCK_VIOLATION_TX_${Date.now()}`;
         }
 
@@ -96,64 +98,74 @@ export class BlockchainService implements OnModuleInit {
         }
     }
 
-    async finalizeHandover(batchId: string): Promise<string> {
+    /**
+     * Transfers token from current owner to new owner (e.g. Retailer).
+     * Replaces old 'finalizeHandover'.
+     */
+    async transferCustody(batchId: string, toAddress: string): Promise<string> {
+        // We calculate TokenID from BatchID in logic if needed, but contract maps string->tokenID
+        // In real web3 app, we'd need to know the tokenId. The contract helper 'uuidToTokenId' helps.
+        // But for 'transferCustody' we need TokenID.
+        // Wait, our Solidity 'transferCustody' takes (to, tokenId).
+        // We need a helper to get tokenId from UUID if we only have UUID.
+
+        // For simplicity in this service, let's assume we can compute it or look it up.
+        // Since keccak256 is standard, we can compute it here or ask contract.
+
         if (this.isMockMode) {
-            this.logger.log(`[MOCK] Finalizing Handover for ${batchId}`);
-            const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
-            state.handover = true;
-            // Ensure batch exists in mock store
-            if (!state.registered) {
-                this.logger.warn(`[MOCK] Batch ${batchId} was not registered, auto-registering for test.`);
-                state.registered = true;
+            this.logger.log(`[MOCK] Transferring custody of ${batchId} to ${toAddress}`);
+            const state = this.mockStore.get(batchId);
+            if (state) {
+                state.owner = toAddress;
+                this.mockStore.set(batchId, state);
             }
-            this.mockStore.set(batchId, state);
-            return `0xMOCK_HANDOVER_TX_${Date.now()}`;
+            return `0xMOCK_TRANSFER_TX_${Date.now()}`;
         }
 
         try {
-            const tx = await this.contract.finalizeHandover(batchId);
-            this.logger.log(`Handover finalized: ${tx.hash}`);
+            // Need to lookup ID first.
+            // In a real optimized app, we index this. Here we might need a contract call if we don't compute locally.
+            // Let's compute locally matching solidity: uint256(keccak256(abi.encodePacked(batchUUID)))
+            const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
+
+            const tx = await this.contract.transferCustody(toAddress, tokenId);
+            this.logger.log(`Custody transfer initiated: ${tx.hash}`);
             await tx.wait();
             return tx.hash;
         } catch (error) {
-            this.logger.error('Failed to finalize handover', error);
-            throw new Error(`Blockchain handover failed: ${error.message}`);
+            this.logger.error('Failed to transfer custody', error);
+            throw new Error(`Custody transfer failed: ${error.message}`);
         }
     }
 
-    async getBatchStatus(batchId: string): Promise<{ exists: boolean; txHash?: string; timestamp?: number; handover?: boolean; violation?: string | null }> {
+    async getBatchPublicData(batchId: string): Promise<{ exists: boolean; owner?: string; violation?: string | null; timestamp?: number }> {
         if (this.isMockMode) {
             const state = this.mockStore.get(batchId);
-            if (!state || !state.registered) return { exists: false };
+            if (!state) return { exists: false };
 
             return {
                 exists: true,
-                txHash: `0xMOCK_TX_${batchId.substring(0, 8)}`,
-                timestamp: Date.now(),
-                handover: state.handover,
-                violation: state.violation
+                owner: state.owner,
+                violation: state.violation,
+                timestamp: state.timestamp
             };
         }
 
         try {
-            // result is [ipfsHash, notary, timestamp, exists, handedOver, violationDetails]
-            const result = await this.contract.records(batchId);
-            const exists = result[3];
+            // returns (owner, uri, violation, isViolated, timestamp)
+            const result = await this.contract.getBatchData(batchId);
 
-            if (!exists) {
-                return { exists: false };
-            }
+            // result[0] is owner address. If it's 0x0... it doesn't exist (or handled by require/revert in contract)
+            // The contract function requires existence, so it will revert if not found.
 
             return {
                 exists: true,
-                txHash: '0x(verified-on-chain)',
-                timestamp: Number(result[2]) * 1000,
-                handover: result[4],
-                violation: result[5] && result[5] !== "" ? result[5] : null
+                owner: result[0],
+                violation: result[3] ? result[2] : null, // if isViolated is true, return details
+                timestamp: Number(result[4]) * 1000
             };
         } catch (error) {
-            this.logger.error(`Failed to get batch status for ${batchId}`, error);
-            // Default to false if error, or throw depending on requirement.
+            this.logger.error(`Failed to get batch data for ${batchId}`, error);
             return { exists: false };
         }
     }

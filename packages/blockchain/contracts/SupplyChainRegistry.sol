@@ -1,54 +1,134 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-contract SupplyChainRegistry {
-    struct Record {
-        string ipfsHash;
-        address notary;
-        uint256 timestamp;
-        bool exists;
-        bool handedOver;
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+/**
+ * @title SupplyChainRegistry
+ * @dev Implements FoodTech Batch tracking via NFT (ERC721).
+ *      Each batch is a Token. 
+ *      Ownership represents physical custody.
+ *      AccessControl manages permissions for producing, transporting, and retailing.
+ */
+contract SupplyChainRegistry is ERC721URIStorage, AccessControl {
+    bytes32 public constant PRODUCER_ROLE = keccak256("PRODUCER_ROLE");
+    bytes32 public constant LOGISTICS_ROLE = keccak256("LOGISTICS_ROLE");
+    bytes32 public constant RETAILER_ROLE = keccak256("RETAILER_ROLE");
+    bytes32 public constant AUDITOR_ROLE = keccak256("AUDITOR_ROLE");
+
+    struct BatchInfo {
+        string batchUUID;
         string violationDetails;
+        bool isViolated;
+        uint256 creationTime;
     }
 
-    // Mapping from Batch UUID string to Record
-    mapping(string => Record) public records;
+    // Mapping TokenID -> Batch Info
+    mapping(uint256 => BatchInfo) public batchInfos;
 
-    event BatchRegistered(string batchUUID, string dataHash, address indexed notary, uint256 timestamp);
-    event BatchHandover(string batchUUID, address indexed notary, uint256 timestamp);
-    event BatchViolation(string batchUUID, string details, address indexed notary, uint256 timestamp);
+    // Mapping UUID string -> TokenID (to look up by string ID)
+    mapping(string => uint256) public uuidToTokenId;
 
-    function registerBatch(string memory batchUUID, string memory dataHash) public {
-        require(!records[batchUUID].exists, "Batch already registered");
+    event BatchCreated(uint256 indexed tokenId, string batchUUID, address indexed producer, uint256 timestamp);
+    event BatchCustodyTransferred(uint256 indexed tokenId, address from, address to, uint256 timestamp);
+    event ViolationReported(uint256 indexed tokenId, string details, address indexed reporter, uint256 timestamp);
 
-        records[batchUUID] = Record({
-            ipfsHash: dataHash,
-            notary: msg.sender,
-            timestamp: block.timestamp,
-            exists: true,
-            handedOver: false,
-            violationDetails: ""
+    constructor() ERC721("FoodTechBatch", "FTB") {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(PRODUCER_ROLE, msg.sender);
+        _grantRole(LOGISTICS_ROLE, msg.sender);
+        _grantRole(RETAILER_ROLE, msg.sender);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721URIStorage, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Producer mints a new Batch NFT.
+     * @param batchUUID Unique string identifier from internal systems
+     * @param tokenURI IPFS metdata link
+     */
+    function createBatch(string memory batchUUID, string memory tokenURI) public onlyRole(PRODUCER_ROLE) {
+        require(uuidToTokenId[batchUUID] == 0, "Batch UUID already exists");
+
+        // Generate Token ID from UUID hash
+        uint256 tokenId = uint256(keccak256(abi.encodePacked(batchUUID)));
+        
+        _mint(msg.sender, tokenId);
+        _setTokenURI(tokenId, tokenURI);
+
+        uuidToTokenId[batchUUID] = tokenId;
+        batchInfos[tokenId] = BatchInfo({
+            batchUUID: batchUUID,
+            violationDetails: "",
+            isViolated: false,
+            creationTime: block.timestamp
         });
 
-        emit BatchRegistered(batchUUID, dataHash, msg.sender, block.timestamp);
+        emit BatchCreated(tokenId, batchUUID, msg.sender, block.timestamp);
     }
 
+    /**
+     * @dev Transfer custody (ownership) of the batch.
+     *      Can be used for Logistics -> Retailer handover.
+     *      Overrides standard transfer to add Role checks if needed.
+     */
+    function transferCustody(address to, uint256 tokenId) public {
+        // Standard ERC721 transferFrom checks ownership/approval internally
+        // We add a check that the recipient has a role in the system
+        require(
+            hasRole(LOGISTICS_ROLE, to) || hasRole(RETAILER_ROLE, to),
+            "Recipient must be an authorized Logistics or Retail partner"
+        );
+        
+        transferFrom(msg.sender, to, tokenId);
+        
+        emit BatchCustodyTransferred(tokenId, msg.sender, to, block.timestamp);
+    }
+
+    /**
+     * @dev Report a compliance violation (e.g. Temp > -18C).
+     *      Can be called by IoT sensors (via Oracle) or Auditors.
+     */
     function reportViolation(string memory batchUUID, string memory details) public {
-        require(records[batchUUID].exists, "Batch not found");
-        
-        Record storage record = records[batchUUID];
-        record.violationDetails = details;
-        
-        emit BatchViolation(batchUUID, details, msg.sender, block.timestamp);
+        uint256 tokenId = uuidToTokenId[batchUUID];
+        require(tokenId != 0, "Batch does not exist");
+        require(
+            hasRole(AUDITOR_ROLE, msg.sender) || hasRole(LOGISTICS_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), 
+            "Not authorized to report violation"
+        );
+
+        BatchInfo storage info = batchInfos[tokenId];
+        info.violationDetails = details;
+        info.isViolated = true;
+
+        emit ViolationReported(tokenId, details, msg.sender, block.timestamp);
     }
 
-    function finalizeHandover(string memory batchUUID) public {
-        require(records[batchUUID].exists, "Batch not found");
-        require(!records[batchUUID].handedOver, "Batch already handed over");
+    /**
+     * @dev Public view for transparency
+     */
+    function getBatchData(string memory batchUUID) public view returns (
+        address currentOwner,
+        string memory uri, 
+        string memory violation, 
+        bool isViolated,
+        uint256 timestamp
+    ) {
+        uint256 tokenId = uuidToTokenId[batchUUID];
+        require(tokenId != 0, "Batch not found");
         
-        Record storage record = records[batchUUID];
-        record.handedOver = true;
+        BatchInfo memory info = batchInfos[tokenId];
         
-        emit BatchHandover(batchUUID, msg.sender, block.timestamp);
+        return (
+            ownerOf(tokenId),
+            tokenURI(tokenId),
+            info.violationDetails,
+            info.isViolated,
+            info.creationTime
+        );
     }
 }

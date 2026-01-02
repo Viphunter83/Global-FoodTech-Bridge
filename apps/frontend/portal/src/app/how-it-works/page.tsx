@@ -125,10 +125,10 @@ export default function HowItWorksPage() {
                                         {t('passport_desc')}
                                     </p>
                                     <div className="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-lg text-left w-full max-w-md mx-auto shadow-inner">
-                                        <p>&gt; create_batch(id="902f1e...")</p>
-                                        <p className="text-blue-400">&gt; verifying signatures...</p>
-                                        <p>&gt; status: <span className="text-white">REGISTERED</span></p>
-                                        <p>&gt; tx_hash: 0x71C...9A2</p>
+                                        <p>&gt; mint_nft_batch(uuid="902f1e...")</p>
+                                        <p className="text-blue-400">&gt; verifying PRODUCER_ROLE...</p>
+                                        <p>&gt; token_id: <span className="text-purple-400">#49281</span> generated</p>
+                                        <p>&gt; status: <span className="text-white">ON-CHAIN</span></p>
                                     </div>
                                 </div>
                             )}
