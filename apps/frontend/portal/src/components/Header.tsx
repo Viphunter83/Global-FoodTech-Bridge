@@ -1,10 +1,15 @@
+'use client';
 
 import Link from 'next/link';
 import { PackageSearch, LayoutDashboard } from 'lucide-react';
 import { Button } from './ui/Button';
 import { RoleSwitcher } from './ui/RoleSwitcher';
+import { LanguageSwitcher } from './ui/LanguageSwitcher';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 
 export function Header() {
+    const { t } = useLanguage();
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 max-w-screen-2xl items-center mx-auto px-4">
@@ -16,10 +21,10 @@ export function Header() {
                     </Link>
                     <nav className="flex items-center space-x-6 text-sm font-medium">
                         <Link href="/batches/new" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                            Create Batch
+                            {t('menu_create_batch')}
                         </Link>
                         <Link href="/how-it-works" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                            How it Works
+                            {t('menu_how_it_works')}
                         </Link>
                     </nav>
                 </div>
@@ -28,6 +33,7 @@ export function Header() {
                         {/* Search could go here */}
                     </div>
                     <nav className="flex items-center gap-2">
+                        <LanguageSwitcher />
                         <RoleSwitcher />
                         <Link href="https://github.com/GlobalFoodTechBridge" target="_blank" rel="noreferrer">
                             <Button variant="ghost" size="icon" className="h-8 w-8 px-0">

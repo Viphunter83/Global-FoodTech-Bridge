@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 
 export default function RootLayout({
     children,
@@ -21,10 +22,12 @@ export default function RootLayout({
         <html lang="en">
             <body className={inter.className}>
                 <AuthProvider>
-                    <div className="relative flex min-h-screen flex-col">
-                        <Header />
-                        <div className="flex-1">{children}</div>
-                    </div>
+                    <LanguageProvider>
+                        <div className="relative flex min-h-screen flex-col">
+                            <Header />
+                            <div className="flex-1">{children}</div>
+                        </div>
+                    </LanguageProvider>
                 </AuthProvider>
             </body>
         </html>

@@ -4,8 +4,12 @@ import { ethers, JsonRpcProvider, Wallet, Contract } from 'ethers';
 
 const REGISTRY_ABI = [
     "function registerBatch(string memory batchUUID, string memory dataHash) public",
+    "function reportViolation(string memory batchUUID, string memory details) public",
+    "function finalizeHandover(string memory batchUUID) public",
     "event BatchRegistered(string batchUUID, string dataHash, address indexed notary, uint256 timestamp)",
-    "function records(string memory batchUUID) public view returns (string memory ipfsHash, address notary, uint256 timestamp, bool exists)"
+    "event BatchHandover(string batchUUID, address indexed notary, uint256 timestamp)",
+    "event BatchViolation(string batchUUID, string details, address indexed notary, uint256 timestamp)",
+    "function records(string memory batchUUID) public view returns (string memory ipfsHash, address notary, uint256 timestamp, bool exists, bool handedOver, string memory violationDetails)"
 ];
 
 @Injectable()
@@ -53,7 +57,6 @@ export class BlockchainService implements OnModuleInit {
             return `0xMOCK_TX_HASH_${Date.now()}`;
         }
 
-        // ... Real implementation ...
         try {
             const tx = await this.contract.registerBatch(batchId, dataHash);
             this.logger.log(`Transaction sent: ${tx.hash}. Waiting for confirmation...`);
@@ -70,24 +73,52 @@ export class BlockchainService implements OnModuleInit {
 
     async registerViolation(batchId: string, details: string): Promise<string> {
         if (this.isMockMode) {
+            this.logger.warn(`[MOCK] Reporting Violation for ${batchId}: ${details}`);
             const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
             state.violation = details;
+            // Ensure batch exists in mock store even if not registered via flow (for testing)
+            if (!state.registered) {
+                this.logger.warn(`[MOCK] Batch ${batchId} was not registered, auto-registering for test.`);
+                state.registered = true;
+            }
             this.mockStore.set(batchId, state);
             return `0xMOCK_VIOLATION_TX_${Date.now()}`;
         }
-        // Real implementation would call contract.reportViolation(...)
-        return '0x...';
+
+        try {
+            const tx = await this.contract.reportViolation(batchId, details);
+            this.logger.log(`Violation reported: ${tx.hash}`);
+            await tx.wait();
+            return tx.hash;
+        } catch (error) {
+            this.logger.error('Failed to report violation', error);
+            throw new Error(`Blockchain violation report failed: ${error.message}`);
+        }
     }
 
     async finalizeHandover(batchId: string): Promise<string> {
         if (this.isMockMode) {
+            this.logger.log(`[MOCK] Finalizing Handover for ${batchId}`);
             const state = this.mockStore.get(batchId) || { registered: false, handover: false, violation: null };
             state.handover = true;
+            // Ensure batch exists in mock store
+            if (!state.registered) {
+                this.logger.warn(`[MOCK] Batch ${batchId} was not registered, auto-registering for test.`);
+                state.registered = true;
+            }
             this.mockStore.set(batchId, state);
             return `0xMOCK_HANDOVER_TX_${Date.now()}`;
         }
-        // Real implementation would call contract.finishHandover(...)
-        return '0x...';
+
+        try {
+            const tx = await this.contract.finalizeHandover(batchId);
+            this.logger.log(`Handover finalized: ${tx.hash}`);
+            await tx.wait();
+            return tx.hash;
+        } catch (error) {
+            this.logger.error('Failed to finalize handover', error);
+            throw new Error(`Blockchain handover failed: ${error.message}`);
+        }
     }
 
     async getBatchStatus(batchId: string): Promise<{ exists: boolean; txHash?: string; timestamp?: number; handover?: boolean; violation?: string | null }> {
@@ -105,8 +136,8 @@ export class BlockchainService implements OnModuleInit {
         }
 
         try {
+            // result is [ipfsHash, notary, timestamp, exists, handedOver, violationDetails]
             const result = await this.contract.records(batchId);
-            // result is [ipfsHash, notary, timestamp, exists]
             const exists = result[3];
 
             if (!exists) {
@@ -117,12 +148,12 @@ export class BlockchainService implements OnModuleInit {
                 exists: true,
                 txHash: '0x(verified-on-chain)',
                 timestamp: Number(result[2]) * 1000,
-                // Real contract fields for handover/violation would be mapped here
-                handover: false,
-                violation: null
+                handover: result[4],
+                violation: result[5] && result[5] !== "" ? result[5] : null
             };
         } catch (error) {
             this.logger.error(`Failed to get batch status for ${batchId}`, error);
+            // Default to false if error, or throw depending on requirement.
             return { exists: false };
         }
     }
