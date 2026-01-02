@@ -1,6 +1,7 @@
 'use client';
 
 import { MapPin } from 'lucide-react';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 
 interface DashboardMapProps {
     lat?: number;
@@ -9,6 +10,8 @@ interface DashboardMapProps {
 }
 
 export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR" }: DashboardMapProps) {
+    const { t } = useLanguage();
+
     return (
         <div className="relative w-full h-[300px] bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
             {/* Simple static map background simulation */}
@@ -22,7 +25,7 @@ export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR"
             </svg>
 
             <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-mono">
-                [ Interactive Supply Chain Map Loading... ]
+                {t('map_loading')}
             </div>
 
             {/* Pin */}

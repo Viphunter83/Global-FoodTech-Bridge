@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
+import { useLanguage } from '../providers/LanguageProvider';
 import { notarizeBatch, finalizeHandover, reportViolation } from '@/lib/api';
 import { Button } from './Button';
 import { Loader2, ShieldCheck, AlertTriangle, CheckCircle, Truck } from 'lucide-react';
@@ -18,6 +19,7 @@ interface BlockchainControlsProps {
 
 export function BlockchainControls({ batchId, blockchainStatus }: BlockchainControlsProps) {
     const { role } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
 
     const handleNotarize = async () => {
@@ -42,7 +44,7 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
     };
 
     if (loading) {
-        return <Button disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing Blockchain Tx...</Button>;
+        return <Button disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('bc_processing')}</Button>;
     }
 
     // 1. Violation State (High Alert)
@@ -51,9 +53,9 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
             <div className="rounded-md bg-red-50 p-4 border border-red-200">
                 <div className="flex items-center text-red-700 font-bold mb-2">
                     <AlertTriangle className="mr-2 h-5 w-5" />
-                    Compliance Violation Recorded
+                    {t('bc_violation_title')}
                 </div>
-                <p className="text-sm text-red-600 mb-2">Details: {blockchainStatus.violation}</p>
+                <p className="text-sm text-red-600 mb-2">{t('bc_violation_details')} {blockchainStatus.violation}</p>
                 <div className="text-xs font-mono text-gray-500 bg-white p-1 rounded inline-block">
                     Tx: {blockchainStatus.txHash?.substring(0, 16)}...
                 </div>
@@ -67,9 +69,9 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
             <div className="rounded-md bg-green-50 p-4 border border-green-200">
                 <div className="flex items-center text-green-700 font-bold">
                     <CheckCircle className="mr-2 h-5 w-5" />
-                    Handover Completed & Verified
+                    {t('bc_handover_title')}
                 </div>
-                <p className="text-sm text-green-600 mt-1">Product successfully accepted by Retailer.</p>
+                <p className="text-sm text-green-600 mt-1">{t('bc_handover_desc')}</p>
             </div>
         );
     }
@@ -81,9 +83,9 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                 <div className="rounded-md bg-blue-50 p-4 border border-blue-200">
                     <div className="flex items-center text-blue-700 font-bold">
                         <ShieldCheck className="mr-2 h-5 w-5" />
-                        Secured on Polygon
+                        {t('bc_secured_title')}
                     </div>
-                    <p className="text-sm text-blue-600 mt-1">Batch passport is immutable.</p>
+                    <p className="text-sm text-blue-600 mt-1">{t('bc_secured_desc')}</p>
                 </div>
 
                 {/* Logistics Actions */}
@@ -91,7 +93,7 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                     <div className="flex gap-2">
                         <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleReport}>
                             <AlertTriangle className="mr-2 h-4 w-4" />
-                            Report Incident
+                            {t('btn_report')}
                         </Button>
                     </div>
                 )}
@@ -99,10 +101,10 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                 {/* Retailer Actions */}
                 {role === 'RETAILER' && (
                     <div className="rounded-md bg-slate-50 p-4 border border-slate-200">
-                        <h4 className="font-semibold text-sm mb-2">Retailer Checkpoint</h4>
+                        <h4 className="font-semibold text-sm mb-2">{t('retailer_checkpoint')}</h4>
                         <Button onClick={handleHandover} className="bg-green-600 hover:bg-green-700 text-white">
                             <Truck className="mr-2 h-4 w-4" />
-                            Accept & Finalize Handover
+                            {t('btn_accept_handover')}
                         </Button>
                     </div>
                 )}
@@ -115,10 +117,10 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
         return (
             <Button onClick={handleNotarize} className="w-full bg-purple-600 hover:bg-purple-700">
                 <ShieldCheck className="mr-2 h-4 w-4" />
-                Notarize on Blockchain
+                {t('btn_notarize')}
             </Button>
         );
     }
 
-    return <div className="text-sm text-gray-500 italic">Waiting for Manufacturer to notarize...</div>;
+    return <div className="text-sm text-gray-500 italic">{t('bc_waiting_manufacturer')}</div>;
 }

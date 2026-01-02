@@ -3,16 +3,19 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Telemetry } from '@/lib/api';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 
 interface TelemetryChartProps {
     data: Telemetry[];
 }
 
 export function TelemetryChart({ data }: TelemetryChartProps) {
+    const { t } = useLanguage();
+
     if (!data || data.length === 0) {
         return (
             <Card className="h-[300px] flex items-center justify-center text-gray-400">
-                No telemetry data available.
+                {t('chart_no_data')}
             </Card>
         );
     }
@@ -26,8 +29,8 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Temperature History</CardTitle>
-                <CardDescription>Real-time sensor readings (°C)</CardDescription>
+                <CardTitle>{t('chart_title')}</CardTitle>
+                <CardDescription>{t('chart_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">

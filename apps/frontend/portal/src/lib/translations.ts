@@ -51,7 +51,37 @@ export type TranslationKey =
     | 'verified_badge'
     | 'menu_create_batch'
     | 'menu_how_it_works'
-    | 'role_persona';
+    | 'role_persona'
+    | 'chart_title'
+    | 'chart_desc'
+    | 'chart_no_data'
+    | 'map_loading'
+    | 'bc_processing'
+    | 'bc_violation_title'
+    | 'bc_violation_details'
+    | 'bc_handover_title'
+    | 'bc_handover_desc'
+    | 'bc_secured_title'
+    | 'bc_secured_desc'
+    | 'btn_report'
+    | 'retailer_checkpoint'
+    | 'btn_accept_handover'
+    | 'btn_notarize'
+    | 'bc_waiting_manufacturer'
+    | 'back_dashboard'
+    | 'batch_id'
+    | 'batch_target_temp'
+    | 'sla_violations_title'
+    | 'sla_violations_desc'
+    | 'map_interface_placeholder'
+    | 'map_last_known'
+    | 'location_tracking_title'
+    | 'bc_validation_title'
+    | 'tx_hash_label'
+    | 'notary_authority_label'
+    | 'smart_contract_name'
+    | 'view_explorer_link'
+    | 'scan_share';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -105,7 +135,37 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         verified_badge: 'VERIFIED',
         menu_create_batch: 'Create Batch',
         menu_how_it_works: 'How it Works',
-        role_persona: 'Persona:'
+        role_persona: 'Persona:',
+        chart_title: 'Temperature History',
+        chart_desc: 'Real-time sensor readings (°C)',
+        chart_no_data: 'No telemetry data available.',
+        map_loading: '[ Interactive Supply Chain Map Loading... ]',
+        bc_processing: 'Processing Blockchain Tx...',
+        bc_violation_title: 'Compliance Violation Recorded',
+        bc_violation_details: 'Details:',
+        bc_handover_title: 'Handover Completed & Verified',
+        bc_handover_desc: 'Product successfully accepted by Retailer.',
+        bc_secured_title: 'Secured on Polygon',
+        bc_secured_desc: 'Batch passport is immutable.',
+        btn_report: 'Report Incident',
+        retailer_checkpoint: 'Retailer Checkpoint',
+        btn_accept_handover: 'Accept & Finalize Handover',
+        btn_notarize: 'Notarize on Blockchain',
+        bc_waiting_manufacturer: 'Waiting for Manufacturer to notarize...',
+        back_dashboard: 'Back to Dashboard',
+        batch_id: 'Batch ID:',
+        batch_target_temp: 'Target: {min}°C to {max}°C',
+        sla_violations_title: 'Attention: SLA Violations Detected',
+        sla_violations_desc: 'Compliance violations recorded in blockchain history.',
+        location_tracking_title: 'Location Tracking',
+        map_interface_placeholder: 'Map Interface',
+        map_last_known: 'Last known:',
+        bc_validation_title: 'Blockchain Validation',
+        tx_hash_label: 'Transaction Hash',
+        notary_authority_label: 'Notary Authority',
+        smart_contract_name: 'Global FoodTech Bridge Smart Contract',
+        view_explorer_link: 'View on Block Explorer →',
+        scan_share: 'Scan to Share'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -158,7 +218,37 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         verified_badge: 'ПРОВЕРЕНО',
         menu_create_batch: 'Создать партию',
         menu_how_it_works: 'Как это работает',
-        role_persona: 'Роль:'
+        role_persona: 'Роль:',
+        chart_title: 'История температур',
+        chart_desc: 'Показания датчиков в реальном времени (°C)',
+        chart_no_data: 'Нет данных телеметрии.',
+        map_loading: '[ Загрузка интерактивной карты поставок... ]',
+        bc_processing: 'Обработка транзакции...',
+        bc_violation_title: 'Зафиксировано нарушение',
+        bc_violation_details: 'Подробности:',
+        bc_handover_title: 'Передача завершена и проверена',
+        bc_handover_desc: 'Товар успешно принят ритейлером.',
+        bc_secured_title: 'Защищено в Polygon',
+        bc_secured_desc: 'Паспорт партии неизменен.',
+        btn_report: 'Сообщить об инциденте',
+        retailer_checkpoint: 'Контрольная точка ритейлера',
+        btn_accept_handover: 'Принять и завершить передачу',
+        btn_notarize: 'Нотаризировать в блокчейне',
+        bc_waiting_manufacturer: 'Ожидание нотаризации производителем...',
+        back_dashboard: 'Назад в дашборд',
+        batch_id: 'ID партии:',
+        batch_target_temp: 'Цель: от {min}°C до {max}°C',
+        sla_violations_title: 'Внимание: Нарушения SLA',
+        sla_violations_desc: 'Нарушения зафиксированы в истории блокчейна.',
+        location_tracking_title: 'Отслеживание местоположения',
+        map_interface_placeholder: 'Интерфейс карты',
+        map_last_known: 'Последнее известно:',
+        bc_validation_title: 'Валидация блокчейна',
+        tx_hash_label: 'Хеш транзакции',
+        notary_authority_label: 'Нотариус',
+        smart_contract_name: 'Смарт-контракт Global FoodTech Bridge',
+        view_explorer_link: 'Смотреть в Block Explorer →',
+        scan_share: 'Сканируйте чтобы поделиться'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -211,6 +301,36 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         verified_badge: 'تم التحقق',
         menu_create_batch: 'إنشاء دفعة',
         menu_how_it_works: 'كيف يعمل',
-        role_persona: 'الدور:'
+        role_persona: 'الدور:',
+        chart_title: 'تاريخ درجة الحرارة',
+        chart_desc: 'قراءات المستشعر في الوقت الفعلي (°C)',
+        chart_no_data: 'لا توجد بيانات للقياس عن بعد.',
+        map_loading: '[ تحميل خريطة سلسلة التوريد التفاعلية... ]',
+        bc_processing: 'معالجة معاملة Blockchain...',
+        bc_violation_title: 'تم تسجيل انتهاك للامتثال',
+        bc_violation_details: 'التفاصيل:',
+        bc_handover_title: 'اكتمل التسليم والتحقق منه',
+        bc_handover_desc: 'تم قبول المنتج بنجاح من قبل بائع التجزئة.',
+        bc_secured_title: 'مؤمن على Polygon',
+        bc_secured_desc: 'جواز سفر الدفعة غير قابل للتغيير.',
+        btn_report: 'الإبلاغ عن حادث',
+        retailer_checkpoint: 'نقطة تفتيش بائع التجزئة',
+        btn_accept_handover: 'القبول وإنهاء التسليم',
+        btn_notarize: 'توثيق في Blockchain',
+        bc_waiting_manufacturer: 'في انتظار الشركة المصنعة للتوثيق...',
+        back_dashboard: 'العودة إلى لوحة القيادة',
+        batch_id: 'معرف الدفعة:',
+        batch_target_temp: 'الهدف: {min}°C إلى {max}°C',
+        sla_violations_title: 'تنبيه: تم اكتشاف انتهاكات SLA',
+        sla_violations_desc: 'تم تسجيل انتهاكات الامتثال في تاريخ blockchain.',
+        location_tracking_title: 'تتبع الموقع',
+        map_interface_placeholder: 'واجهة الخريطة',
+        map_last_known: 'آخر موقع معروف:',
+        bc_validation_title: 'التحقق من صحة Blockchain',
+        tx_hash_label: 'تجزئة المعاملة',
+        notary_authority_label: 'سلطة التوثيق',
+        smart_contract_name: 'العقد الذكي Global FoodTech Bridge',
+        view_explorer_link: 'عرض في Block Explorer ←',
+        scan_share: 'مسح للمشاركة'
     }
 };
