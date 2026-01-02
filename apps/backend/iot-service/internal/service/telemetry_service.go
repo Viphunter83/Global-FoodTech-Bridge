@@ -53,3 +53,13 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 	// 4. Persistence
 	return s.repo.SaveReading(ctx, reading)
 }
+
+func (s *TelemetryService) GetReadings(ctx context.Context, batchID string) ([]*domain.Reading, error) {
+	// 1. Validation
+	if _, err := uuid.Parse(batchID); err != nil {
+		return nil, errors.New("invalid batch_id")
+	}
+
+	// 2. Retrieval
+	return s.repo.GetByBatchID(ctx, batchID)
+}

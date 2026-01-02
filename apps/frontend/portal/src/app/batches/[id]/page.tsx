@@ -3,6 +3,7 @@ import { TemperatureChart } from '@/components/charts/TemperatureChart';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { DashboardQR } from '@/components/ui/DashboardQR';
 
 export default async function BatchDetailsPage({ params }: { params: { id: string } }) {
     const { id } = params;
@@ -105,6 +106,11 @@ export default async function BatchDetailsPage({ params }: { params: { id: strin
                                 </a>
                             )}
                         </div>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center">
+                        <DashboardQR batchId={id} />
+                        <p className="mt-2 text-center text-xs text-gray-500">Scan to Share</p>
                     </div>
 
                 </div>

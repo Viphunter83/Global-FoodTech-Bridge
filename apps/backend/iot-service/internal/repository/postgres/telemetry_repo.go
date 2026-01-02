@@ -38,3 +38,29 @@ func (r *TelemetryRepository) SaveReading(ctx context.Context, reading *domain.R
 
 	return nil
 }
+
+func (r *TelemetryRepository) GetByBatchID(ctx context.Context, batchID string) ([]*domain.Reading, error) {
+	query := `
+		SELECT id, batch_id, timestamp, temperature_celsius, location_lat, location_lon, device_id
+		FROM telemetry_readings
+		WHERE batch_id = $1
+		ORDER BY timestamp DESC
+	`
+
+	rows, err := r.db.Query(ctx, query, batchID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query readings: %w", err)
+	}
+	defer rows.Close()
+
+	var readings []*domain.Reading
+	for rows.Next() {
+		var r domain.Reading
+		if err := rows.Scan(&r.ID, &r.BatchID, &r.Timestamp, &r.TemperatureCelsius, &r.LocationLat, &r.LocationLon, &r.DeviceID); err != nil {
+			return nil, fmt.Errorf("failed to scan reading: %w", err)
+		}
+		readings = append(readings, &r)
+	}
+
+	return readings, nil
+}

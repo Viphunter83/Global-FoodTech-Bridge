@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { PackagePlus, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
+import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 
 export default function CreateBatchPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +65,11 @@ export default function CreateBatchPage() {
                         <CheckCircle className="mb-2 text-green-600" size={48} />
                         <h3 className="text-lg font-medium text-green-900">Batch Created!</h3>
                         <p className="mt-2 font-mono text-sm text-gray-600 break-all">{result.batch_id}</p>
+
+                        <div className="flex justify-center my-4">
+                            <QRCodeDisplay value={`${window.location.origin}/batches/${result.batch_id}`} size={150} />
+                        </div>
+
                         <Link href={`/batches/${result.batch_id}`} className="mt-4 w-full">
                             <Button className="w-full">
                                 Track Batch Status
@@ -85,6 +92,7 @@ export default function CreateBatchPage() {
                             <Input
                                 name="manufacturer_id"
                                 placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                                defaultValue={DEMO_MANUFACTURER_ID}
                                 required
                             />
                         </div>

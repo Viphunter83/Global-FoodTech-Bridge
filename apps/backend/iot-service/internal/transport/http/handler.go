@@ -25,6 +25,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/telemetry", h.ingestTelemetry)
+		r.Get("/telemetry/{batchId}", h.getReadings)
 	})
 
 	return r
@@ -43,4 +44,21 @@ func (h *Handler) ingestTelemetry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) getReadings(w http.ResponseWriter, r *http.Request) {
+	batchID := chi.URLParam(r, "batchId")
+	if batchID == "" {
+		http.Error(w, "missing batch_id", http.StatusBadRequest)
+		return
+	}
+
+	readings, err := h.service.GetReadings(r.Context(), batchID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(readings)
 }
