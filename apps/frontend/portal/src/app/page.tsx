@@ -1,31 +1,93 @@
+'use client';
+
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { ArrowRight, Search, ShieldCheck, Thermometer, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-                <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-                    Global FoodTech Bridge&nbsp;
-                    <code className="font-mono font-bold">Portal</code>
-                </p>
-            </div>
+    const [batchId, setBatchId] = useState('');
+    const router = useRouter();
 
-            <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-                <Link
-                    href="/batches/new"
-                    className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-                >
-                    <h2 className="mb-3 text-2xl font-semibold">
-                        Create Batch{" "}
-                        <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                            -&gt;
-                        </span>
-                    </h2>
-                    <p className="m-0 max-w-[30ch] text-sm opacity-50">
-                        Register a new product batch in the system.
-                    </p>
-                </Link>
-            </div>
+    const handleTrack = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (batchId.trim()) {
+            router.push(`/batches/${batchId.trim()}`);
+        }
+    };
+
+    return (
+        <main className="flex flex-col items-center">
+            {/* Hero Section */}
+            <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950">
+                <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center space-y-8">
+                    <div className="space-y-4 max-w-3xl">
+                        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
+                            Trust Your Supply Chain.
+                        </h1>
+                        <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400 max-w-[700px] mx-auto">
+                            End-to-end traceability for global food trade.
+                            Secured by Blockchain, Verified by IoT.
+                        </p>
+                    </div>
+
+                    {/* Tracking Input */}
+                    <div className="w-full max-w-md space-y-2">
+                        <form onSubmit={handleTrack} className="flex space-x-2">
+                            <Input
+                                placeholder="Enter Batch UUID (e.g. 902f1...)"
+                                className="flex-1 h-12 text-lg"
+                                value={batchId}
+                                onChange={(e) => setBatchId(e.target.value)}
+                            />
+                            <Button type="submit" size="lg" className="h-12 px-6">
+                                <Search className="mr-2 h-5 w-5" />
+                                Track
+                            </Button>
+                        </form>
+                        <p className="text-xs text-gray-400">
+                            Try demo ID: <code className="bg-gray-100 px-1 py-0.5 rounded text-gray-800">902f1e4c-3861-458d-8e76-7054b86c0cf1</code>
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+                        <Link href="/batches/new">
+                            <Button variant="outline" size="lg">
+                                Business Login <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* Features Grid */}
+            <section className="w-full py-16 bg-white dark:bg-gray-900 border-t border-gray-100">
+                <div className="container px-4 md:px-6 mx-auto grid gap-10 md:grid-cols-3">
+                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
+                            <Globe className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-bold">Global Traceability</h3>
+                        <p className="text-gray-500">Real-time location tracking from manufacturer to final destination.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-2">
+                            <Thermometer className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-bold">IoT Monitoring</h3>
+                        <p className="text-gray-500">Automated temperature compliance checks stored in immutable history.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div className="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2">
+                            <ShieldCheck className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-bold">Blockchain Verified</h3>
+                        <p className="text-gray-500">Every batch is notarized on Polygon network for absolute trust.</p>
+                    </div>
+                </div>
+            </section>
         </main>
     );
 }

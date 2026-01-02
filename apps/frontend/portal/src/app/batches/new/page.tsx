@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -11,14 +11,33 @@ import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 
 export default function CreateBatchPage() {
     const [isLoading, setIsLoading] = useState(false);
-    const [result, setResult] = useState<{ batch_id: string; status: string } | null>(null);
+    const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
+    const [recentBatches, setRecentBatches] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    useEffect(() => {
+        // Load recent batches on mount
+        const stored = localStorage.getItem('recent_batches');
+        if (stored) {
+            try {
+                setRecentBatches(JSON.parse(stored));
+            } catch (e) {
+                console.error('Failed to parse history', e);
+            }
+        }
+    }, []);
+
+    const saveToHistory = (id: string) => {
+        const newHistory = [id, ...recentBatches].slice(0, 5); // Keep last 5
+        setRecentBatches(newHistory);
+        localStorage.setItem('recent_batches', JSON.stringify(newHistory));
+    };
+
+    async function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setIsLoading(true);
+        setCreatedBatchId(null);
         setError(null);
-        setResult(null);
 
         const formData = new FormData(event.currentTarget);
         const data = {
@@ -41,9 +60,15 @@ export default function CreateBatchPage() {
             }
 
             const json = await response.json();
-            setResult(json);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Something went wrong');
+            setCreatedBatchId(json.batch_id);
+            saveToHistory(json.batch_id); // Save ID
+        } catch (err: unknown) {
+            console.error(err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Failed to create batch');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -60,17 +85,17 @@ export default function CreateBatchPage() {
                     <p className="text-sm text-gray-500">Enter production details below</p>
                 </div>
 
-                {result ? (
+                {createdBatchId ? (
                     <div className="flex flex-col items-center rounded-lg bg-green-50 p-6 text-center">
                         <CheckCircle className="mb-2 text-green-600" size={48} />
                         <h3 className="text-lg font-medium text-green-900">Batch Created!</h3>
-                        <p className="mt-2 font-mono text-sm text-gray-600 break-all">{result.batch_id}</p>
+                        <p className="mt-2 font-mono text-sm text-gray-600 break-all">{createdBatchId}</p>
 
                         <div className="flex justify-center my-4">
-                            <QRCodeDisplay value={`${window.location.origin}/batches/${result.batch_id}`} size={150} />
+                            <QRCodeDisplay value={`${window.location.origin}/batches/${createdBatchId}`} size={150} />
                         </div>
 
-                        <Link href={`/batches/${result.batch_id}`} className="mt-4 w-full">
+                        <Link href={`/batches/${createdBatchId}`} className="mt-4 w-full">
                             <Button className="w-full">
                                 Track Batch Status
                             </Button>
@@ -78,7 +103,7 @@ export default function CreateBatchPage() {
                         <Button
                             className="mt-2 w-full"
                             variant="secondary"
-                            onClick={() => setResult(null)}
+                            onClick={() => setCreatedBatchId(null)}
                         >
                             Create Another
                         </Button>
@@ -127,12 +152,28 @@ export default function CreateBatchPage() {
                         </div>
 
                         {error && <p className="text-sm text-red-600">{error}</p>}
+                        {/* {error && <p className="text-sm text-red-600">{error}</p>} */}
 
                         <Button className="w-full" disabled={isLoading} type="submit">
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Register Batch
                         </Button>
                     </form>
+                )}
+                {/* Recent Batches Sidebar or Bottom Block */}
+                {recentBatches.length > 0 && !createdBatchId && (
+                    <div className="mt-8 pt-8 border-t border-gray-100">
+                        <h3 className="text-sm font-medium text-gray-500 mb-3">Recently Created Batches (Local)</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {recentBatches.map((id) => (
+                                <Link key={id} href={`/batches/${id}`}>
+                                    <div className="px-3 py-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-xs text-gray-600 font-mono transition-colors">
+                                        {id.slice(0, 8)}...
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </Card>
 
