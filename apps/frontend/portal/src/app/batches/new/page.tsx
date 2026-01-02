@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { PackagePlus, CheckCircle, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function CreateBatchPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -62,8 +63,13 @@ export default function CreateBatchPage() {
                         <CheckCircle className="mb-2 text-green-600" size={48} />
                         <h3 className="text-lg font-medium text-green-900">Batch Created!</h3>
                         <p className="mt-2 font-mono text-sm text-gray-600 break-all">{result.batch_id}</p>
+                        <Link href={`/batches/${result.batch_id}`} className="mt-4 w-full">
+                            <Button className="w-full">
+                                Track Batch Status
+                            </Button>
+                        </Link>
                         <Button
-                            className="mt-6 w-full"
+                            className="mt-2 w-full"
                             variant="secondary"
                             onClick={() => setResult(null)}
                         >
