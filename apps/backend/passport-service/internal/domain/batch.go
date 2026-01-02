@@ -22,6 +22,8 @@ type Batch struct {
 	BatchSize      int              `json:"batch_size"`
 	USFStatus      ValidationStatus `json:"usf_status"`
 	BlockchainHash *string          `json:"blockchain_hash,omitempty"`
+	MinTemp        float64          `json:"min_temp,omitempty"`
+	MaxTemp        float64          `json:"max_temp,omitempty"`
 }
 
 type CreateBatchRequest struct {

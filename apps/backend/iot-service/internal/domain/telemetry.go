@@ -24,3 +24,12 @@ type IngestTelemetryRequest struct {
 	LocationLon        *float64 `json:"lon,omitempty"`
 	DeviceID           string   `json:"device_id"`
 }
+
+type Alert struct {
+	ID        uuid.UUID `json:"id"`
+	BatchID   uuid.UUID `json:"batch_id"`
+	Type      string    `json:"type"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+	DeviceID  string    `json:"device_id"`
+}

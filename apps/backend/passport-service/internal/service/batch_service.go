@@ -33,13 +33,29 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		return nil, errors.New("invalid manufacturer_id format")
 	}
 
-	// 2. Mapping
+	// 2. Mapping & SLA Rules
+	var minTemp, maxTemp float64
+	switch req.ProductType {
+	case "PHO_BO_SOUP":
+		minTemp = -25.0
+		maxTemp = -18.0
+	case "MANGO_SHAKE":
+		minTemp = 2.0
+		maxTemp = 6.0
+	default:
+		// Default safe frozen limits
+		minTemp = -20.0
+		maxTemp = -10.0
+	}
+
 	batch := &domain.Batch{
 		ManufacturerID: manufacturerUUID,
 		ProductType:    req.ProductType,
 		BatchSize:      req.BatchSize,
 		USFStatus:      domain.StatusPending,
 		BlockchainHash: nil,
+		MinTemp:        minTemp,
+		MaxTemp:        maxTemp,
 	}
 
 	// 3. Persistence

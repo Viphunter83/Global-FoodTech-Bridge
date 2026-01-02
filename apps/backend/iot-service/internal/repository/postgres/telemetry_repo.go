@@ -64,3 +64,46 @@ func (r *TelemetryRepository) GetByBatchID(ctx context.Context, batchID string) 
 
 	return readings, nil
 }
+
+func (r *TelemetryRepository) SaveAlert(ctx context.Context, alert *domain.Alert) error {
+	query := `
+		INSERT INTO alerts (id, batch_id, type, message, created_at, device_id)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+	_, err := r.db.Exec(ctx, query,
+		alert.ID,
+		alert.BatchID,
+		alert.Type,
+		alert.Message,
+		alert.CreatedAt,
+		alert.DeviceID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to save alert: %w", err)
+	}
+	return nil
+}
+
+func (r *TelemetryRepository) GetAlertsByBatchID(ctx context.Context, batchID string) ([]*domain.Alert, error) {
+	query := `
+		SELECT id, batch_id, type, message, created_at, device_id
+		FROM alerts
+		WHERE batch_id = $1
+		ORDER BY created_at DESC
+	`
+	rows, err := r.db.Query(ctx, query, batchID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query alerts: %w", err)
+	}
+	defer rows.Close()
+
+	var alerts []*domain.Alert
+	for rows.Next() {
+		var a domain.Alert
+		if err := rows.Scan(&a.ID, &a.BatchID, &a.Type, &a.Message, &a.CreatedAt, &a.DeviceID); err != nil {
+			return nil, fmt.Errorf("failed to scan alert: %w", err)
+		}
+		alerts = append(alerts, &a)
+	}
+	return alerts, nil
+}

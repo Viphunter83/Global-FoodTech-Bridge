@@ -4,6 +4,8 @@ export interface BatchDetails {
     product_type: string;
     batch_size: number;
     created_at: string;
+    min_temp?: number;
+    max_temp?: number;
 }
 
 export interface Telemetry {
@@ -18,6 +20,14 @@ export interface BlockchainStatus {
     status: string;
     txHash?: string;
     verified: boolean;
+}
+
+export interface Alert {
+    id: string;
+    batch_id: string;
+    type: string;
+    message: string;
+    created_at: string;
 }
 
 const PASSPORT_URL = process.env.PASSPORT_SERVICE_URL || 'http://passport-service:8080/api/v1';
@@ -68,5 +78,16 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
     } catch (e) {
         console.error('Failed to fetch blockchain status:', e);
         return { status: 'Error', verified: false };
+    }
+}
+
+export async function getAlerts(id: string): Promise<Alert[]> {
+    try {
+        const res = await fetch(`${IOT_URL}/telemetry/${id}/alerts`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        return res.json();
+    } catch (e) {
+        console.error('Failed to fetch alerts:', e);
+        return [];
     }
 }

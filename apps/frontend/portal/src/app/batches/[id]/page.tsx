@@ -1,7 +1,7 @@
-import { getBatchDetails, getTelemetry, getBlockchainStatus } from '@/lib/api';
+import { getBatchDetails, getTelemetry, getBlockchainStatus, getAlerts } from '@/lib/api';
 import { TemperatureChart } from '@/components/charts/TemperatureChart';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, MapPin, Thermometer } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { DashboardQR } from '@/components/ui/DashboardQR';
 
@@ -9,10 +9,11 @@ export default async function BatchDetailsPage({ params }: { params: { id: strin
     const { id } = params;
 
     // Parallel data fetching
-    const [batch, telemetry, blockchain] = await Promise.all([
+    const [batch, telemetry, blockchain, alerts] = await Promise.all([
         getBatchDetails(id),
         getTelemetry(id),
         getBlockchainStatus(id),
+        getAlerts(id),
     ]);
 
     if (!batch) {
@@ -36,7 +37,14 @@ export default async function BatchDetailsPage({ params }: { params: { id: strin
                         <h1 className="text-3xl font-bold text-gray-900">
                             {batch.product_type.replace('_', ' ')}
                         </h1>
-                        <p className="font-mono text-sm text-gray-500">Batch ID: {batch.id}</p>
+                        <p className="font-mono text-sm text-gray-500 mt-1">
+                            Batch ID: {batch.id}
+                            {batch.min_temp !== undefined && (
+                                <span className="ml-3 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                    Target: {batch.min_temp}°C to {batch.max_temp}°C
+                                </span>
+                            )}
+                        </p>
                     </div>
 
                     {blockchain.verified && (
@@ -48,6 +56,32 @@ export default async function BatchDetailsPage({ params }: { params: { id: strin
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
+
+                    {/* Alerts Banner */}
+                    {alerts.length > 0 && (
+                        <div className="col-span-2 rounded-xl border border-red-200 bg-red-50 p-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <AlertTriangle className="h-5 w-5 text-red-600" aria-hidden="true" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-red-800">Attention: SLA Violations Detected</h3>
+                                    <div className="mt-2 text-sm text-red-700">
+                                        <ul role="list" className="list-disc space-y-1 pl-5">
+                                            {alerts.slice(0, 3).map((alert) => (
+                                                <li key={alert.id}>
+                                                    <span className="font-semibold">{new Date(alert.created_at).toLocaleTimeString()}:</span> {alert.message}
+                                                </li>
+                                            ))}
+                                            {alerts.length > 3 && (
+                                                <li>...and {alerts.length - 3} more</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Temperature Chart */}
                     <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

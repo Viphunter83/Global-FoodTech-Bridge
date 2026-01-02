@@ -16,10 +16,10 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 	return &BatchRepository{db: db}
 }
 
-func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid.UUID, error) {
+	func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid.UUID, error) {
 	query := `
-		INSERT INTO product_batches (manufacturer_id, product_type, batch_size, usf_status, blockchain_hash)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO product_batches (manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, min_temp, max_temp)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id
 	`
 
@@ -30,6 +30,8 @@ func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid
 		batch.BatchSize,
 		batch.USFStatus,
 		batch.BlockchainHash,
+		batch.MinTemp,
+		batch.MaxTemp,
 	).Scan(&id)
 
 	if err != nil {
@@ -39,9 +41,9 @@ func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid
 	return id, nil
 }
 
-func (r *BatchRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Batch, error) {
+	func (r *BatchRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Batch, error) {
 	query := `
-		SELECT id, manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, created_at
+		SELECT id, manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, created_at, min_temp, max_temp
 		FROM product_batches
 		WHERE id = $1
 	`
@@ -55,6 +57,8 @@ func (r *BatchRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Ba
 		&batch.USFStatus,
 		&batch.BlockchainHash,
 		&batch.CreatedAt,
+		&batch.MinTemp,
+		&batch.MaxTemp,
 	)
 
 	if err != nil {
