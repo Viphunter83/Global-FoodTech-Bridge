@@ -9,12 +9,12 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: gfb_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Mount migrations to run on init (Optional: usually handled by app or migration tool)
-      - ./apps/backend/passport-service/migrations:/docker-entrypoint-initdb.d/passport
-      - ./apps/backend/iot-service/migrations:/docker-entrypoint-initdb.d/iot
+      # Mount migrations to run on init
+      - ./apps/backend/passport-service/migrations/init.sql:/docker-entrypoint-initdb.d/001_passport.sql
+      - ./apps/backend/iot-service/migrations/002_create_telemetry.sql:/docker-entrypoint-initdb.d/002_iot.sql
     networks:
       - gfb_net
 

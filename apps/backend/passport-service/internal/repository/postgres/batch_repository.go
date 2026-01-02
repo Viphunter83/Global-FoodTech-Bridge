@@ -38,3 +38,28 @@ func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid
 
 	return id, nil
 }
+
+func (r *BatchRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Batch, error) {
+	query := `
+		SELECT id, manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, created_at
+		FROM product_batches
+		WHERE id = $1
+	`
+
+	var batch domain.Batch
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&batch.ID,
+		&batch.ManufacturerID,
+		&batch.ProductType,
+		&batch.BatchSize,
+		&batch.USFStatus,
+		&batch.BlockchainHash,
+		&batch.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get batch: %w", err)
+	}
+
+	return &batch, nil
+}

@@ -44,7 +44,8 @@ export function TemperatureChart({ data }: { data: Telemetry[] }) {
                     <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         labelFormatter={(label, payload) => {
-                            if (payload && payload.length > 0) {
+                            // Safe access to nested property to prevent crash
+                            if (payload && payload.length > 0 && payload[0]?.payload?.fullDate) {
                                 return payload[0].payload.fullDate;
                             }
                             return label;

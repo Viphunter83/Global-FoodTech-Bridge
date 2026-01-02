@@ -53,3 +53,12 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		Status:  "created",
 	}, nil
 }
+
+func (s *BatchService) GetBatch(ctx context.Context, idStr string) (*domain.Batch, error) {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, errors.New("invalid batch id")
+	}
+
+	return s.repo.GetByID(ctx, id)
+}

@@ -25,6 +25,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/batches", h.createBatch)
+		r.Get("/batches/{id}", h.getBatch)
 	})
 
 	return r
@@ -46,4 +47,22 @@ func (h *Handler) createBatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(res)
+
+}
+
+func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	batch, err := h.service.GetBatch(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(batch)
 }
