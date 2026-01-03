@@ -53,16 +53,16 @@ import { MANUFACTURER_ADDR } from './constants';
 const isServer = typeof window === 'undefined';
 
 const PASSPORT_URL = isServer
-    ? (process.env.PASSPORT_SERVICE_URL || 'http://passport-service:8080/api/v1')
-    : 'http://localhost:8080/api/v1';
+    ? (process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL || 'http://passport-service:8080/api/v1')
+    : '/api/passport';
 
 const IOT_URL = isServer
-    ? (process.env.IOT_SERVICE_URL || 'http://iot-service:8081/api/v1')
-    : 'http://localhost:8081/api/v1';
+    ? (process.env.NEXT_PUBLIC_IOT_SERVICE_URL || 'http://iot-service:8081/api/v1')
+    : '/api/telemetry';
 
 const BLOCKCHAIN_URL = isServer
-    ? (process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3000/api/v1')
-    : 'http://localhost:3000/api/v1';
+    ? (process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3000/api/v1')
+    : '/api/blockchain';
 
 // --- API CLIENT ---
 
