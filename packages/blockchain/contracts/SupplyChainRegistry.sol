@@ -76,18 +76,39 @@ contract SupplyChainRegistry is ERC721URIStorage, AccessControl {
      *      Can be used for Logistics -> Retailer handover.
      *      Overrides standard transfer to add Role checks if needed.
      */
-    function transferCustody(address to, uint256 tokenId) public {
-        // Standard ERC721 transferFrom checks ownership/approval internally
-        // We add a check that the recipient has a role in the system
+    // Mapping to store pending transfers (tokenId => toAddress)
+    mapping(uint256 => address) public pending_transfers;
+
+    event TransferInitiated(uint256 indexed tokenId, address indexed from, address indexed to);
+    event TransferCompleted(uint256 indexed tokenId, address indexed from, address indexed to);
+
+    // Step 1: Current owner initiates transfer to a specific address
+    function initiateTransfer(uint256 tokenId, address to) public {
+        require(ownerOf(tokenId) == msg.sender, "Only owner can initiate transfer");
+        require(to != address(0), "Invalid target address");
         require(
             hasRole(LOGISTICS_ROLE, to) || hasRole(RETAILER_ROLE, to),
             "Recipient must be an authorized Logistics or Retail partner"
         );
         
-        transferFrom(msg.sender, to, tokenId);
-        
-        emit BatchCustodyTransferred(tokenId, msg.sender, to, block.timestamp);
+        pending_transfers[tokenId] = to;
+        emit TransferInitiated(tokenId, msg.sender, to);
     }
+
+    // Step 2: Target address accepts the transfer
+    function acceptTransfer(uint256 tokenId) public {
+        require(pending_transfers[tokenId] == msg.sender, "Caller is not the pending owner");
+        
+        address currentOwner = ownerOf(tokenId);
+        _transfer(currentOwner, msg.sender, tokenId);
+        
+        delete pending_transfers[tokenId];
+        emit TransferCompleted(tokenId, currentOwner, msg.sender);
+        emit BatchCustodyTransferred(tokenId, currentOwner, msg.sender, block.timestamp); // Keep original event for consistency
+    }
+    
+    // Legacy function removed/replaced by 2-step process
+    // function transferCustody... 
 
     /**
      * @dev Report a compliance violation (e.g. Temp > -18C).
@@ -116,7 +137,8 @@ contract SupplyChainRegistry is ERC721URIStorage, AccessControl {
         string memory uri, 
         string memory violation, 
         bool isViolated,
-        uint256 timestamp
+        uint256 timestamp,
+        address pendingOwner
     ) {
         uint256 tokenId = uuidToTokenId[batchUUID];
         require(tokenId != 0, "Batch not found");
@@ -128,7 +150,8 @@ contract SupplyChainRegistry is ERC721URIStorage, AccessControl {
             tokenURI(tokenId),
             info.violationDetails,
             info.isViolated,
-            info.creationTime
+            info.creationTime,
+            pending_transfers[tokenId]
         );
     }
 }

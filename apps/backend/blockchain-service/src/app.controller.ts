@@ -25,13 +25,16 @@ export class AppController {
         return { status: 'success', txHash };
     }
 
-    @Post('handover')
-    async handover(@Body() body: { batchId: string; toAddress: string }) {
-        // Now requires toAddress for NFT transfer
-        // If not provided in legacy call, we might fallback or error.
-        // For now, let's require it, but if missing in mock mode we might fake it.
+    @Post('transfer/initiate')
+    async initiateTransfer(@Body() body: { batchId: string; toAddress: string }) {
         const target = body.toAddress || "0xRetailerAddressDefault";
-        const txHash = await this.blockchainService.transferCustody(body.batchId, target);
+        const txHash = await this.blockchainService.initiateTransfer(body.batchId, target);
+        return { status: 'success', txHash };
+    }
+
+    @Post('transfer/accept')
+    async acceptTransfer(@Body() body: { batchId: string }) {
+        const txHash = await this.blockchainService.acceptTransfer(body.batchId);
         return { status: 'success', txHash };
     }
 }

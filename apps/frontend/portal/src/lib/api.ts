@@ -25,6 +25,7 @@ export interface BlockchainStatus {
     verified: boolean;
     handover?: boolean;
     violation?: string | null;
+    pendingOwner?: string | null;
 }
 
 export interface Alert {
@@ -154,7 +155,8 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
             verified: data.exists,
             txHash: data.txHash,
             handover: data.handover,
-            violation: data.violation
+            violation: data.violation,
+            pendingOwner: data.pendingOwner
         };
     } catch (e) {
         console.error('Failed to fetch blockchain status:', e);
@@ -235,9 +237,9 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
     }
 }
 
-export async function finalizeHandover(batchId: string, toAddress: string = "0xRetailerDefault"): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function initiateHandover(batchId: string, toAddress: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
-        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/handover`, {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ batchId, toAddress }),
@@ -245,11 +247,30 @@ export async function finalizeHandover(batchId: string, toAddress: string = "0xR
         });
 
         if (!res.ok) {
-            return { status: 'error', error: 'Failed to hand over' };
+            return { status: 'error', error: 'Failed to initiate handover' };
         }
         return await res.json();
     } catch (e) {
-        console.error('Failed to finalize handover', e);
+        console.error('Failed to initiate handover', e);
+        return { status: 'error', error: String(e) };
+    }
+}
+
+export async function acceptHandover(batchId: string): Promise<{ status: string; txHash?: string; error?: string }> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/accept`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batchId }),
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            return { status: 'error', error: 'Failed to accept handover' };
+        }
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to accept handover', e);
         return { status: 'error', error: String(e) };
     }
 }

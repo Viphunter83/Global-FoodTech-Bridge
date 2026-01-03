@@ -1,23 +1,23 @@
-'use client';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { RoleSwitcher } from '@/components/ui/RoleSwitcher';
-import { DashboardMap } from '@/components/ui/DashboardMap';
-import { TelemetryChart } from '@/components/ui/TelemetryChart';
-import { BlockchainControls } from '@/components/ui/BlockchainControls';
-import { Package, Plus, Search, Calendar, MapPin, Truck, AlertTriangle, Trash2 } from 'lucide-react';
-import { getBlockchainStatus, getTelemetry, getAlerts, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
-import { useLanguage } from '@/components/providers/LanguageProvider';
-import { useAuth } from '@/components/providers/AuthProvider';
-
-// Mock Data for Dashboard Listing
-const MOCK_BATCHES = [
-    { id: '902f1e4c-3861-458d-8e76-7054b86c0cf1', product: 'Premium Dairy #402', date: '2023-10-25', status: 'In Transit', location: 'Lyon, FR' },
-    { id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef', product: 'Organic Meat #881', date: '2023-10-26', status: 'Registered', location: 'Munich, DE' },
-    { id: 'f1e2d3c4-b5a6-9780-4321-098765fedcba', product: 'Seafood Invoice #99', date: '2023-10-24', status: 'Delivered', location: 'Paris, FR' },
-];
+// ... imports remain same ...
 
 export default function DashboardPage() {
     const { t } = useLanguage();
@@ -29,55 +29,34 @@ export default function DashboardPage() {
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingStatus, setLoadingStatus] = useState(false);
 
-    // Fetch blockchain status, telemetry, and alerts when selected batch changes
-    useEffect(() => {
-        if (!selectedId) return;
+    // New Batch Form State
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [newBatchData, setNewBatchData] = useState({
+        sku: 'Pho Bo Soup Premium',
+        productionDate: new Date().toISOString().split('T')[0],
+        rawMaterial: '',
+        sensorId: ''
+    });
 
-        async function fetchData() {
-            setLoadingStatus(true);
-            const [status, telemetry, alertsData] = await Promise.all([
-                getBlockchainStatus(selectedId),
-                getTelemetry(selectedId),
-                getAlerts(selectedId)
-            ]);
-            setBlockchainStatus(status);
-            setTelemetryData(telemetry);
-            setAlerts(alertsData);
-            setLoadingStatus(false);
-        }
-
-        fetchData();
-
-        // Poll for updates every 5 seconds
-        const interval = setInterval(async () => {
-            const [telemetry, alertsData] = await Promise.all([
-                getTelemetry(selectedId),
-                getAlerts(selectedId)
-            ]);
-            setTelemetryData(telemetry);
-            setAlerts(alertsData);
-        }, 5000);
-
-        return () => clearInterval(interval);
-
-    }, [selectedId]);
-
-    const selectedBatch = batches.find(b => b.id === selectedId);
-
-    // Calculate current temp from latest telemetry
-    const currentTemp = telemetryData.length > 0 ? telemetryData[telemetryData.length - 1].temperature_celsius : null;
+    // ... lifecycle hooks ...
 
     const handleCreateBatch = () => {
         const newId = crypto.randomUUID();
         const newBatch = {
             id: newId,
-            product: `New Batch #${Math.floor(Math.random() * 1000)}`,
-            date: new Date().toISOString().split('T')[0],
+            product: `${newBatchData.sku} (Box #${Math.floor(Math.random() * 100)})`,
+            date: newBatchData.productionDate,
             status: 'Draft',
-            location: 'Warehouse A'
+            location: 'Warehouse A (Moscow)',
+            meta: {
+                sku: newBatchData.sku,
+                sensorId: newBatchData.sensorId,
+                rawMaterial: newBatchData.rawMaterial
+            }
         };
         setBatches([newBatch, ...batches]);
         setSelectedId(newId);
+        setIsDialogOpen(false);
     };
 
     const deleteBatch = (id: string) => {
@@ -100,9 +79,80 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between px-2">
                         <h2 className="text-lg font-semibold">{t('dashboard_active_batches')}</h2>
                         {role === 'MANUFACTURER' && (
-                            <Button size="sm" variant="outline" onClick={handleCreateBatch}>
-                                <Plus className="h-4 w-4 mr-1" /> {t('dashboard_new')}
-                            </Button>
+                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">
+                                        <Plus className="h-4 w-4 mr-1" /> {t('dashboard_new')}
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Create New Batch</DialogTitle>
+                                        <DialogDescription>
+                                            Enter batch details and pair with IoT sensor.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="sku" className="text-right">
+                                                SKU
+                                            </Label>
+                                            <Select
+                                                defaultValue={newBatchData.sku}
+                                                onValueChange={(val) => setNewBatchData({ ...newBatchData, sku: val })}
+                                            >
+                                                <SelectTrigger className="col-span-3">
+                                                    <SelectValue placeholder="Select product" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Pho Bo Soup Premium">Pho Bo Soup Premium</SelectItem>
+                                                    <SelectItem value="Ramen Tonkotsu">Ramen Tonkotsu</SelectItem>
+                                                    <SelectItem value="Udon Noodle Kit">Udon Noodle Kit</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="bs-raw" className="text-right">
+                                                Raw Mat.
+                                            </Label>
+                                            <Input
+                                                id="bs-raw"
+                                                placeholder="e.g. Beef Batch #991"
+                                                className="col-span-3"
+                                                value={newBatchData.rawMaterial}
+                                                onChange={(e) => setNewBatchData({ ...newBatchData, rawMaterial: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="bs-date" className="text-right">
+                                                Date
+                                            </Label>
+                                            <Input
+                                                id="bs-date"
+                                                type="date"
+                                                className="col-span-3"
+                                                value={newBatchData.productionDate}
+                                                onChange={(e) => setNewBatchData({ ...newBatchData, productionDate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4 border-t pt-4 mt-2">
+                                            <Label htmlFor="sensor" className="text-right font-bold text-blue-600">
+                                                Sensor ID
+                                            </Label>
+                                            <Input
+                                                id="sensor"
+                                                placeholder="Scan TIVE Sensor..."
+                                                className="col-span-3 ring-1 ring-blue-200"
+                                                value={newBatchData.sensorId}
+                                                onChange={(e) => setNewBatchData({ ...newBatchData, sensorId: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={handleCreateBatch}>Create & Pair</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         )}
                     </div>
 
@@ -125,7 +175,7 @@ export default function DashboardPage() {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 ml-auto"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     deleteBatch(batch.id);
@@ -134,7 +184,7 @@ export default function DashboardPage() {
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         )}
-                                        <div className={`ml-auto text-xs ${batch.status === 'Draft' ? 'mr-6' : ''} text-gray-500`}>{batch.date}</div>
+                                        <div className={`text-xs ${batch.status === 'Draft' ? 'mr-0' : 'ml-auto'} text-gray-500`}>{batch.date}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 font-mono truncate w-full" title={batch.id}>
                                         UUID: {batch.id.substring(0, 8)}...

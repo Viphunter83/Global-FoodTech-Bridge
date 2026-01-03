@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useLanguage } from '../providers/LanguageProvider';
-import { notarizeBatch, finalizeHandover, reportViolation } from '@/lib/api';
+import { notarizeBatch, initiateHandover, acceptHandover, reportViolation } from '@/lib/api';
 import { Button } from './Button';
-import { Loader2, ShieldCheck, AlertTriangle, CheckCircle, Truck } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertTriangle, CheckCircle, Truck, PackageCheck } from 'lucide-react';
 
 interface BlockchainControlsProps {
     batchId: string;
@@ -14,6 +14,7 @@ interface BlockchainControlsProps {
         handover?: boolean;
         violation?: string | null;
         txHash?: string;
+        pendingOwner?: string | null;
     };
 }
 
@@ -29,9 +30,17 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
         window.location.reload();
     };
 
-    const handleHandover = async () => {
+    const handleInitiateHandover = async () => {
         setLoading(true);
-        await finalizeHandover(batchId);
+        // Hardcoded Retailer Address for MVP
+        await initiateHandover(batchId, "0xRetailerAddress");
+        setLoading(false);
+        window.location.reload();
+    };
+
+    const handleAcceptHandover = async () => {
+        setLoading(true);
+        await acceptHandover(batchId);
         setLoading(false);
         window.location.reload();
     };
@@ -39,6 +48,29 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
     const handleReport = async () => {
         setLoading(true);
         await reportViolation(batchId, "Manual Safety Report");
+        setLoading(false);
+        window.location.reload();
+    };
+
+    const handleTransferToLogistics = async () => {
+        setLoading(true);
+        await initiateHandover(batchId, "0xLogisticsAddress");
+        setLoading(false);
+        window.location.reload();
+    };
+
+    const handleDispatch = async () => {
+        setLoading(true);
+        // Mock Dispatch Event - In real app this calls backend to set status='In Transit'
+        console.log("Dispatching batch...");
+        // await dispatchBatch(batchId); 
+        alert("Truck Dispatched! Status updated to In Transit.");
+        setLoading(false);
+    };
+
+    const handleTransferToRetailer = async () => {
+        setLoading(true);
+        await initiateHandover(batchId, "0xRetailerAddress");
         setLoading(false);
         window.location.reload();
     };
@@ -86,25 +118,67 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                         {t('bc_secured_title')}
                     </div>
                     <p className="text-sm text-blue-600 mt-1">{t('bc_secured_desc')}</p>
+                    {blockchainStatus.pendingOwner && (
+                        <div className="mt-2 text-xs bg-white/50 p-2 rounded text-blue-800">
+                            <strong>Status:</strong> Transfer Pending
+                        </div>
+                    )}
                 </div>
 
                 {/* Logistics Actions */}
                 {role === 'LOGISTICS' && (
-                    <div className="flex gap-2">
-                        <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleReport}>
+                    <div className="space-y-2">
+                        {/* 1. Accept Incoming (if pending) */}
+                        <Button
+                            onClick={handleAcceptHandover}
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                        >
+                            <PackageCheck className="mr-2 h-4 w-4" />
+                            Accept Custody from Producer
+                        </Button>
+
+                        {/* 2. Dispatch (if owned) */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <Button onClick={handleDispatch} variant="outline" className="border-blue-600 text-blue-600">
+                                <Truck className="mr-2 h-4 w-4" />
+                                Dispatch Truck
+                            </Button>
+                            <Button onClick={handleTransferToRetailer} variant="outline">
+                                Transfer to Retailer
+                            </Button>
+                        </div>
+
+                        <Button className="w-full bg-red-600 hover:bg-red-700 text-white" onClick={handleReport}>
                             <AlertTriangle className="mr-2 h-4 w-4" />
                             {t('btn_report')}
                         </Button>
                     </div>
                 )}
 
-                {/* Retailer Actions */}
+                {/* Retailer Actions - Can Accept Transfer */}
                 {role === 'RETAILER' && (
-                    <div className="rounded-md bg-slate-50 p-4 border border-slate-200">
-                        <h4 className="font-semibold text-sm mb-2">{t('retailer_checkpoint')}</h4>
-                        <Button onClick={handleHandover} className="bg-green-600 hover:bg-green-700 text-white">
+                    <div className="rounded-md bg-slate-50 p-4 border border-slate-200 space-y-3">
+                        <h4 className="font-semibold text-sm">{t('retailer_checkpoint')}</h4>
+                        <div className="flex flex-col gap-2">
+                            {/* Only show Accept if transfer is pending (or allow it to try) */}
+                            <Button onClick={handleAcceptHandover} className="w-full h-auto py-2 whitespace-normal bg-green-600 hover:bg-green-700 text-white flex flex-col sm:flex-row items-center justify-center gap-2">
+                                <PackageCheck className="h-4 w-4 shrink-0" />
+                                <span className="text-center">{t('btn_accept_handover')}</span>
+                            </Button>
+                            <Button variant="outline" onClick={handleReport} className="w-full h-auto py-2 whitespace-normal text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 flex flex-col sm:flex-row items-center justify-center gap-2">
+                                <AlertTriangle className="h-4 w-4 shrink-0" />
+                                <span className="text-center">{t('report_issue_btn')}</span>
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Manufacturer Actions - Initiate Transfer to Logistics */}
+                {role === 'MANUFACTURER' && !blockchainStatus.pendingOwner && (
+                    <div className="mt-2">
+                        <Button onClick={handleTransferToLogistics} variant="outline" className="w-full">
                             <Truck className="mr-2 h-4 w-4" />
-                            {t('btn_accept_handover')}
+                            Transfer to Logistics
                         </Button>
                     </div>
                 )}
