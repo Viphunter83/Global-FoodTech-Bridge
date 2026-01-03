@@ -17,6 +17,7 @@ export default function VerifyPage() {
     const batchId = params.id as string;
 
     const [loading, setLoading] = useState(true);
+    const [batch, setBatch] = useState<any>(null);
     const [status, setStatus] = useState<BlockchainStatus | null>(null);
     const [telemetry, setTelemetry] = useState<Telemetry[]>([]);
 
@@ -24,10 +25,12 @@ export default function VerifyPage() {
         if (!batchId) return;
 
         const fetchData = async () => {
-            const [bcData, telemData] = await Promise.all([
-                getBlockchainStatus(batchId),
-                getTelemetry(batchId)
+            const [batchData, bcData, telemData] = await Promise.all([
+                import('@/lib/api').then(mod => mod.getBatchDetails(batchId)),
+                import('@/lib/api').then(mod => mod.getBlockchainStatus(batchId)),
+                import('@/lib/api').then(mod => mod.getTelemetry(batchId))
             ]);
+            setBatch(batchData);
             setStatus(bcData);
             setTelemetry(telemData);
             setLoading(false);
@@ -44,7 +47,7 @@ export default function VerifyPage() {
         );
     }
 
-    if (!status || !status.verified) {
+    if (!status || !status.verified || !batch) { // Check for batch too
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
                 <ShieldCheck className="h-20 w-20 text-gray-300 mb-4" />
@@ -69,7 +72,7 @@ export default function VerifyPage() {
                         <p className="opacity-90 font-medium text-lg mt-1">Global FoodTech Bridge Verified</p>
                     </div>
                     <div className="flex justify-center gap-2 text-sm font-mono opacity-75">
-                        <span>ID: {batchId.substring(0, 8)}...</span>
+                        <span>ID: {batch.id.substring(0, 8)}...</span>
                         <span>•</span>
                         <span>Polygon Network</span>
                     </div>
@@ -84,8 +87,8 @@ export default function VerifyPage() {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 uppercase font-bold tracking-wider">Product</p>
-                                <h2 className="text-xl font-bold text-gray-900">Pho Bo Soup Premium</h2>
-                                <p className="text-gray-600 text-sm">Batch #4021A</p>
+                                <h2 className="text-xl font-bold text-gray-900">{batch.product_type?.replace(/_/g, ' ') || 'Food Product'}</h2>
+                                <p className="text-gray-600 text-sm">Batch #{batch.id.substring(0, 6)}</p>
                             </div>
                             <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
                                 PREMIUM
@@ -124,27 +127,14 @@ export default function VerifyPage() {
                         </h3>
 
                         <div className="relative pl-6 border-l-2 border-green-200 space-y-8">
-                            {/* Step 1 */}
-                            <div className="relative">
-                                <div className="absolute -left-[29px] top-0 bg-green-600 h-4 w-4 rounded-full border-4 border-white shadow-sm"></div>
-                                <p className="text-xs text-gray-500 font-bold mb-1">2026-01-01 08:30</p>
-                                <h4 className="font-semibold text-gray-800">Production Completed</h4>
-                                <p className="text-sm text-gray-600">Moscow, RU • Factory A</p>
-                            </div>
-                            {/* Step 2 */}
-                            <div className="relative">
-                                <div className="absolute -left-[29px] top-0 bg-green-600 h-4 w-4 rounded-full border-4 border-white shadow-sm"></div>
-                                <p className="text-xs text-gray-500 font-bold mb-1">2026-01-02 14:15</p>
-                                <h4 className="font-semibold text-gray-800">Logistics Hub Departure</h4>
-                                <p className="text-sm text-gray-600">Dispatched via Cold Truck</p>
-                            </div>
-                            {/* Step 3 */}
-                            <div className="relative">
-                                <div className="absolute -left-[29px] top-0 bg-green-600 h-4 w-4 rounded-full border-4 border-white shadow-sm"></div>
-                                <p className="text-xs text-gray-500 font-bold mb-1">2026-01-03 09:00</p>
-                                <h4 className="font-semibold text-gray-800">Arrived at Retailer</h4>
-                                <p className="text-sm text-gray-600">Dubai, UAE • Warehouse 4</p>
-                            </div>
+                            {batch.history && batch.history.map((step: any, idx: number) => (
+                                <div key={idx} className="relative">
+                                    <div className={`absolute -left-[29px] top-0 h-4 w-4 rounded-full border-4 border-white shadow-sm ${step.status === 'completed' || step.status === 'current' ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+                                    <p className="text-xs text-gray-500 font-bold mb-1">{step.timestamp}</p>
+                                    <h4 className="font-semibold text-gray-800">{step.stage}</h4>
+                                    <p className="text-sm text-gray-600">{step.location}</p>
+                                </div>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>
