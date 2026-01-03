@@ -91,7 +91,12 @@ export type TranslationKey =
     | 'report_issue_btn'
     | 'consumer_feedback_title'
     | 'btn_download_report'
-    | 'btn_print_qr';
+    | 'btn_print_qr'
+    | 'btn_accept_custody'
+    | 'btn_dispatch_truck'
+    | 'btn_transfer_retailer'
+    | 'btn_transfer_logistics'
+    | 'alert_dispatched';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -185,7 +190,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         report_issue_btn: 'Report Quality Issue',
         consumer_feedback_title: 'Consumer Feedback',
         btn_download_report: 'Download Compliance Report',
-        btn_print_qr: 'Print Label / QR'
+        btn_print_qr: 'Print Label / QR',
+        btn_accept_custody: 'Accept Custody from Producer',
+        btn_dispatch_truck: 'Dispatch Truck',
+        btn_transfer_retailer: 'Transfer to Retailer',
+        btn_transfer_logistics: 'Transfer to Logistics',
+        alert_dispatched: 'Truck Dispatched! Status updated to In Transit.'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -278,7 +288,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         report_issue_btn: 'Сообщить о проблеме',
         consumer_feedback_title: 'Обратная связь',
         btn_download_report: 'Скачать отчет о соответствии (PDF)',
-        btn_print_qr: 'Печать этикетки / QR'
+        btn_print_qr: 'Печать этикетки / QR',
+        btn_accept_custody: 'Принять груз от производителя',
+        btn_dispatch_truck: 'Отправить грузовик',
+        btn_transfer_retailer: 'Передать ритейлеру',
+        btn_transfer_logistics: 'Передать в логистику',
+        alert_dispatched: 'Грузовик отправлен! Статус обновлен на "В пути".'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -371,6 +386,11 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         report_issue_btn: 'الإبلاغ عن مشكلة جودة',
         consumer_feedback_title: 'ملاحظات المستهلك',
         btn_download_report: 'تحميل تقرير الامتثال',
-        btn_print_qr: 'طباعة الملصق / QR'
+        btn_print_qr: 'طباعة الملصق / QR',
+        btn_accept_custody: 'قبول العهدة من المنتج',
+        btn_dispatch_truck: 'إرسال الشاحنة',
+        btn_transfer_retailer: 'نقل إلى بائع التجزئة',
+        btn_transfer_logistics: 'نقل إلى اللوجستيات',
+        alert_dispatched: 'تم إرسال الشاحنة! تم تحديث الحالة إلى "في الطريق".'
     }
 };

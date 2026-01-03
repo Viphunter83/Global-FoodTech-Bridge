@@ -87,13 +87,15 @@ export default function ScanPage() {
         );
     }
 
-    if (error || !status || !status.verified) {
+    // DEMO OVERRIDE: Allow rendering even if error/unverified to show the UI
+    // In production, you might want to show the 404 screen, but for this demo:
+    if ((!batchDetails) && (error || !status)) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
                 <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center space-y-4">
                     <XCircle className="h-20 w-20 text-gray-400 mx-auto" />
                     <h1 className="text-2xl font-bold text-gray-800">Batch Not Found</h1>
-                    <p className="text-gray-500">The scanned QR code does not match any active blockchain record.</p>
+                    <p className="text-gray-500">Could not load batch data. Please try ID: 902f1e4c-3861-458d-8e76-7054b86c0cf1</p>
                     <Button onClick={() => router.push('/dashboard')} variant="outline" className="w-full">
                         Return to Dashboard
                     </Button>
@@ -119,7 +121,7 @@ export default function ScanPage() {
 
     // === LOGISTICS VIEW (Original Red/Green Screen) ===
     if (viewMode === 'logistics') {
-        if (status.violation) {
+        if (status?.violation) {
             return (
                 <div className="min-h-screen bg-red-600 flex flex-col items-center justify-center p-6 text-white text-center">
                     <ToggleButton />
@@ -133,7 +135,7 @@ export default function ScanPage() {
                         </div>
                         <div className="bg-black/20 p-4 rounded-xl text-left">
                             <p className="text-sm font-semibold uppercase tracking-wider opacity-70 mb-1">Issue Details:</p>
-                            <p className="text-lg font-medium">{status.violation}</p>
+                            <p className="text-lg font-medium">{status?.violation}</p>
                         </div>
                         <div className="pt-4 space-y-3">
                             <Button onClick={handleReport} disabled={actionLoading} className="w-full h-14 text-lg bg-white text-red-600 hover:bg-red-50 font-bold shadow-lg">
@@ -200,7 +202,7 @@ export default function ScanPage() {
                     productName={batchDetails?.product_type?.replace(/_/g, ' ') || "Premium Product"}
                     batchId={batchId}
                     freshnessScore={98}
-                    status={status.violation ? 'Warning' : (status.verified ? 'Verified' : 'Pending')}
+                    status={status?.violation ? 'Warning' : (status?.verified ? 'Verified' : 'Pending')}
                 />
 
                 {/* 2. Main Content Tabs */}

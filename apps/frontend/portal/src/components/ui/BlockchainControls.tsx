@@ -64,7 +64,7 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
         // Mock Dispatch Event - In real app this calls backend to set status='In Transit'
         console.log("Dispatching batch...");
         // await dispatchBatch(batchId); 
-        alert("Truck Dispatched! Status updated to In Transit.");
+        alert(t('alert_dispatched'));
         setLoading(false);
     };
 
@@ -134,17 +134,17 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                             className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                         >
                             <PackageCheck className="mr-2 h-4 w-4" />
-                            Accept Custody from Producer
+                            {t('btn_accept_custody')}
                         </Button>
 
                         {/* 2. Dispatch (if owned) */}
                         <div className="grid grid-cols-2 gap-2">
                             <Button onClick={handleDispatch} variant="outline" className="border-blue-600 text-blue-600">
                                 <Truck className="mr-2 h-4 w-4" />
-                                Dispatch Truck
+                                {t('btn_dispatch_truck')}
                             </Button>
                             <Button onClick={handleTransferToRetailer} variant="outline">
-                                Transfer to Retailer
+                                {t('btn_transfer_retailer')}
                             </Button>
                         </div>
 
@@ -178,7 +178,7 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                     <div className="mt-2">
                         <Button onClick={handleTransferToLogistics} variant="outline" className="w-full">
                             <Truck className="mr-2 h-4 w-4" />
-                            Transfer to Logistics
+                            {t('btn_transfer_logistics')}
                         </Button>
                     </div>
                 )}
