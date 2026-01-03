@@ -49,14 +49,14 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
 *   **Build/Start**: Use the `Dockerfile` in the directory.
 *   **Environment Variables**:
     *   `PORT`: `8081`
-    *   `DB_DSN`: `[Your Railway DATABASE_URL]`
+    *   `DATABASE_URL`: `[Your Railway DATABASE_URL]`
 
 ### 3. Passport Service
 *   **Root Directory**: `apps/backend/passport-service`
 *   **Build/Start**: Use the `Dockerfile` in the directory.
 *   **Environment Variables**:
     *   `PORT`: `8080`
-    *   `DB_DSN`: `[Your Railway DATABASE_URL]`
+    *   `DATABASE_URL`: `[Your Railway DATABASE_URL]`
 
 ---
 
