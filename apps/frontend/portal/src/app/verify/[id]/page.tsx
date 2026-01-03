@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getBlockchainStatus, getTelemetry, BlockchainStatus, Telemetry } from '@/lib/api';
 import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/card';
 import { TelemetryChart } from '@/components/ui/TelemetryChart';
 
 export default function VerifyPage() {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useLanguage } from '../providers/LanguageProvider';
 import { notarizeBatch, initiateHandover, acceptHandover, reportViolation } from '@/lib/api';
-import { Button } from './Button';
+import { Button } from './button';
 import { Loader2, ShieldCheck, AlertTriangle, CheckCircle, Truck, PackageCheck } from 'lucide-react';
 
 interface BlockchainControlsProps {

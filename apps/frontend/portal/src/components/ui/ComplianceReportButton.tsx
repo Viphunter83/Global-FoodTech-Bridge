@@ -2,7 +2,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Button } from './Button';
+import { Button } from './button';
 import { FileDown, Printer } from 'lucide-react';
 import { useLanguage } from '../providers/LanguageProvider';
 

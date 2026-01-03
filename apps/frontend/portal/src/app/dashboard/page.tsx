@@ -1,3 +1,15 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useLanguage } from '@/components/providers/LanguageProvider';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { getBatchDetails, getBlockchainStatus, getTelemetry, getAlerts, BatchDetails, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { DashboardMap } from "@/components/ui/DashboardMap";
+import { TelemetryChart } from "@/components/ui/TelemetryChart";
+import { BlockchainControls } from "@/components/ui/BlockchainControls";
+import { Plus, Search, MapPin, Thermometer, Box, Truck, AlertTriangle, Trash2, Package } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -19,6 +31,14 @@ import {
 
 // ... imports remain same ...
 
+// ... imports remain same ...
+
+const MOCK_BATCHES = [
+    { id: '902f1e4c-3861-458d-8e76-7054b86c0cf1', product_type: 'Pho_Bo_Soup', status: 'In Transit', location: 'Dubai, UAE', temperature: -20.5, last_updated: '2024-10-15T10:30:00Z' },
+    { id: 'batch-002', product_type: 'Wagyu_Beef', status: 'Delivered', location: 'Riyadh, KSA', temperature: -18.2, last_updated: '2024-10-14T09:15:00Z' },
+    { id: 'batch-003', product_type: 'Organic_Chicken', status: 'Processing', location: 'Hanoi, VN', temperature: -4.0, last_updated: '2024-10-16T08:00:00Z' },
+];
+
 export default function DashboardPage() {
     const { t } = useLanguage();
     const { role } = useAuth();
@@ -28,6 +48,14 @@ export default function DashboardPage() {
     const [telemetryData, setTelemetryData] = useState<Telemetry[]>([]);
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingStatus, setLoadingStatus] = useState(false);
+
+    const selectedBatch = batches.find(b => b.id === selectedId);
+
+    // Derive current temperature from latest telemetry or batch data
+    const currentTemp = telemetryData.length > 0
+        ? telemetryData[telemetryData.length - 1].temperature_celsius
+        : (selectedBatch?.temperature || null);
+
 
     // New Batch Form State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,15 +72,11 @@ export default function DashboardPage() {
         const newId = crypto.randomUUID();
         const newBatch = {
             id: newId,
-            product: `${newBatchData.sku} (Box #${Math.floor(Math.random() * 100)})`,
-            date: newBatchData.productionDate,
-            status: 'Draft',
-            location: 'Warehouse A (Moscow)',
-            meta: {
-                sku: newBatchData.sku,
-                sensorId: newBatchData.sensorId,
-                rawMaterial: newBatchData.rawMaterial
-            }
+            product_type: newBatchData.sku,
+            status: 'Processing',
+            location: 'Factory (Lyon)',
+            temperature: -4.0,
+            last_updated: new Date().toISOString()
         };
         setBatches([newBatch, ...batches]);
         setSelectedId(newId);
@@ -169,7 +193,7 @@ export default function DashboardPage() {
                                 <div className="flex w-full flex-col gap-1">
                                     <div className="flex items-center justify-between w-full">
                                         <div className="flex items-center gap-2">
-                                            <div className="font-semibold">{batch.product}</div>
+                                            <div className="font-semibold">{batch.product_type}</div>
                                         </div>
                                         {batch.status === 'Draft' && (
                                             <Button
@@ -184,7 +208,7 @@ export default function DashboardPage() {
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         )}
-                                        <div className={`text-xs ${batch.status === 'Draft' ? 'mr-0' : 'ml-auto'} text-gray-500`}>{batch.date}</div>
+                                        <div className={`text-xs ${batch.status === 'Draft' ? 'mr-0' : 'ml-auto'} text-gray-500`}>{new Date(batch.last_updated || "").toLocaleDateString()}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 font-mono truncate w-full" title={batch.id}>
                                         UUID: {batch.id.substring(0, 8)}...

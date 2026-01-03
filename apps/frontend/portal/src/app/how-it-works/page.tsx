@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Database, ShieldCheck, Thermometer, Truck, FileCheck, Server, Factory, ArrowRight, ScanLine, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 
 export default function HowItWorksPage() {

@@ -9,6 +9,14 @@ export interface BatchDetails {
     ingredients?: { en: string; ar: string; ru: string };
     nutrition?: { calories: number; protein: number; fat: number; carbs: number };
     halal_cert_url?: string;
+    manufacturer_name?: string;
+    history?: {
+        stage: string;
+        location: string;
+        timestamp: string;
+        status: 'completed' | 'current' | 'future';
+        icon: 'package' | 'truck' | 'warehouse' | 'fork';
+    }[];
 }
 
 export interface Telemetry {
@@ -65,7 +73,15 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                 ru: "Говядина премиум (80%), Рисовая лапша, Специи, Морская соль."
             },
             nutrition: data.nutrition || { calories: 450, protein: 35, fat: 12, carbs: 55 },
-            halal_cert_url: data.halal_cert_url || "/certificates/halal-Cert-2024.pdf"
+            halal_cert_url: data.halal_cert_url || "/certificates/halal-Cert-2024.pdf",
+            manufacturer_name: "Bun Cha Ha Noi Factory",
+            history: [
+                { stage: "Produced & Packed", location: "Hanoi, Vietnam", timestamp: "Fri, 10 Oct • 08:30", status: "completed", icon: "package" },
+                { stage: "Quality Check (AI)", location: "Factory Line 1", timestamp: "Fri, 10 Oct • 09:15", status: "completed", icon: "warehouse" },
+                { stage: "Cold Chain Logistics", location: "Global Transit", timestamp: "Sat, 11 Oct • 14:00", status: "completed", icon: "truck" },
+                { stage: "Arrived at Hub", location: "Dubai, UAE", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
+                { stage: "Ready for Kitchen", location: "Restaurant", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
+            ]
         };
     } catch (e) {
         console.error('Failed to fetch batch details:', e);

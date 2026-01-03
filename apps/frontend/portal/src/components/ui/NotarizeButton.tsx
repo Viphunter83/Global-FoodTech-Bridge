@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { notarizeBatch } from '@/lib/api';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/components/providers/LanguageProvider';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
 import { useState } from 'react';
 

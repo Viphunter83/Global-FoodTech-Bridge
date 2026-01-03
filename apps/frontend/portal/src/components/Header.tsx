@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { PackageSearch, LayoutDashboard } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button } from './ui/button';
 import { RoleSwitcher } from './ui/RoleSwitcher';
 import { LanguageSwitcher } from './ui/LanguageSwitcher';
 import { useLanguage } from '@/components/providers/LanguageProvider';

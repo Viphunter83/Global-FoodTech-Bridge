@@ -2,7 +2,7 @@
 
 import { useAuth, UserRole } from '@/components/providers/AuthProvider';
 import { useLanguage } from '@/components/providers/LanguageProvider';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Shield, Truck, ShoppingBag } from 'lucide-react';
 
 export function RoleSwitcher() {
