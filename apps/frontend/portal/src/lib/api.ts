@@ -36,6 +36,8 @@ export interface BlockchainStatus {
     pendingOwner?: string | null;
     owner?: string;
     sensorPaired?: boolean;
+    shippingStatus?: string;
+    shippingStatusLabel?: string;
 }
 
 export interface Alert {

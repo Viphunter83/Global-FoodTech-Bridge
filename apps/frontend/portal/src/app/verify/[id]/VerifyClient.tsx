@@ -49,7 +49,7 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
 
                     {blockchain.txHash && (
                         <a
-                            href={`https://mumbai.polygonscan.com/tx/${blockchain.txHash}`}
+                            href={`https://amoy.polygonscan.com/tx/${blockchain.txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-4 text-xs text-blue-600 underline"

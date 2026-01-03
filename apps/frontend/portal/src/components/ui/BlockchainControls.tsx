@@ -190,7 +190,7 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
 
                 {/* LOGISTICS ROLE */}
                 {role === 'LOGISTICS' && (
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         {/* A. Accept Incoming (Pending for US) */}
                         {status.pendingOwner === LOGISTICS_ADDR && (
                             <Button
@@ -202,28 +202,60 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                             </Button>
                         )}
 
-                        {/* B. Dispatch/Forward (We are Owner, No Pending Transfer) */}
+                        {/* B. Update Shipping Status (We are Owner) */}
                         {status.owner === LOGISTICS_ADDR && !status.pendingOwner && (
-                            <div className="flex flex-col gap-2">
-                                <Button onClick={handleDispatch} variant="outline" className="w-full border-blue-600 text-blue-600">
-                                    <Truck className="mr-2 h-4 w-4" />
-                                    {t('btn_dispatch_truck')}
-                                </Button>
-                                <Button onClick={handleTransferToRetailer} variant="outline" className="w-full">
-                                    <PackageCheck className="mr-2 h-4 w-4" />
-                                    {t('btn_transfer_retailer')}
-                                </Button>
+                            <div className="bg-white p-3 rounded border border-gray-200 shadow-sm space-y-2">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Update Logistics Checkpoint
+                                </label>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { id: 'DEPARTED_ORIGIN', label: '🚚 Departed Origin', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+                                        { id: 'ARRIVED_PORT', label: '⚓️ Arrived at Port', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+                                        { id: 'LOADED_VESSEL', label: '🚢 Loaded on Vessel', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+                                        { id: 'CUSTOMS_CLEARANCE', label: '🛃 Customs Clearance', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+                                        { id: 'ARRIVED_DESTINATION', label: '📦 Arrived Destination', color: 'bg-green-100 text-green-700 border-green-200' }
+                                    ].map((s) => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => {
+                                                setLoading(true);
+                                                // Simulate network delay
+                                                setTimeout(() => {
+                                                    updateBatchState(batchId, { shippingStatus: s.id, shippingStatusLabel: s.label });
+                                                    setLoading(false);
+                                                }, 600);
+                                            }}
+                                            disabled={status.shippingStatus === s.id}
+                                            className={`text-left px-3 py-2 text-sm rounded border transition-all flex items-center justify-between ${status.shippingStatus === s.id
+                                                    ? 'bg-gray-800 text-white border-gray-900 ring-2 ring-gray-300'
+                                                    : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
+                                                }`}
+                                        >
+                                            <span>{s.label}</span>
+                                            {status.shippingStatus === s.id && <CheckCircle className="h-4 w-4" />}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
-                        {/* C. Waiting State */}
+                        {/* C. Forward to Retailer */}
+                        {status.owner === LOGISTICS_ADDR && !status.pendingOwner && (
+                            <Button onClick={handleTransferToRetailer} variant="outline" className="w-full border-blue-600 text-blue-600">
+                                <PackageCheck className="mr-2 h-4 w-4" />
+                                {t('btn_transfer_retailer')}
+                            </Button>
+                        )}
+
+                        {/* D. Waiting State */}
                         {status.owner !== LOGISTICS_ADDR && status.pendingOwner !== LOGISTICS_ADDR && (
                             <div className="text-center text-sm text-gray-500 py-2 italic bg-gray-50 rounded">
                                 {t('bc_waiting_manufacturer')}
                             </div>
                         )}
 
-                        <Button className="w-full bg-red-600 hover:bg-red-700 text-white mt-2" onClick={handleReport}>
+                        <Button className="w-full bg-red-600 hover:bg-red-700 text-white mt-1" onClick={handleReport}>
                             <AlertTriangle className="mr-2 h-4 w-4" />
                             {t('btn_report')}
                         </Button>

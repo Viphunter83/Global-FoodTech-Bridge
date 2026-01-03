@@ -156,6 +156,59 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                         </div>
                     </div>
 
+                    {/* Shipping Timeline */}
+                    {effectiveBlockchain.shippingStatus && (
+                        <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-6 text-lg font-semibold text-gray-900">🚚 Logistics Timeline</h2>
+                            <div className="relative">
+                                {/* Connector Line */}
+                                <div className="absolute left-4 top-2 bottom-0 w-0.5 bg-gray-200" style={{ height: 'calc(100% - 24px)' }}></div>
+                                <div className="space-y-6">
+                                    {[
+                                        { id: 'DEPARTED_ORIGIN', label: 'Departed Origin', date: 'Oct 24, 08:30' },
+                                        { id: 'ARRIVED_PORT', label: 'Arrived at Port', date: 'Oct 25, 14:15' },
+                                        { id: 'LOADED_VESSEL', label: 'Loaded on Vessel', date: 'Oct 26, 09:00' },
+                                        { id: 'CUSTOMS_CLEARANCE', label: 'Customs Clearance', date: 'Oct 28, 11:45' },
+                                        { id: 'ARRIVED_DESTINATION', label: 'Arrived at Destination', date: 'Oct 29, 16:30' }
+                                    ].map((step, index, arr) => {
+                                        // Determine active state relative to current status index
+                                        const statusOrder = ['DEPARTED_ORIGIN', 'ARRIVED_PORT', 'LOADED_VESSEL', 'CUSTOMS_CLEARANCE', 'ARRIVED_DESTINATION'];
+                                        const currentIndex = statusOrder.indexOf(effectiveBlockchain.shippingStatus);
+                                        const stepIndex = statusOrder.indexOf(step.id);
+                                        const isActive = stepIndex <= currentIndex;
+                                        const isCurrent = stepIndex === currentIndex;
+
+                                        return (
+                                            <div key={step.id} className="relative flex items-center pl-10">
+                                                {/* Dot */}
+                                                <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${isActive ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                                                    } z-10 transition-colors duration-300`}></div>
+
+                                                {/* Content */}
+                                                <div className="flex-1">
+                                                    <h3 className={`text-sm font-medium ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                        {step.label}
+                                                    </h3>
+                                                    {isActive && (
+                                                        <p className="text-xs text-blue-600 font-mono mt-0.5">
+                                                            confirmed • {step.date}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {isCurrent && (
+                                                    <div className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded uppercase tracking-wide">
+                                                        Current
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Blockchain Info */}
                     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                         <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('bc_validation_title')}</h2>
@@ -172,7 +225,7 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                             </div>
                             {effectiveBlockchain.txHash && (
                                 <a
-                                    href={`https://mumbai.polygonscan.com/tx/${effectiveBlockchain.txHash}`}
+                                    href={`https://amoy.polygonscan.com/tx/${effectiveBlockchain.txHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-block text-sm font-medium text-blue-600 hover:text-blue-500"
