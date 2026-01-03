@@ -2,9 +2,15 @@
 const nextConfig = {
     output: 'standalone',
     async rewrites() {
-        const PASSPORT_URL = process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL || 'http://passport-service:8080/api/v1';
-        const IOT_URL = process.env.NEXT_PUBLIC_IOT_SERVICE_URL || 'http://iot-service:8081/api/v1';
-        const BLOCKCHAIN_URL = process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3000/api/v1';
+        const ensureProtocol = (url, fallback) => {
+            if (!url) return fallback;
+            if (url.startsWith('http')) return url;
+            return `https://${url}`;
+        };
+
+        const PASSPORT_URL = ensureProtocol(process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL, 'http://passport-service:8080/api/v1');
+        const IOT_URL = ensureProtocol(process.env.NEXT_PUBLIC_IOT_SERVICE_URL, 'http://iot-service:8081/api/v1');
+        const BLOCKCHAIN_URL = ensureProtocol(process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL, 'http://blockchain-service:3000/api/v1');
 
         return [
             {
