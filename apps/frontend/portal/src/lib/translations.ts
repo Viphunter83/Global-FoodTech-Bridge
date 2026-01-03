@@ -96,7 +96,8 @@ export type TranslationKey =
     | 'btn_dispatch_truck'
     | 'btn_transfer_retailer'
     | 'btn_transfer_logistics'
-    | 'alert_dispatched';
+    | 'alert_dispatched'
+    | 'bc_waiting_logistics';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -195,7 +196,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_dispatch_truck: 'Dispatch Truck',
         btn_transfer_retailer: 'Transfer to Retailer',
         btn_transfer_logistics: 'Transfer to Logistics',
-        alert_dispatched: 'Truck Dispatched! Status updated to In Transit.'
+        alert_dispatched: 'Truck Dispatched! Status updated to In Transit.',
+        bc_waiting_logistics: 'Waiting for Logistics provider...'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -293,7 +295,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_dispatch_truck: 'Отправить грузовик',
         btn_transfer_retailer: 'Передать ритейлеру',
         btn_transfer_logistics: 'Передать в логистику',
-        alert_dispatched: 'Грузовик отправлен! Статус обновлен на "В пути".'
+        alert_dispatched: 'Грузовик отправлен! Статус обновлен на "В пути".',
+        bc_waiting_logistics: 'Ожидание логистического оператора...'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -391,6 +394,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_dispatch_truck: 'إرسال الشاحنة',
         btn_transfer_retailer: 'نقل إلى بائع التجزئة',
         btn_transfer_logistics: 'نقل إلى اللوجستيات',
-        alert_dispatched: 'تم إرسال الشاحنة! تم تحديث الحالة إلى "في الطريق".'
+        alert_dispatched: 'تم إرسال الشاحنة! تم تحديث الحالة إلى "في الطريق".',
+        bc_waiting_logistics: 'في انتظار مزود الخدمات اللوجستية...'
     }
 };

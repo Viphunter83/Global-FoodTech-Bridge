@@ -1,12 +1,19 @@
 'use client';
 
-import { TemperatureChart } from '@/components/charts/TemperatureChart';
+import dynamic from 'next/dynamic';
+
+const TemperatureChart = dynamic(
+    () => import('@/components/charts/TemperatureChart').then((mod) => mod.TemperatureChart),
+    { ssr: false, loading: () => <div className="h-80 w-full bg-gray-50 animate-pulse rounded-md" /> }
+);
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle } from 'lucide-react';
 import { DashboardQR } from '@/components/ui/DashboardQR';
 import { BlockchainControls } from '@/components/ui/BlockchainControls';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { ComplianceReportButton } from '@/components/ui/ComplianceReportButton';
+import { useDemoState } from '@/components/providers/DemoStateProvider';
+import { useState, useEffect } from 'react';
 
 interface BatchDetailsClientProps {
     batch: any;
@@ -17,6 +24,16 @@ interface BatchDetailsClientProps {
 
 export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: BatchDetailsClientProps) {
     const { t } = useLanguage();
+    const { getBatchState, isInitialized } = useDemoState();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // hydration-safe state merging
+    const clientState = getBatchState(batch.id);
+    const effectiveBlockchain = (mounted && isInitialized && clientState) ? { ...blockchain, ...clientState } : blockchain;
 
     // Helper to replace placeholders in translation strings
     const formatTempTarget = (min: number, max: number) => {
@@ -35,6 +52,23 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                     {t('back_dashboard')}
                 </Link>
 
+                {/* GAP 2: Quick Scan Status Screen */}
+                {(effectiveBlockchain.violation || alerts.length > 0) && (
+                    <div className="mb-8 p-6 bg-red-600 text-white rounded-xl shadow-lg flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
+                        <div className="text-4xl mb-2">❌</div>
+                        <h2 className="text-3xl font-black uppercase tracking-wider">QC FAILED</h2>
+                        <p className="font-mono mt-1 opacity-90">DO NOT ACCEPT • SENSORS DETECTED VIOLATION</p>
+                    </div>
+                )}
+
+                {effectiveBlockchain.verified && !effectiveBlockchain.violation && alerts.length === 0 && (
+                    <div className="mb-8 p-6 bg-green-600 text-white rounded-xl shadow-lg flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
+                        <div className="text-4xl mb-2">✅</div>
+                        <h2 className="text-3xl font-black uppercase tracking-wider">QC PASSED</h2>
+                        <p className="font-mono mt-1 opacity-90">TEMPERATURE &amp; HALAL VERIFIED • READY FOR RECEIVAL</p>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
@@ -51,9 +85,9 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                         </p>
                     </div>
 
-                    {blockchain.verified && (
+                    {effectiveBlockchain.verified && (
                         <div className="flex items-center gap-3">
-                            <ComplianceReportButton batch={batch} telemetry={telemetry} alerts={alerts} blockchain={blockchain} />
+                            <ComplianceReportButton batch={batch} telemetry={telemetry} alerts={alerts} blockchain={effectiveBlockchain} />
                             <div className="flex items-center rounded-full bg-green-100 px-4 py-2 text-green-700 ring-1 ring-green-600/20">
                                 <ShieldCheck className="mr-2 h-5 w-5" />
                                 <span className="text-sm font-medium">{t('bc_secured_title')}</span>
@@ -129,16 +163,16 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                             <div>
                                 <p className="text-xs font-medium uppercase text-gray-500">{t('tx_hash_label')}</p>
                                 <p className="break-all font-mono text-xs text-gray-700">
-                                    {blockchain.txHash || 'Pending...'}
+                                    {effectiveBlockchain.txHash || 'Pending...'}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-xs font-medium uppercase text-gray-500">{t('notary_authority_label')}</p>
                                 <p className="text-sm text-gray-700">{t('smart_contract_name')}</p>
                             </div>
-                            {blockchain.txHash && (
+                            {effectiveBlockchain.txHash && (
                                 <a
-                                    href={`https://mumbai.polygonscan.com/tx/${blockchain.txHash}`}
+                                    href={`https://mumbai.polygonscan.com/tx/${effectiveBlockchain.txHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-block text-sm font-medium text-blue-600 hover:text-blue-500"
@@ -148,7 +182,10 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                             )}
 
                             <div className="pt-4 border-t border-gray-100">
-                                <BlockchainControls batchId={batch.id} blockchainStatus={blockchain} />
+                                <BlockchainControls
+                                    batchId={batch.id}
+                                    blockchainStatus={effectiveBlockchain}
+                                />
                             </div>
                         </div>
                     </div>

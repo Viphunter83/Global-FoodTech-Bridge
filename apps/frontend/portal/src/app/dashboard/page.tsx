@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getBatchDetails, getBlockchainStatus, getTelemetry, getAlerts, BatchDetails, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { DashboardMap } from "@/components/ui/DashboardMap";
-import { TelemetryChart } from "@/components/ui/TelemetryChart";
+const TelemetryChart = dynamic(
+    () => import("@/components/ui/TelemetryChart").then((mod) => mod.TelemetryChart),
+    { ssr: false, loading: () => <div className="h-[300px] w-full bg-gray-50 animate-pulse rounded-md" /> }
+);
 import { BlockchainControls } from "@/components/ui/BlockchainControls";
 import { Plus, Search, MapPin, Thermometer, Box, Truck, AlertTriangle, Trash2, Package } from 'lucide-react';
 import {
@@ -67,7 +71,52 @@ export default function DashboardPage() {
     });
 
     // ... lifecycle hooks ...
+    useEffect(() => {
+        // Load recent batches from local storage to connect the "Create" flow with Dashboard
+        const stored = localStorage.getItem('recent_batches');
+        if (stored) {
+            try {
+                const ids = JSON.parse(stored);
+                if (Array.isArray(ids) && ids.length > 0) {
+                    const realBatches = ids.map((id: string) => ({
+                        id,
+                        product_type: 'Pho_Bo_Soup', // Demo Default
+                        status: 'Created',
+                        location: 'Factory Line 1',
+                        temperature: -20.0,
+                        last_updated: new Date().toISOString()
+                    }));
+                    // Prepend real batches to mocks
+                    setBatches(prev => {
+                        // Avoid duplicates
+                        const unique = realBatches.filter(b => !prev.find(p => p.id === b.id));
+                        return [...unique, ...prev];
+                    });
+                    // Auto-select the most recent one
+                    setSelectedId(ids[0]);
+                }
+            } catch (e) {
+                console.error('Failed to load recent batches', e);
+            }
+        }
+    }, []);
 
+    // Fetch data for selected batch
+    useEffect(() => {
+        if (!selectedId) return;
+        setLoadingStatus(true);
+        Promise.all([
+            getBatchDetails(selectedId),
+            getBlockchainStatus(selectedId),
+            getTelemetry(selectedId),
+            getAlerts(selectedId)
+        ]).then(([batch, bc, tel, al]) => {
+            if (bc) setBlockchainStatus(bc);
+            if (tel) setTelemetryData(tel);
+            if (al) setAlerts(al);
+            setLoadingStatus(false);
+        });
+    }, [selectedId]);
     const handleCreateBatch = () => {
         const newId = crypto.randomUUID();
         const newBatch = {
@@ -319,10 +368,23 @@ export default function DashboardPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {selectedId && blockchainStatus && (
-                                    <BlockchainControls
-                                        batchId={selectedId}
-                                        blockchainStatus={blockchainStatus}
-                                    />
+                                    <>
+                                        <BlockchainControls
+                                            batchId={selectedId}
+                                            blockchainStatus={blockchainStatus}
+                                            onRefresh={() => window.location.reload()}
+                                        />
+                                        <div className="pt-2 border-t border-gray-100">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                                                onClick={() => window.open(`/scan/${selectedId}`, '_blank')}
+                                            >
+                                                <Search className="mr-2 h-4 w-4" />
+                                                {t('btn_view_passport' as any) || "View Digital Passport"}
+                                            </Button>
+                                        </div>
+                                    </>
                                 )}
                             </CardContent>
                         </Card>

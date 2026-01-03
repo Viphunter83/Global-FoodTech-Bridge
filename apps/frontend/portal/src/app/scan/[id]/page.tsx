@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { getBlockchainStatus, acceptHandover, reportViolation, getBatchDetails, BatchDetails } from '@/lib/api';
 import { Loader2, CheckCircle, AlertTriangle, XCircle, PackageCheck, ShieldCheck, FileCheck, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BlockchainControls } from '@/components/ui/BlockchainControls';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ProductHero } from '@/components/passport/ProductHero';
 import { JourneyTimeline } from '@/components/passport/JourneyTimeline';
@@ -196,7 +197,6 @@ export default function ScanPage() {
         <div className="min-h-screen bg-gray-50 pb-12">
             <ToggleButton />
             <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
-
                 {/* 1. Hero Section */}
                 <ProductHero
                     productName={batchDetails?.product_type?.replace(/_/g, ' ') || "Premium Product"}
@@ -276,6 +276,25 @@ export default function ScanPage() {
                         </div>
                     </TabsContent>
                 </Tabs>
+
+                {/* 3. Blockchain Controls (Role-Based) */}
+                <Card className="p-6 border-blue-100 shadow-md">
+                    <h3 className="text-lg font-semibold mb-4 text-blue-900 border-b border-blue-50 pb-2">Supply Chain Actions</h3>
+                    {status && (
+                        <BlockchainControls
+                            batchId={batchId}
+                            blockchainStatus={status}
+                            onRefresh={() => {
+                                // Trigger re-fetch logic
+                                setLoading(true); // Short loading blink
+                                getBlockchainStatus(batchId).then(newStatus => {
+                                    setStatus(newStatus);
+                                    setLoading(false);
+                                });
+                            }}
+                        />
+                    )}
+                </Card>
 
                 <div className="text-center text-xs text-gray-400 pt-8">
                     Powered by Global FoodTech Bridge Blockchain

@@ -5,7 +5,12 @@ import { useParams } from 'next/navigation';
 import { getBlockchainStatus, getTelemetry, BlockchainStatus, Telemetry } from '@/lib/api';
 import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TelemetryChart } from '@/components/ui/TelemetryChart';
+import dynamic from 'next/dynamic';
+
+const TelemetryChart = dynamic(
+    () => import('@/components/ui/TelemetryChart').then((mod) => mod.TelemetryChart),
+    { ssr: false, loading: () => <div className="h-40 w-full bg-gray-50 animate-pulse rounded-md" /> }
+);
 
 export default function VerifyPage() {
     const params = useParams();

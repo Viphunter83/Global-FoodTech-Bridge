@@ -1,1 +1,7 @@
-export const DEMO_MANUFACTURER_ID = '0a9fccd0-4c52-4ae5-8821-708aafefa86b';
+export const MANUFACTURER_ADDR = "0xManufacturer";
+export const LOGISTICS_ADDR = "0x1234567890123456789012345678901234567890";
+export const RETAILER_ADDR = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+
+export const DEMO_MANUFACTURER_ID = "550e8400-e29b-41d4-a716-446655440000";
+
+export const STORAGE_KEY = 'gfb_demo_state';

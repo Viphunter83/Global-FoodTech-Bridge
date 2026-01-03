@@ -5,5 +5,7 @@ CREATE TABLE IF NOT EXISTS product_batches (
     product_type VARCHAR(50) NOT NULL,
     batch_size INTEGER NOT NULL,
     usf_status VARCHAR(20) DEFAULT 'PENDING',
-    blockchain_hash VARCHAR(66)
+    blockchain_hash VARCHAR(66),
+    min_temp DOUBLE PRECISION,
+    max_temp DOUBLE PRECISION
 );

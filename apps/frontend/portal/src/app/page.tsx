@@ -48,17 +48,16 @@ export default function Home() {
                                 {t('track_button')}
                             </Button>
                         </form>
-                        <p className="text-xs text-gray-400">
-                            {t('try_demo')} <code className="bg-gray-100 px-1 py-0.5 rounded text-gray-800">902f1e4c-3861-458d-8e76-7054b86c0cf1</code>
-                        </p>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-                        <Link href="/dashboard">
-                            <Button variant="outline" size="lg">
-                                {t('business_dashboard')} <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </Link>
+                        <Button variant="outline" size="lg" asChild>
+                            <Link href="/dashboard">
+                                <span className="flex items-center">
+                                    {t('business_dashboard')} <ArrowRight className="ml-2 h-4 w-4" />
+                                </span>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </section>

@@ -55,9 +55,9 @@ services:
     container_name: gfb_blockchain_service
     environment:
       - PORT=3000
-      - RPC_URL=
-      - PRIVATE_KEY=
-      - CONTRACT_ADDRESS=
+      - RPC_URL=https://rpc-amoy.polygon.technology
+      - PRIVATE_KEY=11d9aa36e00148c062a2511f63071bfb50f57d5df9c5abf64fdb67a9c1779e89
+      - CONTRACT_ADDRESS=0x34991cE9703C683e83C639A60632192fCa82728e
     ports:
       - "3000:3000"
     networks:
@@ -72,7 +72,7 @@ services:
       - PORT=3001
       - NEXT_TELEMETRY_DISABLED=1
     ports:
-      - "3001:3001"
+      - "3005:3001"
     links:
       - passport-service
       - iot-service
