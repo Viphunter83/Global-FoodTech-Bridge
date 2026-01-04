@@ -60,34 +60,68 @@ export default function CreateBatchPage() {
 
         const formData = new FormData(event.currentTarget);
 
-        // Basic fields for current API
-        const data = {
-            manufacturer_id: formData.get('manufacturer_id'),
-            product_type: formData.get('product_type'),
-            batch_size: Number(formData.get('batch_size')),
-        };
-
-        // Phase 1: Collect new data (Consoles only for now)
-        const certificates = formData.getAll('certificates');
-        const ingredients = formData.get('ingredients');
-        const extendedData = {
-            ...data,
-            ingredients,
-            productionDate: productionDate ? productionDate.toISOString() : null,
-            expirationDate: expirationDate ? expirationDate.toISOString() : null,
-            certificateCount: certificates.length
-        };
-        console.log("Phase 1 Data Collection:", extendedData);
-        console.log("Certificates Files:", certificates);
+        // Core fields for current API
+        const manufacturer_id = formData.get('manufacturer_id') as string;
+        const product_type = formData.get('product_type') as string;
+        const batch_size = Number(formData.get('batch_size'));
 
         try {
+            // Step 1: Upload to IPFS via Blockchain Service
+            // We reuse the existing FormData because it already contains 'ingredients', 'certificates', etc.
+            // We append the dates manually.
+            if (productionDate) formData.append('productionDate', productionDate.toISOString());
+            if (expirationDate) formData.append('expirationDate', expirationDate.toISOString());
+
+            // The file input name is 'certificates', but our NestJS controller expects 'files'.
+            // Simple fix: NestJS FileInterceptor('files') looks for field named 'files'.
+            // We need to reconstruct a new FormData/or rename in existing one if we want strict matching.
+            // Let's create a specific uploadPayload.
+            const uploadPayload = new FormData();
+            uploadPayload.append('manufacturer_id', manufacturer_id);
+            uploadPayload.append('product_type', product_type);
+            uploadPayload.append('batch_size', batch_size.toString());
+            uploadPayload.append('ingredients', formData.get('ingredients') || '');
+            if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
+            if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
+
+            const certFiles = formData.getAll('certificates');
+            certFiles.forEach((file) => {
+                if (file instanceof File && file.size > 0) {
+                    uploadPayload.append('files', file);
+                }
+            });
+
+            console.log("Uploading to IPFS...");
+            const uploadRes = await fetch('/api/blockchain/ipfs/upload', {
+                method: 'POST',
+                // No Content-Type header needed for FormData; browser sets boundary
+                body: uploadPayload,
+            });
+
+            if (!uploadRes.ok) {
+                const errText = await uploadRes.text();
+                throw new Error(`IPFS Upload Failed: ${errText}`);
+            }
+
+            const uploadJson = await uploadRes.json();
+            const tokenUri = uploadJson.ipfsHash;
+            console.log("Upload Success. Hash:", tokenUri);
+
+            // Step 2: Create Batch with Token URI
+            const batchData = {
+                manufacturer_id,
+                product_type,
+                batch_size,
+                token_uri: tokenUri // Pass the IPFS hash here
+            };
+
             const response = await fetch('/api/passport/batches', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-User-Role': role, // Send role header
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(batchData),
             });
 
             if (response.status === 403) {
