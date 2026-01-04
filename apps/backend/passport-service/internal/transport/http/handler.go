@@ -26,7 +26,13 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Protected Routes
+		// Public Routes
+		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("ok"))
+		})
+        
+        // ... rest of routes
 		r.Group(func(r chi.Router) {
 			r.Use(h.RoleMiddleware("MANUFACTURER"))
 			r.Post("/batches", h.createBatch)
