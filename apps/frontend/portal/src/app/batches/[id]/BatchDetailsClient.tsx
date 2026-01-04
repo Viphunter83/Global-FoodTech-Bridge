@@ -137,6 +137,20 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                                         </p>
                                     </div>
                                 </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {batch.production_location && (
+                                        <div>
+                                            <h3 className="text-sm font-medium uppercase text-gray-500">{t('form_production_location')}</h3>
+                                            <p className="font-mono text-sm text-gray-900 mt-1">{batch.production_location}</p>
+                                        </div>
+                                    )}
+                                    {batch.origin_location && (
+                                        <div>
+                                            <h3 className="text-sm font-medium uppercase text-gray-500">{t('form_origin_location')}</h3>
+                                            <p className="font-mono text-sm text-gray-900 mt-1">{batch.origin_location}</p>
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div>
                                     <h3 className="text-sm font-medium uppercase text-gray-500 mb-2">{t('ipfs_certificates_header')}</h3>

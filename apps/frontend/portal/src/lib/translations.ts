@@ -119,7 +119,9 @@ export type TranslationKey =
     | 'recent_batches_title'
     | 'ipfs_section_title'
     | 'ipfs_certificates_header'
-    | 'ipfs_no_documents';
+    | 'ipfs_no_documents'
+    | 'form_production_location'
+    | 'form_origin_location';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -241,7 +243,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         recent_batches_title: 'Recently Created Batches (Local)',
         ipfs_section_title: 'Digital Product Passport (IPFS)',
         ipfs_certificates_header: 'Certificates & Documents',
-        ipfs_no_documents: 'No documents uploaded.'
+        ipfs_no_documents: 'No documents uploaded.',
+        form_production_location: 'Production Location (City, Country)',
+        form_origin_location: 'Dispatch Location (Port/Warehouse)'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -362,7 +366,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         recent_batches_title: 'Недавно созданные партии (Локально)',
         ipfs_section_title: 'Цифровой паспорт продукта (IPFS)',
         ipfs_certificates_header: 'Сертификаты и документы',
-        ipfs_no_documents: 'Документы не загружены.'
+        ipfs_no_documents: 'Документы не загружены.',
+        form_production_location: 'Место производства (Город, Страна)',
+        form_origin_location: 'Место отгрузки (Порт/Склад)'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -483,6 +489,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         recent_batches_title: 'الدفعات التي تم إنشاؤها مؤخرًا (محليًا)',
         ipfs_section_title: 'جواز السفر الرقمي للمنتج (IPFS)',
         ipfs_certificates_header: 'الشهادات والوثائق',
-        ipfs_no_documents: 'لم يتم تحميل أي مستندات.'
+        ipfs_no_documents: 'لم يتم تحميل أي مستندات.',
+        form_production_location: 'موقع الإنتاج (المدينة ، البلد)',
+        form_origin_location: 'موقع الإرسال (الميناء / المستودع)'
     }
 };

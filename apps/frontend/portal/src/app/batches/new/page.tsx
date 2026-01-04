@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
-import { PackagePlus, CheckCircle, Loader2, Calendar as CalendarIcon, Upload, FileText } from 'lucide-react';
+import { PackagePlus, CheckCircle, Loader2, Calendar as CalendarIcon, Upload, FileText, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -84,7 +84,10 @@ export default function CreateBatchPage() {
             uploadPayload.append('batch_size', batch_size.toString());
             uploadPayload.append('ingredients', formData.get('ingredients') || '');
             if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
+            if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
             if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
+            uploadPayload.append('productionLocation', formData.get('production_location') || '');
+            uploadPayload.append('originLocation', formData.get('origin_location') || '');
 
             const certFiles = formData.getAll('certificates');
             certFiles.forEach((file) => {
@@ -260,6 +263,34 @@ export default function CreateBatchPage() {
                                     placeholder="e.g. Beef, Rice Noodles, Star Anise, Cinnamon..."
                                     className="min-h-[100px]"
                                 />
+                            </div>
+
+                            {/* Location Data */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="production_location">{t('form_production_location')}</Label>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            id="production_location"
+                                            name="production_location"
+                                            placeholder="e.g. Dubai, UAE"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="origin_location">{t('form_origin_location')}</Label>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            id="origin_location"
+                                            name="origin_location"
+                                            placeholder="e.g. Jebel Ali Port"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Dates Row */}

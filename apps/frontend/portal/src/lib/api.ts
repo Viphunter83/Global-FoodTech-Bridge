@@ -14,6 +14,8 @@ export interface BatchDetails {
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
+    production_location?: string;
+    origin_location?: string;
     certificates?: { name: string, uri: string }[];
     history?: {
         stage: string;
@@ -128,6 +130,10 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                     // Update Dates
                     extendedData.production_date = getAttr("Production Date");
                     extendedData.expiration_date = getAttr("Expiration Date");
+
+                    // Update Locations
+                    extendedData.production_location = getAttr("Production Location");
+                    extendedData.origin_location = getAttr("Origin Location");
 
                     // Update Certificates
                     if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
