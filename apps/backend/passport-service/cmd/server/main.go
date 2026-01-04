@@ -19,11 +19,22 @@ func main() {
 	}
 
 	// Connect to DB
-	dbpool, err := pgxpool.New(context.Background(), dbURL)
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatalf("Unable to parse DATABASE_URL: %v\n", err)
+	}
+	
+	dbpool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
 	defer dbpool.Close()
+
+	// Verify connection immediately
+	if err := dbpool.Ping(context.Background()); err != nil {
+		log.Fatalf("Unable to connect to database (Ping failed): %v\n", err)
+	}
+	log.Println("Successfully connected to Database")
 
 	// Init Dependencies
 	// Init Dependencies

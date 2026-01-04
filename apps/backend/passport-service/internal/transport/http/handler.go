@@ -25,13 +25,22 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	// Root Health Check (critical for Railway)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Passport Service Running"))
+	})
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
+
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public Routes
+		// API Routes
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("ok"))
 		})
-        
         // ... rest of routes
 		r.Group(func(r chi.Router) {
 			r.Use(h.RoleMiddleware("MANUFACTURER"))
