@@ -121,7 +121,9 @@ export type TranslationKey =
     | 'ipfs_certificates_header'
     | 'ipfs_no_documents'
     | 'form_production_location'
-    | 'form_origin_location';
+    | 'form_production_location'
+    | 'form_origin_location'
+    | 'menu_admin';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -174,6 +176,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         next_step: 'Next Step',
         menu_create_batch: 'Create Batch',
         menu_how_it_works: 'How it Works',
+        menu_admin: 'Admin',
         role_persona: 'Persona:',
         chart_title: 'Temperature History',
         chart_desc: 'Real-time sensor readings (°C)',
@@ -297,6 +300,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         next_step: 'Далее',
         menu_create_batch: 'Создать партию',
         menu_how_it_works: 'Как это работает',
+        menu_admin: 'Админ',
         role_persona: 'Роль:',
         chart_title: 'История температур',
         chart_desc: 'Показания датчиков в реальном времени (°C)',
@@ -420,6 +424,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         next_step: 'الخطوة التالية',
         menu_create_batch: 'إنشاء دفعة',
         menu_how_it_works: 'كيف يعمل',
+        menu_admin: 'مشرف',
         role_persona: 'الدور:',
         chart_title: 'تاريخ درجة الحرارة',
         chart_desc: 'قراءات المستشعر في الوقت الفعلي (°C)',

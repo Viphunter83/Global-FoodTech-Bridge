@@ -26,6 +26,9 @@ export function Header() {
                         <Link href="/how-it-works" className="transition-colors hover:text-foreground/80 text-foreground/60">
                             {t('menu_how_it_works')}
                         </Link>
+                        <Link href="/admin/companies" className="transition-colors hover:text-foreground/80 text-foreground/60 font-semibold text-primary">
+                            {t('menu_admin')}
+                        </Link>
                     </nav>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
