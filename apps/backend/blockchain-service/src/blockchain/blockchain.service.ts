@@ -231,38 +231,36 @@ export class BlockchainService implements OnModuleInit {
             return { exists: false };
         }
     }
-            return { exists: false };
-        }
-    }
 
-    async grantRole(role: string, targetAddress: string): Promise < string > {
-    this.logger.log(`Granting Role ${role} to ${targetAddress}`);
 
-    // Define role hashes (Must match Solidity `keccak256("ROLE_NAME")`)
-    const ROLES: Record<string, string> = {
-    'MANUFACTURER': ethers.keccak256(ethers.toUtf8Bytes("PRODUCER_ROLE")),
-        'LOGISTICS': ethers.keccak256(ethers.toUtf8Bytes("LOGISTICS_ROLE")),
+    async grantRole(role: string, targetAddress: string): Promise<string> {
+        this.logger.log(`Granting Role ${role} to ${targetAddress}`);
+
+        // Define role hashes (Must match Solidity `keccak256("ROLE_NAME")`)
+        const ROLES: Record<string, string> = {
+            'MANUFACTURER': ethers.keccak256(ethers.toUtf8Bytes("PRODUCER_ROLE")),
+            'LOGISTICS': ethers.keccak256(ethers.toUtf8Bytes("LOGISTICS_ROLE")),
             'RETAILER': ethers.keccak256(ethers.toUtf8Bytes("RETAILER_ROLE")),
         };
 
-const roleHash = ROLES[role];
-if (!roleHash) {
-    throw new Error(`Invalid Role: ${role}`);
-}
+        const roleHash = ROLES[role];
+        if (!roleHash) {
+            throw new Error(`Invalid Role: ${role}`);
+        }
 
-if (this.isMockMode) {
-    return `0xMOCK_GRANT_ROLE_${Date.now()}`;
-}
+        if (this.isMockMode) {
+            return `0xMOCK_GRANT_ROLE_${Date.now()}`;
+        }
 
-try {
-    // Only Default Admin (Manufacturer Wallet in this setup) can grant roles
-    const tx = await (this.contract.connect(this.manufacturerWallet) as any).grantRole(roleHash, targetAddress);
-    this.logger.log(`Grant Role TX: ${tx.hash}`);
-    await tx.wait();
-    return tx.hash;
-} catch (error) {
-    this.logger.error('Failed to grant role', error);
-    throw new Error(`Grant Role failed: ${error.message}`);
-}
+        try {
+            // Only Default Admin (Manufacturer Wallet in this setup) can grant roles
+            const tx = await (this.contract.connect(this.manufacturerWallet) as any).grantRole(roleHash, targetAddress);
+            this.logger.log(`Grant Role TX: ${tx.hash}`);
+            await tx.wait();
+            return tx.hash;
+        } catch (error) {
+            this.logger.error('Failed to grant role', error);
+            throw new Error(`Grant Role failed: ${error.message}`);
+        }
     }
 }
