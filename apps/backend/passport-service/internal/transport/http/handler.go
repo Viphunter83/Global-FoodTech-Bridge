@@ -8,14 +8,16 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/global-foodtech-bridge/passport-service/internal/domain"
 	"github.com/global-foodtech-bridge/passport-service/internal/service"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
-	service *service.BatchService
+	service        *service.BatchService
+	companyService *service.CompanyService
 }
 
-func NewHandler(service *service.BatchService) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *service.BatchService, companyService *service.CompanyService) *Handler {
+	return &Handler{service: service, companyService: companyService}
 }
 
 func (h *Handler) InitRoutes() *chi.Mux {
@@ -31,7 +33,14 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		})
 		
 		// Public Routes
+		// Public Routes
 		r.Get("/batches/{id}", h.getBatch)
+
+		// Admin Routes
+		r.Post("/admin/companies", h.createCompany)
+		r.Post("/admin/companies", h.createCompany)
+		r.Get("/admin/companies", h.listCompanies)
+		r.Post("/admin/companies/{id}/approve", h.approveCompany)
 	})
 
 	return r
@@ -84,4 +93,49 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(batch)
+}
+
+func (h *Handler) createCompany(w http.ResponseWriter, r *http.Request) {
+	var req domain.CreateCompanyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := h.companyService.CreateCompany(r.Context(), req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *Handler) listCompanies(w http.ResponseWriter, r *http.Request) {
+	companies, err := h.companyService.GetAllCompanies(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(companies)
+}
+
+func (h *Handler) approveCompany(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.companyService.ApproveCompany(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "approved"})
 }

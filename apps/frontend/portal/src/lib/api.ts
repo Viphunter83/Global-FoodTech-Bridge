@@ -55,6 +55,16 @@ export interface Alert {
     created_at: string;
 }
 
+export interface Company {
+    id: string;
+    name: string;
+    type: 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER';
+    wallet_address: string;
+    production_location?: string;
+    is_active: boolean;
+    created_at: string;
+}
+
 import { MANUFACTURER_ADDR } from './constants';
 
 const isServer = typeof window === 'undefined';
@@ -353,5 +363,53 @@ export async function reportViolation(batchId: string, details: string): Promise
     } catch (e) {
         console.error('Failed to report violation', e);
         return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
+    }
+}
+
+// --- ADMIN API ---
+
+export async function createCompany(data: { name: string; type: string; production_location: string }): Promise<Company | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/companies`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            console.error('Failed to create company');
+            return null;
+        }
+
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error:', e);
+        return null;
+    }
+}
+
+export async function getCompanies(): Promise<Company[]> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/companies`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error:', e);
+        return [];
+    }
+}
+
+export async function approveCompany(id: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/companies/${id}/approve`, {
+            method: 'POST',
+            referrerPolicy: 'no-referrer', // Avoid some CORS issues locally
+            cache: 'no-store'
+        });
+        return res.ok;
+    } catch (e) {
+        console.error('Failed to approve company', e);
+        return false;
     }
 }

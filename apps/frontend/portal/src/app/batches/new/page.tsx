@@ -19,7 +19,7 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 import { AlertTriangle } from 'lucide-react'; // Import AlertIcon
 
 export default function CreateBatchPage() {
-    const { role } = useAuth(); // Get current role
+    const { role, companyId } = useAuth(); // Get current role and companyId
     const { t, dir } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
@@ -211,7 +211,7 @@ export default function CreateBatchPage() {
                                 id="manufacturer_id"
                                 name="manufacturer_id"
                                 placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
-                                defaultValue={DEMO_MANUFACTURER_ID}
+                                defaultValue={companyId || DEMO_MANUFACTURER_ID}
                                 required
                             />
                         </div>

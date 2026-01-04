@@ -26,9 +26,15 @@ func main() {
 	defer dbpool.Close()
 
 	// Init Dependencies
+	// Init Dependencies
 	repo := postgres.NewBatchRepository(dbpool)
+	companyRepo := postgres.NewCompanyRepository(dbpool)
+
 	svc := service.NewBatchService(repo)
-	handler := transport.NewHandler(svc)
+	walletSvc := service.NewWalletService()
+	companySvc := service.NewCompanyService(companyRepo, walletSvc)
+
+	handler := transport.NewHandler(svc, companySvc)
 
 	// Init Router
 	router := handler.InitRoutes()

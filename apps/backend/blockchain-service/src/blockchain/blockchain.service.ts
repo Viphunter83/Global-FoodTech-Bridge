@@ -7,7 +7,9 @@ const REGISTRY_ABI = [
     "function initiateTransfer(uint256 tokenId, address to) public",
     "function acceptTransfer(uint256 tokenId) public",
     "function reportViolation(string memory batchUUID, string memory details) public",
+    "function reportViolation(string memory batchUUID, string memory details) public",
     "function getBatchData(string memory batchUUID) public view returns (address currentOwner, string memory uri, string memory violation, bool isViolated, uint256 timestamp, address pendingOwner)",
+    "function grantRole(bytes32 role, address account) public",
     "event BatchCreated(uint256 indexed tokenId, string batchUUID, address indexed producer, uint256 timestamp)",
     "event TransferInitiated(uint256 indexed tokenId, address indexed from, address indexed to)",
     "event TransferCompleted(uint256 indexed tokenId, address indexed from, address indexed to)",
@@ -228,5 +230,39 @@ export class BlockchainService implements OnModuleInit {
             this.logger.error(`Failed to get batch data for ${batchId}`, error);
             return { exists: false };
         }
+    }
+            return { exists: false };
+        }
+    }
+
+    async grantRole(role: string, targetAddress: string): Promise < string > {
+    this.logger.log(`Granting Role ${role} to ${targetAddress}`);
+
+    // Define role hashes (Must match Solidity `keccak256("ROLE_NAME")`)
+    const ROLES: Record<string, string> = {
+    'MANUFACTURER': ethers.keccak256(ethers.toUtf8Bytes("PRODUCER_ROLE")),
+        'LOGISTICS': ethers.keccak256(ethers.toUtf8Bytes("LOGISTICS_ROLE")),
+            'RETAILER': ethers.keccak256(ethers.toUtf8Bytes("RETAILER_ROLE")),
+        };
+
+const roleHash = ROLES[role];
+if (!roleHash) {
+    throw new Error(`Invalid Role: ${role}`);
+}
+
+if (this.isMockMode) {
+    return `0xMOCK_GRANT_ROLE_${Date.now()}`;
+}
+
+try {
+    // Only Default Admin (Manufacturer Wallet in this setup) can grant roles
+    const tx = await (this.contract.connect(this.manufacturerWallet) as any).grantRole(roleHash, targetAddress);
+    this.logger.log(`Grant Role TX: ${tx.hash}`);
+    await tx.wait();
+    return tx.hash;
+} catch (error) {
+    this.logger.error('Failed to grant role', error);
+    throw new Error(`Grant Role failed: ${error.message}`);
+}
     }
 }
