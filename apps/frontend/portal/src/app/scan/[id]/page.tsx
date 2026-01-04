@@ -223,7 +223,10 @@ export default function ScanPage() {
                         <Card className="p-6">
                             <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                {batchDetails?.ingredients?.en || "Loading ingredients..."}
+                                {typeof batchDetails?.ingredients === 'string'
+                                    ? batchDetails?.ingredients
+                                    : (batchDetails?.ingredients?.en || "Loading ingredients...")
+                                }
                             </p>
                             <div className="mt-4 flex gap-2">
                                 <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">

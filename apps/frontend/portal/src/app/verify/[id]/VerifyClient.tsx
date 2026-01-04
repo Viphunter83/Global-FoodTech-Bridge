@@ -101,7 +101,10 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                                     {t('ingredients_label')}
                                 </h3>
                                 <p className="text-sm text-gray-600 leading-relaxed">
-                                    {batch.ingredients?.[language as 'en' | 'ru' | 'ar'] || batch.ingredients?.['en']}
+                                    {typeof batch.ingredients === 'string'
+                                        ? batch.ingredients
+                                        : (batch.ingredients?.[language as 'en' | 'ru' | 'ar'] || batch.ingredients?.['en'])
+                                    }
                                 </p>
                             </div>
 
