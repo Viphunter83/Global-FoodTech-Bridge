@@ -70,9 +70,7 @@ export default function AdminCompaniesPage() {
         setApprovingId(company.id);
         const success = await approveCompany(company.id);
         if (success) {
-            // In a real app, update local state or re-fetch
-            // For now, assume it worked.
-            console.log("Approved!");
+            setCompanies(companies.map(c => c.id === company.id ? { ...c, is_active: true } : c));
         }
         setApprovingId(null);
     };
@@ -196,19 +194,26 @@ export default function AdminCompaniesPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => handleApprove(company)}
-                                                        disabled={approvingId === company.id}
-                                                    >
-                                                        {approvingId === company.id ? (
-                                                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                                                        ) : (
-                                                            <CheckCircle2 className="mr-1 h-3 w-3 text-green-500" />
-                                                        )}
-                                                        Approve
-                                                    </Button>
+                                                    {company.is_active ? (
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 h-9 px-3">
+                                                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                                                            Approved
+                                                        </Badge>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleApprove(company)}
+                                                            disabled={approvingId === company.id}
+                                                        >
+                                                            {approvingId === company.id ? (
+                                                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <CheckCircle2 className="mr-1 h-3 w-3 text-green-500" />
+                                                            )}
+                                                            Approve
+                                                        </Button>
+                                                    )}
                                                     <Button size="sm" variant="default" onClick={() => handleLoginAs(company)}>
                                                         <LogIn className="mr-1 h-3 w-3" />
                                                         Login As
