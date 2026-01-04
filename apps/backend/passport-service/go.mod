@@ -1,6 +1,6 @@
 module github.com/global-foodtech-bridge/passport-service
 
-go 1.22.0
+go 1.24.0
 
 require (
 	github.com/ethereum/go-ethereum v1.16.7
