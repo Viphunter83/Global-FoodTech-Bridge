@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Get, Param } from '@nestjs/common';
 import { BlockchainService } from './blockchain/blockchain.service';
 
-@Controller('api/v1/blockchain')
+@Controller('blockchain')
 export class AppController {
     constructor(
         private readonly blockchainService: BlockchainService
