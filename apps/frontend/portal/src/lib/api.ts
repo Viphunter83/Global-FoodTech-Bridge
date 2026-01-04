@@ -6,10 +6,15 @@ export interface BatchDetails {
     created_at: string;
     min_temp?: number | null;
     max_temp?: number | null;
-    ingredients?: { en: string; ar: string; ru: string };
+    ingredients?: { en: string; ar: string; ru: string } | string;
     nutrition?: { calories: number; protein: number; fat: number; carbs: number };
     halal_cert_url?: string;
     manufacturer_name?: string;
+    token_uri?: string;
+    // IPFS Extended Data
+    production_date?: string;
+    expiration_date?: string;
+    certificates?: { name: string, uri: string }[];
     history?: {
         stage: string;
         location: string;
@@ -72,8 +77,8 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         if (!res.ok) return null;
         const data = await res.json();
 
-        // Mock extended data for MVP if missing
-        return {
+        // Base Mock Data
+        let extendedData: BatchDetails = {
             ...data,
             ingredients: data.ingredients || {
                 en: "Premium Beef (80%), Rice Noodles, Spices, Sea Salt.",
@@ -91,6 +96,54 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                 { stage: "Ready for Kitchen", location: "Restaurant", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
             ]
         };
+
+        // IPFS Fetch Logic
+        if (data.token_uri) {
+            try {
+                // Use a public gateway. Ideally, use env var for gateway.
+                const ipfsGateway = "https://gateway.pinata.cloud/ipfs/";
+                // token_uri might be just the hash or ipfs://hash
+                const hash = data.token_uri.replace('ipfs://', '');
+
+                const ipfsRes = await fetch(`${ipfsGateway}${hash}`);
+                if (ipfsRes.ok) {
+                    const ipfsData = await ipfsRes.json();
+
+                    // Merge IPFS data
+                    // Attributes format: [{ trait_type: "Ingredients", value: "..." }, ...]
+                    const attributes = ipfsData.attributes || [];
+                    const getAttr = (key: string) => attributes.find((a: any) => a.trait_type === key)?.value;
+
+                    // Update Ingredients if present
+                    const ipfsIngredients = getAttr("Ingredients");
+                    if (ipfsIngredients) {
+                        // Assuming IPFS text is English/Generic for now, unless structured
+                        extendedData.ingredients = {
+                            en: ipfsIngredients,
+                            ar: "المكونات من المستند الرقمي", // Placeholder for translation
+                            ru: ipfsIngredients // Fallback
+                        };
+                    }
+
+                    // Update Dates
+                    extendedData.production_date = getAttr("Production Date");
+                    extendedData.expiration_date = getAttr("Expiration Date");
+
+                    // Update Certificates
+                    if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
+                        extendedData.certificates = ipfsData.certificates.map((cert: any) => ({
+                            name: cert.name,
+                            uri: cert.uri.replace('ipfs://', ipfsGateway)
+                        }));
+                    }
+                }
+            } catch (ipfsErr) {
+                console.warn("Failed to fetch IPFS metadata:", ipfsErr);
+            }
+        }
+
+        return extendedData;
+
     } catch (e) {
         console.error('Failed to fetch batch details:', e);
         return null;

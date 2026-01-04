@@ -23,7 +23,7 @@ interface BatchDetailsClientProps {
 }
 
 export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: BatchDetailsClientProps) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { getBatchState, isInitialized } = useDemoState();
     const [mounted, setMounted] = useState(false);
 
@@ -97,6 +97,70 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
+
+                    {/* IPFS Data Block: Ingredients & Certificates */}
+                    <div className="col-span-2 rounded-xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm">
+                        <div className="flex items-center mb-4">
+                            <div className="mr-3 rounded-lg bg-blue-100 p-2 text-blue-600">
+                                <ShieldCheck className="h-5 w-5" />
+                            </div>
+                            <h2 className="text-lg font-semibold text-gray-900">Digital Product Passport (IPFS)</h2>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {/* Ingredients */}
+                            <div className="space-y-2">
+                                <h3 className="text-sm font-medium uppercase text-gray-500">Ingredients</h3>
+                                <div className="rounded-lg bg-white p-4 text-sm text-gray-700 shadow-sm">
+                                    {/* Handle both string and object format for ingredients */}
+                                    {typeof batch.ingredients === 'string' ? (
+                                        <p>{batch.ingredients}</p>
+                                    ) : (
+                                        <p>{batch.ingredients?.[language] || batch.ingredients?.en}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Dates & Certificates */}
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <h3 className="text-sm font-medium uppercase text-gray-500">Production Date</h3>
+                                        <p className="font-mono text-sm text-gray-900 mt-1">
+                                            {batch.production_date ? new Date(batch.production_date).toLocaleDateString() : 'N/A'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-medium uppercase text-gray-500">Expiration Date</h3>
+                                        <p className="font-mono text-sm text-gray-900 mt-1">
+                                            {batch.expiration_date ? new Date(batch.expiration_date).toLocaleDateString() : 'N/A'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-sm font-medium uppercase text-gray-500 mb-2">Certificates & Documents</h3>
+                                    {batch.certificates && batch.certificates.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {batch.certificates.map((cert: any, idx: number) => (
+                                                <a
+                                                    key={idx}
+                                                    href={cert.uri}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center px-3 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                >
+                                                    📄 {cert.name}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-400 italic">No documents uploaded.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Alerts Banner */}
                     {alerts.length > 0 && (
