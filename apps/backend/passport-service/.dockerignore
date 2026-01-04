@@ -1,0 +1,14 @@
+node_modules
+.git
+.DS_Store
+*.log
+bin/
+tmp/
+coverage/
+.idea/
+.vscode/
+dist/
+build/
+**/*.mp4
+**/*.mov
+**/*.zip
