@@ -56,6 +56,7 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		BlockchainHash: nil,
 		MinTemp:        &minTemp,
 		MaxTemp:        &maxTemp,
+		TokenURI:       &req.TokenURI,
 	}
 
 	// 3. Persistence

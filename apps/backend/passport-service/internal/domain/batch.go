@@ -24,12 +24,14 @@ type Batch struct {
 	BlockchainHash *string          `json:"blockchain_hash,omitempty"`
 	MinTemp        *float64          `json:"min_temp,omitempty"`
 	MaxTemp        *float64          `json:"max_temp,omitempty"`
+	TokenURI       *string          `json:"token_uri,omitempty"`
 }
 
 type CreateBatchRequest struct {
 	ManufacturerID string `json:"manufacturer_id"`
 	ProductType    string `json:"product_type"`
 	BatchSize      int    `json:"batch_size"`
+	TokenURI       string `json:"token_uri,omitempty"`
 }
 
 type CreateBatchResponse struct {

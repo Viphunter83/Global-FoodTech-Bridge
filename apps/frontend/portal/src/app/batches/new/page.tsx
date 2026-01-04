@@ -4,8 +4,14 @@ import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { PackagePlus, CheckCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { PackagePlus, CheckCircle, Loader2, Calendar as CalendarIcon, Upload, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -17,6 +23,10 @@ export default function CreateBatchPage() {
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
     const [recentBatches, setRecentBatches] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    // New Data Collection States (Phase 1)
+    const [productionDate, setProductionDate] = useState<Date>();
+    const [expirationDate, setExpirationDate] = useState<Date>();
 
     useEffect(() => {
         // Load recent batches on mount
@@ -49,11 +59,26 @@ export default function CreateBatchPage() {
         setError(null);
 
         const formData = new FormData(event.currentTarget);
+
+        // Basic fields for current API
         const data = {
             manufacturer_id: formData.get('manufacturer_id'),
             product_type: formData.get('product_type'),
             batch_size: Number(formData.get('batch_size')),
         };
+
+        // Phase 1: Collect new data (Consoles only for now)
+        const certificates = formData.getAll('certificates');
+        const ingredients = formData.get('ingredients');
+        const extendedData = {
+            ...data,
+            ingredients,
+            productionDate: productionDate ? productionDate.toISOString() : null,
+            expirationDate: expirationDate ? expirationDate.toISOString() : null,
+            certificateCount: certificates.length
+        };
+        console.log("Phase 1 Data Collection:", extendedData);
+        console.log("Certificates Files:", certificates);
 
         try {
             const response = await fetch('/api/passport/batches', {
@@ -141,10 +166,11 @@ export default function CreateBatchPage() {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            <Label htmlFor="manufacturer_id">
                                 Manufacturer ID
-                            </label>
+                            </Label>
                             <Input
+                                id="manufacturer_id"
                                 name="manufacturer_id"
                                 placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                                 defaultValue={DEMO_MANUFACTURER_ID}
@@ -153,11 +179,12 @@ export default function CreateBatchPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            <Label htmlFor="product_type">
                                 Product Type
-                            </label>
+                            </Label>
                             <div className="relative">
                                 <select
+                                    id="product_type"
                                     name="product_type"
                                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
@@ -169,16 +196,113 @@ export default function CreateBatchPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            <Label htmlFor="batch_size">
                                 Batch Size
-                            </label>
+                            </Label>
                             <Input
+                                id="batch_size"
                                 name="batch_size"
                                 type="number"
                                 placeholder="100"
                                 min="1"
                                 required
                             />
+                        </div>
+
+                        {/* Phase 1: New Data Fields */}
+                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Product Details (IPFS)
+                            </h3>
+
+                            {/* Ingredients */}
+                            <div className="space-y-2">
+                                <Label htmlFor="ingredients">Ingredients List</Label>
+                                <Textarea
+                                    id="ingredients"
+                                    name="ingredients"
+                                    placeholder="e.g. Beef, Rice Noodles, Star Anise, Cinnamon..."
+                                    className="min-h-[100px]"
+                                />
+                            </div>
+
+                            {/* Dates Row */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2 text-left">
+                                    <Label>Production Date</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !productionDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {productionDate ? format(productionDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={productionDate}
+                                                onSelect={setProductionDate}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <Label>Expiration Date</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !expirationDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {expirationDate ? format(expirationDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={expirationDate}
+                                                onSelect={setExpirationDate}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </div>
+
+                            {/* Certificates */}
+                            <div className="space-y-2">
+                                <Label htmlFor="certificates">
+                                    Certificates (PDF/JPG)
+                                </Label>
+                                <div className="flex items-center justify-center w-full">
+                                    <label htmlFor="certificates" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border-gray-300">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                            <p className="text-xs text-gray-500">PDF, JPG or PNG</p>
+                                        </div>
+                                        <Input
+                                            id="certificates"
+                                            name="certificates"
+                                            type="file"
+                                            multiple
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         {error && <p className="text-sm text-red-600">{error}</p>}
