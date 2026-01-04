@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFiles, Body, UseInterceptors, Logger } from '@nestjs/common';
+import { Controller, Post, UploadedFiles, Body, UseInterceptors, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { IpfsService } from './ipfs.service';
 
@@ -14,43 +14,51 @@ export class IpfsController {
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() body: any
     ) {
-        this.logger.log(`Received upload request. Files: ${files ? files.length : 0}`);
+        try {
+            this.logger.log(`Received upload request. Files: ${files ? files.length : 0}`);
 
-        const uploadedHashes: Record<string, string> = {};
+            const uploadedHashes: Record<string, string> = {};
 
-        // 1. Upload all files (certificates)
-        if (files && files.length > 0) {
-            for (const file of files) {
-                const hash = await this.ipfsService.uploadFile(file.buffer, file.originalname);
-                uploadedHashes[file.originalname] = hash;
+            // 1. Upload all files (certificates)
+            if (files && files.length > 0) {
+                for (const file of files) {
+                    const hash = await this.ipfsService.uploadFile(file.buffer, file.originalname);
+                    uploadedHashes[file.originalname] = hash;
+                }
             }
+
+            // 2. Construct Metadata JSON
+            const metadata = {
+                name: `Batch ${body.manufacturer_id}`, // temporary name
+                description: `Batch of ${body.product_type}`,
+                image: "ipfs://placeholder-image", // In real app, maybe upload a product image?
+                attributes: [
+                    { trait_type: "Ingredients", value: body.ingredients },
+                    { trait_type: "Production Date", value: body.productionDate },
+                    { trait_type: "Expiration Date", value: body.expirationDate },
+                    { trait_type: "Batch Size", value: body.batch_size },
+                ],
+                // Extensions for certificates
+                certificates: Object.entries(uploadedHashes).map(([name, hash]) => ({
+                    name,
+                    uri: `ipfs://${hash}`
+                }))
+            };
+
+            // 3. Upload Metadata JSON
+            const metadataHash = await this.ipfsService.uploadJSON(metadata);
+
+            return {
+                success: true,
+                ipfsHash: metadataHash, // This is the "Token URI"
+                metadata: metadata // Return meantadata for debug
+            };
+        } catch (error) {
+            this.logger.error("Upload failed", error);
+            throw new HttpException({
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                error: error.message,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // 2. Construct Metadata JSON
-        const metadata = {
-            name: `Batch ${body.manufacturer_id}`, // temporary name
-            description: `Batch of ${body.product_type}`,
-            image: "ipfs://placeholder-image", // In real app, maybe upload a product image?
-            attributes: [
-                { trait_type: "Ingredients", value: body.ingredients },
-                { trait_type: "Production Date", value: body.productionDate },
-                { trait_type: "Expiration Date", value: body.expirationDate },
-                { trait_type: "Batch Size", value: body.batch_size },
-            ],
-            // Extensions for certificates
-            certificates: Object.entries(uploadedHashes).map(([name, hash]) => ({
-                name,
-                uri: `ipfs://${hash}`
-            }))
-        };
-
-        // 3. Upload Metadata JSON
-        const metadataHash = await this.ipfsService.uploadJSON(metadata);
-
-        return {
-            success: true,
-            ipfsHash: metadataHash, // This is the "Token URI"
-            metadata: metadata // Return meantadata for debug
-        };
     }
 }

@@ -50,6 +50,10 @@ export class IpfsService {
 
         } catch (error) {
             this.logger.error('Failed to upload file to Pinata', error);
+            if (axios.isAxiosError(error) && error.response) {
+                this.logger.error(`Pinata Error: ${JSON.stringify(error.response.data)}`);
+                throw new Error(`IPFS Upload failed: ${JSON.stringify(error.response.data)}`);
+            }
             throw new Error(`IPFS Upload failed: ${error.message}`);
         }
     }
@@ -77,6 +81,10 @@ export class IpfsService {
             return res.data.IpfsHash;
         } catch (error) {
             this.logger.error('Failed to upload JSON to Pinata', error);
+            if (axios.isAxiosError(error) && error.response) {
+                this.logger.error(`Pinata Error: ${JSON.stringify(error.response.data)}`);
+                throw new Error(`IPFS JSON Upload failed: ${JSON.stringify(error.response.data)}`);
+            }
             throw new Error(`IPFS JSON Upload failed: ${error.message}`);
         }
     }
