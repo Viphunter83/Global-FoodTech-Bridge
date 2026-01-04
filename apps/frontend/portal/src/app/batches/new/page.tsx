@@ -15,10 +15,12 @@ import { cn } from '@/lib/utils';
 import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 import { AlertTriangle } from 'lucide-react'; // Import AlertIcon
 
 export default function CreateBatchPage() {
     const { role } = useAuth(); // Get current role
+    const { t, dir } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
     const [recentBatches, setRecentBatches] = useState<string[]>([]);
@@ -154,14 +156,14 @@ export default function CreateBatchPage() {
                     <div className="rounded-full bg-blue-100 p-3 text-blue-600">
                         <PackagePlus size={32} />
                     </div>
-                    <h1 className="mt-4 text-2xl font-bold text-gray-900">Create New Batch</h1>
-                    <p className="text-sm text-gray-500">Enter production details below</p>
+                    <h1 className="mt-4 text-2xl font-bold text-gray-900">{t('create_batch_title')}</h1>
+                    <p className="text-sm text-gray-500">{t('create_batch_subtitle')}</p>
                 </div>
 
                 {createdBatchId ? (
                     <div className="flex flex-col items-center rounded-lg bg-green-50 p-6 text-center">
                         <CheckCircle className="mb-2 text-green-600" size={48} />
-                        <h3 className="text-lg font-medium text-green-900">Batch Created!</h3>
+                        <h3 className="text-lg font-medium text-green-900">{t('msg_batch_created')}</h3>
                         <p className="mt-2 font-mono text-sm text-gray-600 break-all">{createdBatchId}</p>
 
                         <div className="flex justify-center my-4">
@@ -170,7 +172,7 @@ export default function CreateBatchPage() {
 
                         <Link href={`/batches/${createdBatchId}`} className="mt-4 w-full">
                             <Button className="w-full">
-                                Track Batch Status
+                                {t('msg_track_status')}
                             </Button>
                         </Link>
                         <Button
@@ -178,7 +180,7 @@ export default function CreateBatchPage() {
                             variant="secondary"
                             onClick={() => setCreatedBatchId(null)}
                         >
-                            Create Another
+                            {t('msg_create_another')}
                         </Button>
                     </div>
                 ) : (
@@ -190,10 +192,9 @@ export default function CreateBatchPage() {
                                         <AlertTriangle className="h-5 w-5 text-yellow-400" aria-hidden="true" />
                                     </div>
                                     <div className="ml-3">
-                                        <h3 className="text-sm font-medium text-yellow-800">Permission Warning</h3>
+                                        <h3 className="text-sm font-medium text-yellow-800">{t('permission_warning')}</h3>
                                         <div className="mt-2 text-sm text-yellow-700">
-                                            <p>You are currently logged in as <strong>{role}</strong>.</p>
-                                            <p>Only <strong>MANUFACTURER</strong> can create new batches.</p>
+                                            <p>{t('permission_warning_desc')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -201,7 +202,7 @@ export default function CreateBatchPage() {
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="manufacturer_id">
-                                Manufacturer ID
+                                {t('form_manufacturer_id')}
                             </Label>
                             <Input
                                 id="manufacturer_id"
@@ -214,7 +215,7 @@ export default function CreateBatchPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="product_type">
-                                Product Type
+                                {t('form_product_type')}
                             </Label>
                             <div className="relative">
                                 <select
@@ -231,7 +232,7 @@ export default function CreateBatchPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="batch_size">
-                                Batch Size
+                                {t('form_batch_size')}
                             </Label>
                             <Input
                                 id="batch_size"
@@ -247,12 +248,12 @@ export default function CreateBatchPage() {
                         <div className="space-y-4 pt-4 border-t border-gray-100">
                             <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                                 <FileText className="h-4 w-4" />
-                                Product Details (IPFS)
+                                {t('form_product_details_ipfs')}
                             </h3>
 
                             {/* Ingredients */}
                             <div className="space-y-2">
-                                <Label htmlFor="ingredients">Ingredients List</Label>
+                                <Label htmlFor="ingredients">{t('form_ingredients')}</Label>
                                 <Textarea
                                     id="ingredients"
                                     name="ingredients"
@@ -264,7 +265,7 @@ export default function CreateBatchPage() {
                             {/* Dates Row */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 text-left">
-                                    <Label>Production Date</Label>
+                                    <Label>{t('form_production_date')}</Label>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -275,7 +276,7 @@ export default function CreateBatchPage() {
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {productionDate ? format(productionDate, "PPP") : <span>Pick a date</span>}
+                                                {productionDate ? format(productionDate, "PPP") : <span>{t('pick_date')}</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0" align="start">
@@ -289,7 +290,7 @@ export default function CreateBatchPage() {
                                     </Popover>
                                 </div>
                                 <div className="space-y-2 text-left">
-                                    <Label>Expiration Date</Label>
+                                    <Label>{t('form_expiration_date')}</Label>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -300,7 +301,7 @@ export default function CreateBatchPage() {
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {expirationDate ? format(expirationDate, "PPP") : <span>Pick a date</span>}
+                                                {expirationDate ? format(expirationDate, "PPP") : <span>{t('pick_date')}</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0" align="start">
@@ -318,13 +319,13 @@ export default function CreateBatchPage() {
                             {/* Certificates */}
                             <div className="space-y-2">
                                 <Label htmlFor="certificates">
-                                    Certificates (PDF/JPG)
+                                    {t('form_certificates')}
                                 </Label>
                                 <div className="flex items-center justify-center w-full">
                                     <label htmlFor="certificates" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border-gray-300">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                             <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">{t('form_certificates_sub')}</span></p>
                                             <p className="text-xs text-gray-500">PDF, JPG or PNG</p>
                                         </div>
                                         <Input
@@ -344,14 +345,14 @@ export default function CreateBatchPage() {
 
                         <Button className="w-full" disabled={isLoading} type="submit">
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Register Batch
+                            {t('menu_create_batch')}
                         </Button>
                     </form>
                 )}
                 {/* Recent Batches Sidebar or Bottom Block */}
                 {recentBatches.length > 0 && !createdBatchId && (
                     <div className="mt-8 pt-8 border-t border-gray-100">
-                        <h3 className="text-sm font-medium text-gray-500 mb-3">Recently Created Batches (Local)</h3>
+                        <h3 className="text-sm font-medium text-gray-500 mb-3">{t('recent_batches_title')}</h3>
                         <div className="flex flex-wrap gap-2">
                             {recentBatches.map((id) => (
                                 <Link key={id} href={`/batches/${id}`}>

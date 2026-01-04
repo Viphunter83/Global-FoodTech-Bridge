@@ -97,7 +97,29 @@ export type TranslationKey =
     | 'btn_transfer_retailer'
     | 'btn_transfer_logistics'
     | 'alert_dispatched'
-    | 'bc_waiting_logistics';
+    | 'bc_waiting_logistics'
+    | 'create_batch_title'
+    | 'create_batch_subtitle'
+    | 'form_manufacturer_id'
+    | 'form_product_type'
+    | 'form_batch_size'
+    | 'form_ingredients'
+    | 'form_product_details_ipfs'
+    | 'form_production_date'
+    | 'form_expiration_date'
+    | 'form_certificates'
+    | 'form_certificates_sub'
+    | 'btn_upload_file'
+    | 'msg_batch_created'
+    | 'msg_track_status'
+    | 'msg_create_another'
+    | 'pick_date'
+    | 'permission_warning'
+    | 'permission_warning_desc'
+    | 'recent_batches_title'
+    | 'ipfs_section_title'
+    | 'ipfs_certificates_header'
+    | 'ipfs_no_documents';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -197,7 +219,29 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_transfer_retailer: 'Transfer to Retailer',
         btn_transfer_logistics: 'Transfer to Logistics',
         alert_dispatched: 'Truck Dispatched! Status updated to In Transit.',
-        bc_waiting_logistics: 'Waiting for Logistics provider...'
+        bc_waiting_logistics: 'Waiting for Logistics provider...',
+        create_batch_title: 'Create New Batch',
+        create_batch_subtitle: 'Enter production details below',
+        form_manufacturer_id: 'Manufacturer ID',
+        form_product_type: 'Product Type',
+        form_batch_size: 'Batch Size',
+        form_ingredients: 'Ingredients List',
+        form_product_details_ipfs: 'Product Details (IPFS)',
+        form_production_date: 'Production Date',
+        form_expiration_date: 'Expiration Date',
+        form_certificates: 'Certificates (PDF/JPG)',
+        form_certificates_sub: 'Click to upload or drag and drop',
+        btn_upload_file: 'Upload File',
+        msg_batch_created: 'Batch Created!',
+        msg_track_status: 'Track Batch Status',
+        msg_create_another: 'Create Another',
+        pick_date: 'Pick a date',
+        permission_warning: 'Permission Warning',
+        permission_warning_desc: 'Only MANUFACTURER can create new batches.',
+        recent_batches_title: 'Recently Created Batches (Local)',
+        ipfs_section_title: 'Digital Product Passport (IPFS)',
+        ipfs_certificates_header: 'Certificates & Documents',
+        ipfs_no_documents: 'No documents uploaded.'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -296,7 +340,29 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_transfer_retailer: 'Передать ритейлеру',
         btn_transfer_logistics: 'Передать в логистику',
         alert_dispatched: 'Грузовик отправлен! Статус обновлен на "В пути".',
-        bc_waiting_logistics: 'Ожидание логистического оператора...'
+        bc_waiting_logistics: 'Ожидание логистического оператора...',
+        create_batch_title: 'Создать новую партию',
+        create_batch_subtitle: 'Введите детали производства',
+        form_manufacturer_id: 'ID Производителя',
+        form_product_type: 'Тип Продукта',
+        form_batch_size: 'Размер Партии',
+        form_ingredients: 'Список Ингредиентов',
+        form_product_details_ipfs: 'Детали Продукта (IPFS)',
+        form_production_date: 'Дата Производства',
+        form_expiration_date: 'Дата Истечения',
+        form_certificates: 'Сертификаты (PDF/JPG)',
+        form_certificates_sub: 'Нажмите для загрузки или перетащите',
+        btn_upload_file: 'Загрузить файл',
+        msg_batch_created: 'Партия создана!',
+        msg_track_status: 'Отследить статус',
+        msg_create_another: 'Создать еще',
+        pick_date: 'Выберите дату',
+        permission_warning: 'Предупреждение о правах',
+        permission_warning_desc: 'Только ПРОИЗВОДИТЕЛЬ может создавать партии.',
+        recent_batches_title: 'Недавно созданные партии (Локально)',
+        ipfs_section_title: 'Цифровой паспорт продукта (IPFS)',
+        ipfs_certificates_header: 'Сертификаты и документы',
+        ipfs_no_documents: 'Документы не загружены.'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -395,6 +461,28 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         btn_transfer_retailer: 'نقل إلى بائع التجزئة',
         btn_transfer_logistics: 'نقل إلى اللوجستيات',
         alert_dispatched: 'تم إرسال الشاحنة! تم تحديث الحالة إلى "في الطريق".',
-        bc_waiting_logistics: 'في انتظار مزود الخدمات اللوجستية...'
+        bc_waiting_logistics: 'في انتظار مزود الخدمات اللوجستية...',
+        create_batch_title: 'إنشاء دفعة جديدة',
+        create_batch_subtitle: 'أدخل تفاصيل الإنتاج أدناه',
+        form_manufacturer_id: 'معرف الشركة المصنعة',
+        form_product_type: 'نوع المنتج',
+        form_batch_size: 'حجم الدفعة',
+        form_ingredients: 'قائمة المكونات',
+        form_product_details_ipfs: 'تفاصيل المنتج (IPFS)',
+        form_production_date: 'تاريخ الإنتاج',
+        form_expiration_date: 'تاريخ انتهاء الصلاحية',
+        form_certificates: 'الشهادات (PDF/JPG)',
+        form_certificates_sub: 'انقر للتحميل أو اسحب وأسقط',
+        btn_upload_file: 'تحميل الملف',
+        msg_batch_created: 'تم إنشاء الدفعة!',
+        msg_track_status: 'تتبع حالة الدفعة',
+        msg_create_another: 'إنشاء أخرى',
+        pick_date: 'اختر تاريخًا',
+        permission_warning: 'تحذير الإذن',
+        permission_warning_desc: 'يمكن للشركة المصنعة فقط إنشاء دفعات جديدة.',
+        recent_batches_title: 'الدفعات التي تم إنشاؤها مؤخرًا (محليًا)',
+        ipfs_section_title: 'جواز السفر الرقمي للمنتج (IPFS)',
+        ipfs_certificates_header: 'الشهادات والوثائق',
+        ipfs_no_documents: 'لم يتم تحميل أي مستندات.'
     }
 };
