@@ -121,7 +121,6 @@ export type TranslationKey =
     | 'ipfs_certificates_header'
     | 'ipfs_no_documents'
     | 'form_production_location'
-    | 'form_production_location'
     | 'form_origin_location'
     | 'form_destination_country'
     | 'form_unit_of_measure'
@@ -163,7 +162,8 @@ export type TranslationKey =
     | 'template_label_cold'
     | 'status_verified'
     | 'required'
-    | 'farm_to_fork_journey';
+    | 'farm_to_fork_journey'
+    | 'loading';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
     en: {
@@ -283,6 +283,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         status_verified: 'Verified',
         required: 'Required',
         farm_to_fork_journey: 'Product Life Journey',
+        loading: 'Loading',
         msg_track_status: 'Track Batch Status',
         msg_create_another: 'Create Another',
         pick_date: 'Pick a date',
@@ -446,6 +447,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         status_verified: 'Проверено',
         required: 'Требуется',
         farm_to_fork_journey: 'Жизненный путь продукта',
+        loading: 'Загрузка',
         msg_track_status: 'Отследить статус',
         msg_create_another: 'Создать еще',
         pick_date: 'Выберите дату',
@@ -609,6 +611,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         status_verified: 'تم التحقق',
         required: 'مطلوب',
         farm_to_fork_journey: 'رحلة المنتج من المنتج للمستهلك',
+        loading: 'جاري التحميل',
         msg_track_status: 'تتبع حالة الدفعة',
         msg_create_another: 'إنشاء أخرى',
         pick_date: 'اختر تاريخًا',
@@ -772,6 +775,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         status_verified: 'Đã xác minh',
         required: 'Yêu cầu',
         farm_to_fork_journey: 'Hành trình từ Trang trại đến Bàn ăn',
+        loading: 'Đang tải',
         msg_track_status: 'Theo dõi Trạng thái Lô hàng',
         msg_create_another: 'Tạo lô khác',
         pick_date: 'Chọn ngày',
