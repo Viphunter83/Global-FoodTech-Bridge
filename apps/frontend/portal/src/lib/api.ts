@@ -124,7 +124,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         const isMango = data.product_type?.toLowerCase().includes('mango');
 
         // Dynamic History/Timeline Logic
-        let history = [];
+        let history: BatchDetails['history'] = [];
         if (data.template_id) {
             try {
                 const template = await getTemplateDetails(data.template_id);
