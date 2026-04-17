@@ -40,7 +40,7 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		batch.MinTemp,
 		batch.MaxTemp,
 		batch.TokenURI,
-		batch.CertificatesIPFS,
+		batch.Certificates,
 		batch.TemplateID,
 	).Scan(&id)
 
@@ -76,7 +76,7 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		&batch.MinTemp,
 		&batch.MaxTemp,
 		&batch.TokenURI,
-		&batch.CertificatesIPFS,
+		&batch.Certificates,
 		&batch.TemplateID,
 	)
 

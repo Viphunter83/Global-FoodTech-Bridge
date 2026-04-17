@@ -70,7 +70,7 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		MinTemp:            &rule.MinTemp,
 		MaxTemp:            &rule.MaxTemp,
 		TokenURI:           &req.TokenURI,
-		CertificatesIPFS:   req.CertificatesIPFS,
+		Certificates:       req.Certificates,
 	}
 
 	if req.TemplateID != "" {
@@ -89,8 +89,8 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 	if batch.DestinationCountry == "" {
 		batch.DestinationCountry = "Global"
 	}
-	if batch.CertificatesIPFS == nil {
-		batch.CertificatesIPFS = []string{}
+	if batch.Certificates == nil {
+		batch.Certificates = []domain.BatchCertificate{}
 	}
 
 	// 3. Persistence

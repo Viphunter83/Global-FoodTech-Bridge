@@ -12,7 +12,21 @@ import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { getTemplates, SupplyChainTemplate } from '@/lib/api';
-import { AlertTriangle, Layers } from 'lucide-react'; 
+import { 
+    AlertTriangle, 
+    Layers, 
+    PackagePlus, 
+    CheckCircle, 
+    Loader2, 
+    Calendar as CalendarIcon, 
+    Upload, 
+    FileText, 
+    MapPin 
+} from 'lucide-react'; 
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { QRCodeDisplay } from '@/components/passport/QRCodeDisplay';
 
 export default function CreateBatchPage() {
     const { role, companyId } = useAuth(); // Get current role and companyId
@@ -27,7 +41,10 @@ export default function CreateBatchPage() {
     // New Data Collection States (Phase 1)
     const [productionDate, setProductionDate] = useState<Date>();
     const [expirationDate, setExpirationDate] = useState<Date>();
-
+    useEffect(() => {
+        const history = localStorage.getItem('recent_batches');
+        if (history) {
+            setRecentBatches(JSON.parse(history));
         }
 
         // Load Templates
@@ -82,7 +99,6 @@ export default function CreateBatchPage() {
             uploadPayload.append('product_type', product_type);
             uploadPayload.append('batch_size', batch_size.toString());
             uploadPayload.append('ingredients', formData.get('ingredients') || '');
-            if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
             if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
             if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
             uploadPayload.append('productionLocation', formData.get('production_location') || '');

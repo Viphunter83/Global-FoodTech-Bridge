@@ -1,3 +1,9 @@
+export interface BatchCertificate {
+    hash: string;
+    type: string;
+    name: string;
+}
+
 export interface BatchDetails {
     id: string;
     manufacturer_id: string;
@@ -20,13 +26,15 @@ export interface BatchDetails {
     expiration_date?: string;
     production_location?: string;
     origin_location?: string;
-    certificates?: { name: string, uri: string }[];
+    certificates?: BatchCertificate[];
     history?: {
         stage: string;
         location: string;
         timestamp: string;
         status: 'completed' | 'current' | 'future';
-        icon: 'package' | 'truck' | 'warehouse' | 'fork';
+        icon: 'package' | 'truck' | 'warehouse' | 'fork' | 'leaf' | 'check';
+        is_compliant?: boolean;
+        required_cert?: string;
     }[];
 }
 
@@ -121,13 +129,20 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             try {
                 const template = await getTemplateDetails(data.template_id);
                 if (template && template.steps) {
-                    history = template.steps.map((step, index) => ({
-                        stage: step.name,
-                        location: index === 0 ? (data.origin_country || "Origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Destination") : "In Transit"),
-                        timestamp: index === 0 ? "Started" : (index < 3 ? "Completed" : "Estimated"), // Simple logic for demo
-                        status: index < 3 ? "completed" : (index === 3 ? "current" : "future") as any,
-                        icon: (step.icon || 'package') as any
-                    }));
+                    history = template.steps.map((step, index) => {
+                        const isCompliant = !step.required_cert || 
+                                           data.certificates?.some((c: any) => c.type === step.required_cert);
+                        
+                        return {
+                            stage: step.name,
+                            location: index === 0 ? (data.origin_country || "Origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Destination") : "In Transit"),
+                            timestamp: index === 0 ? "Started" : (index < 3 ? "Completed" : "Estimated"), 
+                            status: index < 3 ? "completed" : (index === 3 ? "current" : "future") as any,
+                            icon: (step.icon || 'package') as any,
+                            is_compliant: isCompliant,
+                            required_cert: step.required_cert
+                        };
+                    });
                 }
             } catch (err) {
                 console.warn("Failed to fetch template steps, falling back to mock");
