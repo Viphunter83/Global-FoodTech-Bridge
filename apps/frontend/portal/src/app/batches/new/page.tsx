@@ -26,7 +26,7 @@ import {
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { QRCodeDisplay } from '@/components/passport/QRCodeDisplay';
+import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
 
 export default function CreateBatchPage() {
     const { role, companyId } = useAuth(); // Get current role and companyId
