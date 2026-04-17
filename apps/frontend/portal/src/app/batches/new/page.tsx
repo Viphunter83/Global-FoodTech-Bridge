@@ -112,19 +112,23 @@ export default function CreateBatchPage() {
             const tokenUri = uploadJson.ipfsHash;
             console.log("Upload Success. Hash:", tokenUri);
 
-            // Step 2: Create Batch with Token URI
+            // Step 2: Create Batch with Token URI and Universal Fields
             const batchData = {
                 manufacturer_id,
                 product_type,
                 batch_size,
-                token_uri: tokenUri // Pass the IPFS hash here
+                unit_of_measure: formData.get('unit_of_measure') as string,
+                origin_country: formData.get('origin_country') as string,
+                destination_country: formData.get('destination_country') as string,
+                token_uri: tokenUri, // Pass the IPFS hash here
+                certificates_ipfs: [] // Placeholder for future enhancement if needed
             };
 
             const response = await fetch('/api/passport/batches', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-User-Role': role, // Send role header
+                    'X-User-Role': role || 'MANUFACTURER', // Send role header
                 },
                 body: JSON.stringify(batchData),
             });
@@ -229,22 +233,61 @@ export default function CreateBatchPage() {
                                 >
                                     <option value="PHO_BO_SOUP">Vietnam Soup (Pho Bo)</option>
                                     <option value="MANGO_SHAKE">Mango Shake</option>
+                                    <option value="DRIED_MANGO">Dried Mango (Global)</option>
+                                    <option value="FROZEN_FISH">Frozen Fish (Pacific)</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="batch_size">
-                                {t('form_batch_size')}
-                            </Label>
-                            <Input
-                                id="batch_size"
-                                name="batch_size"
-                                type="number"
-                                placeholder="100"
-                                min="1"
-                                required
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="batch_size">
+                                    {t('form_batch_size')}
+                                </Label>
+                                <Input
+                                    id="batch_size"
+                                    name="batch_size"
+                                    type="number"
+                                    placeholder="100"
+                                    min="1"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="unit_of_measure">
+                                    {t('form_unit_of_measure')}
+                                </Label>
+                                <select
+                                    id="unit_of_measure"
+                                    name="unit_of_measure"
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="kg">{t('unit_kg')}</option>
+                                    <option value="lbs">{t('unit_lbs')}</option>
+                                    <option value="units">{t('unit_units')}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="origin_country">{t('form_production_location')}</Label>
+                                <Input
+                                    id="origin_country"
+                                    name="origin_country"
+                                    placeholder="e.g. Vietnam"
+                                    defaultValue="Vietnam"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="destination_country">{t('form_destination_country')}</Label>
+                                <Input
+                                    id="destination_country"
+                                    name="destination_country"
+                                    placeholder="e.g. USA"
+                                    defaultValue="Global"
+                                />
+                            </div>
                         </div>
 
                         {/* Phase 1: New Data Fields */}

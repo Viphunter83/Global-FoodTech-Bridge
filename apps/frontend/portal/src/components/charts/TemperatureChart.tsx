@@ -15,7 +15,15 @@ import { format } from 'date-fns';
 import { Telemetry } from '@/lib/api';
 import { useState, useEffect } from 'react';
 
-export function TemperatureChart({ data }: { data: Telemetry[] }) {
+export function TemperatureChart({ 
+    data, 
+    minLimit = -22, 
+    maxLimit = -18 
+}: { 
+    data: Telemetry[];
+    minLimit?: number;
+    maxLimit?: number;
+}) {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -31,6 +39,10 @@ export function TemperatureChart({ data }: { data: Telemetry[] }) {
     if (!isMounted) {
         return <div className="h-80 w-full bg-gray-50 animate-pulse rounded-md" />;
     }
+
+    // Dynamic scale logic
+    const padding = Math.abs(maxLimit - minLimit) * 0.5 || 5;
+    const yDomain = [minLimit - padding, maxLimit + padding];
 
     return (
         <div className="h-80 w-full min-h-[320px] min-w-[300px]">
@@ -49,7 +61,7 @@ export function TemperatureChart({ data }: { data: Telemetry[] }) {
                         fontSize={12}
                         tickLine={false}
                         unit="°C"
-                        domain={[-25, -5]}
+                        domain={yDomain}
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -60,10 +72,15 @@ export function TemperatureChart({ data }: { data: Telemetry[] }) {
                             return label;
                         }}
                     />
-                    <ReferenceArea y1={-50} y2={-18} fill="#dcfce7" fillOpacity={0.4} />
-                    <ReferenceArea y1={-18} y2={-10} fill="#fef9c3" fillOpacity={0.4} />
-                    <ReferenceArea y1={-10} y2={10} fill="#fee2e2" fillOpacity={0.4} />
-                    <ReferenceLine y={-18} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Max Limit (-18°C)', fill: '#ef4444', fontSize: 12, position: 'insideTopRight' }} />
+                    {/* Safe Zone */}
+                    <ReferenceArea y1={minLimit} y2={maxLimit} fill="#dcfce7" fillOpacity={0.4} />
+                    {/* Danger Zones */}
+                    <ReferenceArea y1={yDomain[0]} y2={minLimit} fill="#fee2e2" fillOpacity={0.4} />
+                    <ReferenceArea y1={maxLimit} y2={yDomain[1]} fill="#fee2e2" fillOpacity={0.4} />
+                    
+                    <ReferenceLine y={maxLimit} stroke="#ef4444" strokeDasharray="3 3" label={{ value: `Max (${maxLimit}°C)`, fill: '#ef4444', fontSize: 10, position: 'insideTopRight' }} />
+                    <ReferenceLine y={minLimit} stroke="#ef4444" strokeDasharray="3 3" label={{ value: `Min (${minLimit}°C)`, fill: '#ef4444', fontSize: 10, position: 'insideBottomRight' }} />
+                    
                     <Line
                         type="monotone"
                         dataKey="temperature_celsius"

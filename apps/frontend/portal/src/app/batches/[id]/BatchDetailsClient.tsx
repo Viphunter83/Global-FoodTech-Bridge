@@ -82,6 +82,11 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                                     {formatTempTarget(batch.min_temp, batch.max_temp)}
                                 </span>
                             )}
+                            {(batch.origin_country || batch.destination_country) && (
+                                <span className="ml-3 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                                    {t('batch_route')}: {batch.origin_country || 'Unknown'} ➔ {batch.destination_country || 'Global'}
+                                </span>
+                            )}
                         </p>
                     </div>
 
@@ -215,7 +220,11 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                                 </div>
                             </div>
                         </div>
-                        <TemperatureChart data={telemetry} />
+                        <TemperatureChart 
+                            data={telemetry} 
+                            minLimit={batch.min_temp ?? -22} 
+                            maxLimit={batch.max_temp ?? -18} 
+                        />
                     </div>
 
                     {/* Map Placeholder */}
@@ -243,11 +252,11 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                                 <div className="absolute left-4 top-2 bottom-0 w-0.5 bg-gray-200" style={{ height: 'calc(100% - 24px)' }}></div>
                                 <div className="space-y-6">
                                     {[
-                                        { id: 'DEPARTED_ORIGIN', label: 'Departed Origin', date: 'Oct 24, 08:30' },
-                                        { id: 'ARRIVED_PORT', label: 'Arrived at Port', date: 'Oct 25, 14:15' },
-                                        { id: 'LOADED_VESSEL', label: 'Loaded on Vessel', date: 'Oct 26, 09:00' },
-                                        { id: 'CUSTOMS_CLEARANCE', label: 'Customs Clearance', date: 'Oct 28, 11:45' },
-                                        { id: 'ARRIVED_DESTINATION', label: 'Arrived at Destination', date: 'Oct 29, 16:30' }
+                                        { id: 'DEPARTED_ORIGIN', label: t('timeline_departed_origin'), date: 'Oct 24, 08:30' },
+                                        { id: 'ARRIVED_PORT', label: t('timeline_arrived_port'), date: 'Oct 25, 14:15' },
+                                        { id: 'LOADED_VESSEL', label: t('timeline_loaded_vessel'), date: 'Oct 26, 09:00' },
+                                        { id: 'CUSTOMS_CLEARANCE', label: t('timeline_customs_clearance'), date: 'Oct 28, 11:45' },
+                                        { id: 'ARRIVED_DESTINATION', label: t('timeline_arrived_destination'), date: 'Oct 29, 16:30' }
                                     ].map((step, index, arr) => {
                                         // Determine active state relative to current status index
                                         const statusOrder = ['DEPARTED_ORIGIN', 'ARRIVED_PORT', 'LOADED_VESSEL', 'CUSTOMS_CLEARANCE', 'ARRIVED_DESTINATION'];

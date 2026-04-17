@@ -81,8 +81,14 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                         <div className="space-y-6">
                             {/* Product Info */}
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900 mb-1">{batch.product_type.replace('_', ' ')}</h2>
-                                <div className="text-sm text-gray-500">Premium Selection</div>
+                                <h2 className="text-xl font-bold text-gray-900 mb-1">{batch.product_type.replace(/_/g, ' ')}</h2>
+                                <div className="text-sm text-gray-500 flex items-center gap-1">
+                                    <span className="font-semibold text-blue-600">
+                                        {batch.batch_size} {t(`unit_${batch.unit_of_measure}` as any) || batch.unit_of_measure}
+                                    </span>
+                                    <span>•</span>
+                                    <span>{batch.origin_country} → {batch.destination_country}</span>
+                                </div>
                             </div>
 
                             {/* Halal Badge */}
@@ -103,7 +109,7 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                                 <p className="text-sm text-gray-600 leading-relaxed">
                                     {typeof batch.ingredients === 'string'
                                         ? batch.ingredients
-                                        : (batch.ingredients?.[language as 'en' | 'ru' | 'ar'] || batch.ingredients?.['en'])
+                                        : (batch.ingredients?.[language as 'en' | 'ru' | 'ar' | 'vi'] || batch.ingredients?.['en'])
                                     }
                                 </p>
                             </div>
@@ -140,19 +146,19 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                         <div className="relative border-l border-gray-200 pl-4 ml-2 space-y-8">
                             <div className="relative">
                                 <div className="absolute -left-[21px] rounded-full bg-blue-600 h-3 w-3 mt-1.5 ring-4 ring-white"></div>
-                                <h4 className="font-semibold text-gray-900">Manufacturing</h4>
-                                <div className="text-sm text-gray-500">Packed & Sealed</div>
+                                <h4 className="font-semibold text-gray-900">{t('step_production')}</h4>
+                                <div className="text-sm text-gray-500">Packed & Field Verified</div>
                                 <div className="mt-1 inline-flex items-center text-xs font-mono bg-gray-100 rounded px-1.5 py-0.5">
-                                    <MapPin className="h-3 w-3 mr-1" /> Lyon, FR
+                                    <MapPin className="h-3 w-3 mr-1" /> {batch.origin_country || 'Vietnam'}
                                 </div>
                             </div>
 
                             <div className="relative">
                                 <div className="absolute -left-[21px] rounded-full bg-blue-600 h-3 w-3 mt-1.5 ring-4 ring-white"></div>
-                                <h4 className="font-semibold text-gray-900">Logistics Transport</h4>
-                                <div className="text-sm text-gray-500">Cold Chain Monitored (-20°C)</div>
+                                <h4 className="font-semibold text-gray-900">{t('step_logistics')}</h4>
+                                <div className="text-sm text-gray-500">{t('iot_monitoring')}</div>
                                 <div className="mt-1 inline-flex items-center text-xs font-mono bg-gray-100 rounded px-1.5 py-0.5">
-                                    <Truck className="h-3 w-3 mr-1" /> In Transit
+                                    <Truck className="h-3 w-3 mr-1" /> {t('live_tracking_active')}
                                 </div>
                             </div>
 

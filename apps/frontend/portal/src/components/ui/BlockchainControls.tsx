@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useLanguage } from '../providers/LanguageProvider';
 import { useDemoState } from '../providers/DemoStateProvider';
-import { notarizeBatch, initiateHandover, acceptHandover, reportViolation } from '@/lib/api';
+import { notarizeBatch, initiateHandover, acceptHandover, reportViolation, updateBatchBlockchainHash } from '@/lib/api';
 import { Button } from './button';
 import { Loader2, ShieldCheck, AlertTriangle, CheckCircle, Truck, PackageCheck, Thermometer } from 'lucide-react';
 import { MANUFACTURER_ADDR, LOGISTICS_ADDR, RETAILER_ADDR } from '@/lib/constants';
@@ -60,6 +60,12 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
 
         if (res.txHash) {
             updateBatchState(batchId, { verified: true, status: 'Notarized', owner: MANUFACTURER_ADDR, txHash: res.txHash });
+            // Close the loop: Save to DB
+            try {
+                await updateBatchBlockchainHash(batchId, res.txHash);
+            } catch (e) {
+                console.error("Failed to sync blockchain hash to DB", e);
+            }
         }
         setLoading(false);
     };
@@ -86,6 +92,14 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
         updateBatchState(batchId, { handover: isFinal, owner: newOwner, pendingOwner: null });
 
         const res = await acceptHandover(batchId);
+        if (res.txHash) {
+            // Close the loop: Save to DB (optional but good for audit)
+            try {
+                await updateBatchBlockchainHash(batchId, res.txHash);
+            } catch (e) {
+                console.error("Failed to sync blockchain hash to DB", e);
+            }
+        }
         setLoading(false);
         if (res.error && !res.txHash?.includes('demo')) {
             alert(t('bc_processing') + " Failed: " + res.error);
@@ -206,15 +220,15 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
                         {status.owner === LOGISTICS_ADDR && !status.pendingOwner && (
                             <div className="bg-white p-3 rounded border border-gray-200 shadow-sm space-y-2">
                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Update Logistics Checkpoint
+                                    {t('timeline_update_checkpoint')}
                                 </label>
                                 <div className="grid grid-cols-1 gap-2">
                                     {[
-                                        { id: 'DEPARTED_ORIGIN', label: '🚚 Departed Origin', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-                                        { id: 'ARRIVED_PORT', label: '⚓️ Arrived at Port', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-                                        { id: 'LOADED_VESSEL', label: '🚢 Loaded on Vessel', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-                                        { id: 'CUSTOMS_CLEARANCE', label: '🛃 Customs Clearance', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-                                        { id: 'ARRIVED_DESTINATION', label: '📦 Arrived Destination', color: 'bg-green-100 text-green-700 border-green-200' }
+                                        { id: 'DEPARTED_ORIGIN', label: `🚚 ${t('timeline_departed_origin')}`, color: 'bg-blue-100 text-blue-700 border-blue-200' },
+                                        { id: 'ARRIVED_PORT', label: `⚓️ ${t('timeline_arrived_port')}`, color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+                                        { id: 'LOADED_VESSEL', label: `🚢 ${t('timeline_loaded_vessel')}`, color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+                                        { id: 'CUSTOMS_CLEARANCE', label: `🛃 ${t('timeline_customs_clearance')}`, color: 'bg-purple-100 text-purple-700 border-purple-200' },
+                                        { id: 'ARRIVED_DESTINATION', label: `📦 ${t('timeline_arrived_destination')}`, color: 'bg-green-100 text-green-700 border-green-200' }
                                     ].map((s) => (
                                         <button
                                             key={s.id}

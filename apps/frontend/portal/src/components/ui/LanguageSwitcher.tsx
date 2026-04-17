@@ -11,7 +11,7 @@ export function LanguageSwitcher() {
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
-    const selectLanguage = (lang: 'en' | 'ru' | 'ar') => {
+    const selectLanguage = (lang: 'en' | 'ru' | 'ar' | 'vi') => {
         setLanguage(lang);
         setIsOpen(false);
     };
@@ -19,7 +19,8 @@ export function LanguageSwitcher() {
     const labels = {
         en: 'English',
         ru: 'Русский',
-        ar: 'العربية'
+        ar: 'العربية',
+        vi: 'Tiếng Việt'
     };
 
     return (

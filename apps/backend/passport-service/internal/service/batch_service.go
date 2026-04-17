@@ -8,6 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type SLARule struct {
+	MinTemp float64
+	MaxTemp float64
+}
+
+var SLARegistry = map[string]SLARule{
+	"PHO_BO_SOUP": {MinTemp: -25.0, MaxTemp: -18.0},
+	"MANGO_SHAKE": {MinTemp: 2.0, MaxTemp: 6.0},
+	"DRIED_MANGO": {MinTemp: 10.0, MaxTemp: 25.0}, // Universal addition
+}
+
 type BatchService struct {
 	repo *postgres.BatchRepository
 }
@@ -27,6 +38,12 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 	if req.ProductType == "" {
 		return nil, errors.New("product_type is required")
 	}
+	if req.OriginCountry == "" {
+		return nil, errors.New("origin_country is required for international trade")
+	}
+	if req.DestinationCountry == "" {
+		return nil, errors.New("destination_country is required for international trade")
+	}
 
 	manufacturerUUID, err := uuid.Parse(req.ManufacturerID)
 	if err != nil {
@@ -34,29 +51,39 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 	}
 
 	// 2. Mapping & SLA Rules
-	var minTemp, maxTemp float64
-	switch req.ProductType {
-	case "PHO_BO_SOUP":
-		minTemp = -25.0
-		maxTemp = -18.0
-	case "MANGO_SHAKE":
-		minTemp = 2.0
-		maxTemp = 6.0
-	default:
-		// Default safe frozen limits
-		minTemp = -20.0
-		maxTemp = -10.0
+	rule, exists := SLARegistry[req.ProductType]
+	if !exists {
+		// Default safe ambient/dry cargo limits if unknown
+		rule = SLARule{MinTemp: 0.0, MaxTemp: 30.0}
 	}
 
+	// 3. Entity Creation
 	batch := &domain.Batch{
-		ManufacturerID: manufacturerUUID,
-		ProductType:    req.ProductType,
-		BatchSize:      req.BatchSize,
-		USFStatus:      domain.StatusPending,
-		BlockchainHash: nil,
-		MinTemp:        &minTemp,
-		MaxTemp:        &maxTemp,
-		TokenURI:       &req.TokenURI,
+		ManufacturerID:     manufacturerUUID,
+		ProductType:        req.ProductType,
+		BatchSize:          req.BatchSize,
+		UnitOfMeasure:      req.UnitOfMeasure,
+		OriginCountry:      req.OriginCountry,
+		DestinationCountry: req.DestinationCountry,
+		USFStatus:          domain.StatusPending,
+		BlockchainHash:     nil,
+		MinTemp:            &rule.MinTemp,
+		MaxTemp:            &rule.MaxTemp,
+		TokenURI:           &req.TokenURI,
+		CertificatesIPFS:   req.CertificatesIPFS,
+	}
+
+	if batch.UnitOfMeasure == "" {
+		batch.UnitOfMeasure = "kg" // Default
+	}
+	if batch.OriginCountry == "" {
+		batch.OriginCountry = "Unknown"
+	}
+	if batch.DestinationCountry == "" {
+		batch.DestinationCountry = "Global"
+	}
+	if batch.CertificatesIPFS == nil {
+		batch.CertificatesIPFS = []string{}
 	}
 
 	// 3. Persistence
@@ -78,4 +105,13 @@ func (s *BatchService) GetBatch(ctx context.Context, idStr string) (*domain.Batc
 	}
 
 	return s.repo.GetByID(ctx, id)
+}
+
+func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, hash string) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return errors.New("invalid batch id")
+	}
+
+	return s.repo.UpdateBlockchainHash(ctx, id, hash)
 }

@@ -50,6 +50,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		// Public Routes
 		// Public Routes
 		r.Get("/batches/{id}", h.getBatch)
+		r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
 
 		// Admin Routes
 		r.Post("/admin/companies", h.createCompany)
@@ -108,6 +109,28 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(batch)
+}
+
+func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	var req domain.UpdateBlockchainRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateBlockchainHash(r.Context(), id, req.BlockchainHash); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
 }
 
 func (h *Handler) createCompany(w http.ResponseWriter, r *http.Request) {

@@ -6,11 +6,14 @@ export interface BatchDetails {
     created_at: string;
     min_temp?: number | null;
     max_temp?: number | null;
-    ingredients?: { en: string; ar: string; ru: string } | string;
+    ingredients?: { en: string; ar: string; ru: string; vi: string } | string;
     nutrition?: { calories: number; protein: number; fat: number; carbs: number };
     halal_cert_url?: string;
     manufacturer_name?: string;
     token_uri?: string;
+    origin_country?: string;
+    destination_country?: string;
+    unit_of_measure?: string;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
@@ -89,23 +92,37 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         if (!res.ok) return null;
         const data = await res.json();
 
-        // Base Mock Data
+        // Base Mock Data with dynamic logic
+        const isBeef = data.product_type?.toLowerCase().includes('beef') || data.product_type?.toLowerCase().includes('meat');
+        const isMango = data.product_type?.toLowerCase().includes('mango');
+
         let extendedData: BatchDetails = {
             ...data,
-            ingredients: data.ingredients || {
+            ingredients: data.ingredients || (isBeef ? {
                 en: "Premium Beef (80%), Rice Noodles, Spices, Sea Salt.",
-                ar: "لحم بقري ممتاز (80٪) ، نودلز أرز ، بهارات ، ملح البحر.",
-                ru: "Говядина премиум (80%), Рисовая лапша, Специи, Морская соль."
-            },
-            nutrition: data.nutrition || { calories: 450, protein: 35, fat: 12, carbs: 55 },
-            halal_cert_url: data.halal_cert_url || "/certificates/halal-Cert-2024.pdf",
-            manufacturer_name: "Bun Cha Ha Noi Factory",
+                ar: "لحм بقري ممتاز (80٪) ، نودلز أرز ، بهارات ، ملح البحر.",
+                ru: "Говядина премиум (80%), Рисовая лапша, Специи, Морская соль.",
+                vi: "Thịt bò cao cấp (80%), Bún gạo, Gia vị, Muối biển."
+            } : isMango ? {
+                en: "Organic Dried Mango (100%), No added sugar.",
+                ar: "مانجو مجفف عضوي (100٪) ، بدون سكر مضاف.",
+                ru: "Органическое сушеное манго (100%), без добавления сахара.",
+                vi: "Xoài sấy hữu cơ (100%), Không thêm đường."
+            } : {
+                en: "Natural Organic Product",
+                ar: "منتج عضوي طبيعي",
+                ru: "Натуральный органический продукт",
+                vi: "Sản phẩm hữu cơ tự nhiên"
+            }),
+            nutrition: data.nutrition || (isMango ? { calories: 150, protein: 1, fat: 0, carbs: 38 } : { calories: 450, protein: 35, fat: 12, carbs: 55 }),
+            halal_cert_url: data.halal_cert_url || "/certificates/standard-cert.pdf",
+            manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
             history: [
-                { stage: "Produced & Packed", location: "Hanoi, Vietnam", timestamp: "Fri, 10 Oct • 08:30", status: "completed", icon: "package" },
-                { stage: "Quality Check (AI)", location: "Factory Line 1", timestamp: "Fri, 10 Oct • 09:15", status: "completed", icon: "warehouse" },
-                { stage: "Cold Chain Logistics", location: "Global Transit", timestamp: "Sat, 11 Oct • 14:00", status: "completed", icon: "truck" },
-                { stage: "Arrived at Hub", location: "Dubai, UAE", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
-                { stage: "Ready for Kitchen", location: "Restaurant", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
+                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: "Fri, Oct 10 • 08:30", status: "completed", icon: "package" },
+                { stage: "Quality Check (AI)", location: "Line 1", timestamp: "Fri, Oct 10 • 09:15", status: "completed", icon: "warehouse" },
+                { stage: "Cold Chain Logistics", location: "Universal Transit", timestamp: "Sat, Oct 11 • 14:00", status: "completed", icon: "truck" },
+                { stage: "Arrived at Hub", location: data.destination_country || "International Hub", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
+                { stage: "Ready for Retail", location: "Global Network", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
             ]
         };
 
@@ -133,7 +150,8 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                         extendedData.ingredients = {
                             en: ipfsIngredients,
                             ar: "المكونات من المستند الرقمي", // Placeholder for translation
-                            ru: ipfsIngredients // Fallback
+                            ru: ipfsIngredients, // Fallback
+                            vi: ipfsIngredients // Fallback
                         };
                     }
 
@@ -166,7 +184,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
     }
 }
 
-export async function getTelemetry(id: string): Promise<Telemetry[]> {
+export async function getTelemetry(id: string, minLimit: number = -22, maxLimit: number = -18): Promise<Telemetry[]> {
     try {
         const res = await fetch(`${IOT_URL}/telemetry/${id}`, { cache: 'no-store' });
 
@@ -175,24 +193,26 @@ export async function getTelemetry(id: string): Promise<Telemetry[]> {
             data = await res.json();
         }
 
-        // MOCK: If no real data, generate realistic "Sales" curve for demo
-        // Force mock data for consistency during verification step
+        // MOCK: Generate realistic curve based on actual SLA limits
         if (!data || data.length === 0) {
             const now = Date.now();
             const mockData: Telemetry[] = [];
-            // Generate 24 hours of data (every 15 mins)
+            // Target roughly the middle of the safe zone
+            const targetAvg = (minLimit + maxLimit) / 2;
+            const variance = Math.abs(maxLimit - minLimit) * 0.2;
+
             for (let i = 0; i < 96; i++) {
                 const time = now - (i * 15 * 60 * 1000);
-                // "Sawtooth" pattern: compressor cycling between -22 and -19
-                const cycle = (i % 8);
-                let temp = -22 + (cycle * 0.4);
+                // "Sawtooth" pattern around the safe zone
+                const cycle = Math.sin(i / 2);
+                let temp = targetAvg + (cycle * variance);
 
                 mockData.push({
                     timestamp: new Date(time).toISOString(),
                     temperature_celsius: parseFloat(temp.toFixed(1)),
                     device_id: "dev_01",
-                    location_lat: 45.7 + (Math.random() * 0.01),
-                    location_lon: 4.8 + (Math.random() * 0.01)
+                    location_lat: 10.7 + (Math.random() * 0.01), // Near equator by default if no loc
+                    location_lon: 106.6 + (Math.random() * 0.01)
                 });
             }
             return mockData.reverse();
@@ -201,24 +221,7 @@ export async function getTelemetry(id: string): Promise<Telemetry[]> {
         return data;
     } catch (e) {
         console.warn('Failed to fetch telemetry, using mock:', e);
-        // Fallback Mock Logic (Copy of above for error case)
-        const now = Date.now();
-        const mockData: Telemetry[] = [];
-        for (let i = 0; i < 96; i++) {
-            const time = now - (i * 15 * 60 * 1000);
-            const cycle = (i % 8);
-            let temp = -22 + (cycle * 0.4);
-            // No spikes
-            mockData.push({
-                timestamp: new Date(time).toISOString(),
-                temperature_celsius: parseFloat(temp.toFixed(1)),
-                device_id: "dev_01",
-                // Random drift around Lyon coordinates
-                location_lat: 45.75 + (Math.random() * 0.05),
-                location_lon: 4.85 + (Math.random() * 0.05)
-            });
-        }
-        return mockData.reverse();
+        return [];
     }
 }
 
@@ -304,6 +307,25 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
         console.error('Failed to notarize batch:', e);
         return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
     }
+}
+
+/**
+ * Updates the blockchain transaction hash for a batch in the main database.
+ */
+export async function updateBatchBlockchainHash(batchId: string, blockchainHash: string) {
+    const response = await fetch(`${PASSPORT_URL}/batches/${batchId}/blockchain`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ blockchain_hash: blockchainHash }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update blockchain hash');
+    }
+
+    return response.json();
 }
 
 export async function initiateHandover(batchId: string, toAddress: string): Promise<{ status: string; txHash?: string; error?: string }> {

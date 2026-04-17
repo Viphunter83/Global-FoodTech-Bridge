@@ -18,8 +18,12 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 
 	func (r *BatchRepository) Create(ctx context.Context, batch *domain.Batch) (uuid.UUID, error) {
 	query := `
-		INSERT INTO product_batches (manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, min_temp, max_temp, token_uri)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO product_batches (
+			manufacturer_id, product_type, batch_size, unit_of_measure, 
+			origin_country, destination_country, usf_status, 
+			blockchain_hash, min_temp, max_temp, token_uri, certificates_ipfs
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id
 	`
 
@@ -28,11 +32,15 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		batch.ManufacturerID,
 		batch.ProductType,
 		batch.BatchSize,
+		batch.UnitOfMeasure,
+		batch.OriginCountry,
+		batch.DestinationCountry,
 		batch.USFStatus,
 		batch.BlockchainHash,
 		batch.MinTemp,
 		batch.MaxTemp,
 		batch.TokenURI,
+		batch.CertificatesIPFS,
 	).Scan(&id)
 
 	if err != nil {
@@ -44,7 +52,10 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 
 	func (r *BatchRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Batch, error) {
 	query := `
-		SELECT id, manufacturer_id, product_type, batch_size, usf_status, blockchain_hash, created_at, min_temp, max_temp, token_uri
+		SELECT 
+			id, manufacturer_id, product_type, batch_size, unit_of_measure,
+			origin_country, destination_country, usf_status, blockchain_hash, 
+			created_at, min_temp, max_temp, token_uri, certificates_ipfs
 		FROM product_batches
 		WHERE id = $1
 	`
@@ -55,12 +66,16 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		&batch.ManufacturerID,
 		&batch.ProductType,
 		&batch.BatchSize,
+		&batch.UnitOfMeasure,
+		&batch.OriginCountry,
+		&batch.DestinationCountry,
 		&batch.USFStatus,
 		&batch.BlockchainHash,
 		&batch.CreatedAt,
 		&batch.MinTemp,
 		&batch.MaxTemp,
 		&batch.TokenURI,
+		&batch.CertificatesIPFS,
 	)
 
 	if err != nil {
@@ -68,4 +83,15 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 	}
 
 	return &batch, nil
+}
+
+func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID, hash string) error {
+	query := `
+		UPDATE product_batches
+		SET blockchain_hash = $1
+		WHERE id = $2
+	`
+
+	_, err := r.db.Exec(ctx, query, hash, id)
+	return err
 }

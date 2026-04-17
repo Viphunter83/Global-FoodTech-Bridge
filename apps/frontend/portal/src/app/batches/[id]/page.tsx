@@ -5,17 +5,17 @@ import { notFound } from 'next/navigation';
 export default async function BatchDetailsPage({ params }: { params: { id: string } }) {
     const { id } = params;
 
-    // Parallel data fetching
-    const [batch, telemetry, blockchain, alerts] = await Promise.all([
-        getBatchDetails(id),
-        getTelemetry(id),
-        getBlockchainStatus(id),
-        getAlerts(id),
-    ]);
-
+    const batch = await getBatchDetails(id);
     if (!batch) {
         notFound();
     }
+
+    // Parallel data fetching with SLA limits
+    const [telemetry, blockchain, alerts] = await Promise.all([
+        getTelemetry(id, batch.min_temp ?? -22, batch.max_temp ?? -18),
+        getBlockchainStatus(id),
+        getAlerts(id),
+    ]);
 
     return (
         <BatchDetailsClient

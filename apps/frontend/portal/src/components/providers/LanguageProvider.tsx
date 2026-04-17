@@ -18,7 +18,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Load preference from local storage if available
         const savedLang = localStorage.getItem('gfb-language') as Language;
-        if (savedLang && (savedLang === 'en' || savedLang === 'ru' || savedLang === 'ar')) {
+        if (savedLang && (savedLang === 'en' || savedLang === 'ru' || savedLang === 'ar' || savedLang === 'vi')) {
             setLanguage(savedLang);
         }
     }, []);
