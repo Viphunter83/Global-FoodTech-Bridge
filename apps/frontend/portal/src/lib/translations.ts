@@ -136,6 +136,27 @@ export type TranslationKey =
     | 'timeline_arrived_destination'
     | 'timeline_update_checkpoint'
     | 'batch_route'
+    | 'monitoring_title'
+    | 'monitoring_subtitle'
+    | 'monitoring_refresh'
+    | 'monitoring_project_label'
+    | 'monitoring_updated_at'
+    | 'monitoring_health_check'
+    | 'monitoring_uptime_label'
+    | 'monitoring_uptime_value'
+    | 'monitoring_cpu_usage'
+    | 'monitoring_memory_usage'
+    | 'monitoring_endpoint_link'
+    | 'monitoring_trust_index_title'
+    | 'monitoring_trust_index_desc'
+    | 'monitoring_avg_uptime'
+    | 'monitoring_active_services'
+    | 'monitoring_railway_connected'
+    | 'monitoring_no_data'
+    | 'admin_companies'
+    | 'admin_monitoring'
+    | 'admin_back_to_app'
+    | 'admin_operator_title'
     | 'menu_admin';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -274,7 +295,28 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         timeline_customs_clearance: 'Customs Clearance',
         timeline_arrived_destination: 'Arrived at Destination',
         timeline_update_checkpoint: 'Update Logistics Checkpoint',
-        batch_route: 'Trade Route'
+        batch_route: 'Trade Route',
+        monitoring_title: 'Infrastructure Monitoring',
+        monitoring_subtitle: 'Real-time status of Global FoodTech Bridge services on Railway.',
+        monitoring_refresh: 'Refresh Status',
+        monitoring_project_label: 'Project:',
+        monitoring_updated_at: 'Updated',
+        monitoring_health_check: 'Health Check',
+        monitoring_uptime_label: 'Uptime',
+        monitoring_uptime_value: '{value}% Uptime',
+        monitoring_cpu_usage: 'CPU Usage',
+        monitoring_memory_usage: 'Memory',
+        monitoring_endpoint_link: 'View Service endpoint →',
+        monitoring_trust_index_title: 'Infrastructure Trust Index',
+        monitoring_trust_index_desc: 'Our platform maintains high availability through automated recovery and multi-region deployment.',
+        monitoring_avg_uptime: 'Average Uptime',
+        monitoring_active_services: 'Active Services',
+        monitoring_railway_connected: 'Railway Connected',
+        monitoring_no_data: 'No infrastructure data available.',
+        admin_companies: 'Companies',
+        admin_monitoring: 'Monitoring',
+        admin_back_to_app: 'Back to App',
+        admin_operator_title: 'Platform Operator'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -411,7 +453,28 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         timeline_customs_clearance: 'Таможенная очистка',
         timeline_arrived_destination: 'Прибыло в пункт назначения',
         timeline_update_checkpoint: 'Обновить контрольную точку',
-        batch_route: 'Торговый маршрут'
+        batch_route: 'Торговый маршрут',
+        monitoring_title: 'Мониторинг инфраструктуры',
+        monitoring_subtitle: 'Статус сервисов Global FoodTech Bridge на Railway в реальном времени.',
+        monitoring_refresh: 'Обновить статус',
+        monitoring_project_label: 'Проект:',
+        monitoring_updated_at: 'Обновлено',
+        monitoring_health_check: 'Проверка здоровья',
+        monitoring_uptime_label: 'Аптайм',
+        monitoring_uptime_value: '{value}% Аптайм',
+        monitoring_cpu_usage: 'Загрузка CPU',
+        monitoring_memory_usage: 'Память',
+        monitoring_endpoint_link: 'Перейти к сервису →',
+        monitoring_trust_index_title: 'Индекс доверия инфраструктуры',
+        monitoring_trust_index_desc: 'Наша платформа поддерживает высокую доступность благодаря автоматическому восстановлению и развертыванию в нескольких регионах.',
+        monitoring_avg_uptime: 'Средний аптайм',
+        monitoring_active_services: 'Активные сервисы',
+        monitoring_railway_connected: 'Подключено к Railway',
+        monitoring_no_data: 'Данные об инфраструктуре отсутствуют.',
+        admin_companies: 'Компании',
+        admin_monitoring: 'Мониторинг',
+        admin_back_to_app: 'Вернуться в приложение',
+        admin_operator_title: 'Оператор платформы'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -548,7 +611,28 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         timeline_customs_clearance: 'التخليص الجمركي',
         timeline_arrived_destination: 'وصلت إلى الوجهة',
         timeline_update_checkpoint: 'تحديث نقطة التفتيش',
-        batch_route: 'مسار التجارة'
+        batch_route: 'مسار التجارة',
+        monitoring_title: 'مراقبة البنية التحتية',
+        monitoring_subtitle: 'حالة خدمات Global FoodTech Bridge على Railway في الوقت الفعلي.',
+        monitoring_refresh: 'تحديث الحالة',
+        monitoring_project_label: 'المشروع:',
+        monitoring_updated_at: 'تم التحديث',
+        monitoring_health_check: 'فحص الحالة',
+        monitoring_uptime_label: 'وقت التشغيل',
+        monitoring_uptime_value: '{value}% وقت التشغيل',
+        monitoring_cpu_usage: 'استخدام المعالج',
+        monitoring_memory_usage: 'الذاكرة',
+        monitoring_endpoint_link: 'عرض نقطة نهاية الخدمة ←',
+        monitoring_trust_index_title: 'مؤشر الثقة في البنية التحتية',
+        monitoring_trust_index_desc: 'تحافظ منصتنا على توفر عالٍ من خلال الاسترداد الآلي والنشر في مناطق متعددة.',
+        monitoring_avg_uptime: 'متوسط وقت التشغيل',
+        monitoring_active_services: 'الخدمات النشطة',
+        monitoring_railway_connected: 'متصل بـ Railway',
+        monitoring_no_data: 'لا توجد بيانات للبنية التحتية متاحة.',
+        admin_companies: 'الشركات',
+        admin_monitoring: 'المراقبة',
+        admin_back_to_app: 'العودة للتطبيق',
+        admin_operator_title: 'مشغل المنصة'
     },
     vi: {
         app_title_suffix: 'Quản lý Chuỗi cung ứng',
@@ -685,6 +769,27 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         timeline_customs_clearance: 'Thông quan Hải quan',
         timeline_arrived_destination: 'Đã đến kho điểm đích',
         timeline_update_checkpoint: 'Cập nhật trạm kiểm soát mới',
-        batch_route: 'Tuyến đường thương mại'
+        batch_route: 'Tuyến đường thương mại',
+        monitoring_title: 'Giám sát Hạ tầng',
+        monitoring_subtitle: 'Trạng thái thời gian thực của các dịch vụ Global FoodTech Bridge trên Railway.',
+        monitoring_refresh: 'Làm mới Trạng thái',
+        monitoring_project_label: 'Dự án:',
+        monitoring_updated_at: 'Cập nhật',
+        monitoring_health_check: 'Kiểm tra Sức khỏe',
+        monitoring_uptime_label: 'Thời gian hoạt động',
+        monitoring_uptime_value: '{value}% Thời gian hoạt động',
+        monitoring_cpu_usage: 'Sử dụng CPU',
+        monitoring_memory_usage: 'Bộ nhớ',
+        monitoring_endpoint_link: 'Xem điểm cuối dịch vụ →',
+        monitoring_trust_index_title: 'Chỉ số Tin cậy Hạ tầng',
+        monitoring_trust_index_desc: 'Nền tảng của chúng tôi duy trì tính khả dụng cao thông qua khôi phục tự động và triển khai đa khu vực.',
+        monitoring_avg_uptime: 'Thời gian hoạt động Trung bình',
+        monitoring_active_services: 'Dịch vụ Đang hoạt động',
+        monitoring_railway_connected: 'Đã kết nối Railway',
+        monitoring_no_data: 'Không có dữ liệu hạ tầng.',
+        admin_companies: 'Công ty',
+        admin_monitoring: 'Giám sát',
+        admin_back_to_app: 'Quay lại Ứng dụng',
+        admin_operator_title: 'Điều hành Nền tảng'
     }
 };
