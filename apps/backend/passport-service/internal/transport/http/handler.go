@@ -12,12 +12,17 @@ import (
 )
 
 type Handler struct {
-	service        *service.BatchService
-	companyService *service.CompanyService
+	service         *service.BatchService
+	companyService  *service.CompanyService
+	templateService *service.TemplateService
 }
 
-func NewHandler(service *service.BatchService, companyService *service.CompanyService) *Handler {
-	return &Handler{service: service, companyService: companyService}
+func NewHandler(service *service.BatchService, companyService *service.CompanyService, templateService *service.TemplateService) *Handler {
+	return &Handler{
+		service:         service,
+		companyService:  companyService,
+		templateService: templateService,
+	}
 }
 
 func (h *Handler) InitRoutes() *chi.Mux {
@@ -57,6 +62,10 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		r.Post("/admin/companies", h.createCompany)
 		r.Get("/admin/companies", h.listCompanies)
 		r.Post("/admin/companies/{id}/approve", h.approveCompany)
+
+		// Templates
+		r.Get("/templates", h.listTemplates)
+		r.Get("/templates/{id}", h.getTemplate)
 	})
 
 	return r
@@ -176,4 +185,31 @@ func (h *Handler) approveCompany(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "approved"})
+}
+
+func (h *Handler) listTemplates(w http.ResponseWriter, r *http.Request) {
+	templates, err := h.templateService.ListTemplates(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(templates)
+}
+
+func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing template id", http.StatusBadRequest)
+		return
+	}
+
+	template, err := h.templateService.GetTemplate(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(template)
 }

@@ -40,12 +40,14 @@ func main() {
 	// Init Dependencies
 	repo := postgres.NewBatchRepository(dbpool)
 	companyRepo := postgres.NewCompanyRepository(dbpool)
+	templateRepo := postgres.NewTemplateRepository(dbpool)
 
 	svc := service.NewBatchService(repo)
 	walletSvc := service.NewWalletService()
 	companySvc := service.NewCompanyService(companyRepo, walletSvc)
+	templateSvc := service.NewTemplateService(templateRepo)
 
-	handler := transport.NewHandler(svc, companySvc)
+	handler := transport.NewHandler(svc, companySvc, templateSvc)
 
 	// Init Router
 	router := handler.InitRoutes()

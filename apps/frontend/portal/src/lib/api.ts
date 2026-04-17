@@ -14,6 +14,7 @@ export interface BatchDetails {
     origin_country?: string;
     destination_country?: string;
     unit_of_measure?: string;
+    template_id?: string | null;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
@@ -68,6 +69,24 @@ export interface Company {
     created_at: string;
 }
 
+export interface SupplyChainTemplate {
+    id: string;
+    name: string;
+    description: string;
+    is_active: boolean;
+    steps?: TemplateStep[];
+}
+
+export interface TemplateStep {
+    id: string;
+    template_id: string;
+    step_order: number;
+    name: string;
+    icon: string;
+    description: string;
+    required_cert?: string;
+}
+
 import { MANUFACTURER_ADDR } from './constants';
 
 const isServer = typeof window === 'undefined';
@@ -96,6 +115,35 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         const isBeef = data.product_type?.toLowerCase().includes('beef') || data.product_type?.toLowerCase().includes('meat');
         const isMango = data.product_type?.toLowerCase().includes('mango');
 
+        // Dynamic History/Timeline Logic
+        let history = [];
+        if (data.template_id) {
+            try {
+                const template = await getTemplateDetails(data.template_id);
+                if (template && template.steps) {
+                    history = template.steps.map((step, index) => ({
+                        stage: step.name,
+                        location: index === 0 ? (data.origin_country || "Origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Destination") : "In Transit"),
+                        timestamp: index === 0 ? "Started" : (index < 3 ? "Completed" : "Estimated"), // Simple logic for demo
+                        status: index < 3 ? "completed" : (index === 3 ? "current" : "future") as any,
+                        icon: (step.icon || 'package') as any
+                    }));
+                }
+            } catch (err) {
+                console.warn("Failed to fetch template steps, falling back to mock");
+            }
+        }
+
+        if (history.length === 0) {
+            history = [
+                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: "Fri, Oct 10 • 08:30", status: "completed", icon: "package" },
+                { stage: "Quality Check (AI)", location: "Line 1", timestamp: "Fri, Oct 10 • 09:15", status: "completed", icon: "warehouse" },
+                { stage: "Cold Chain Logistics", location: "Universal Transit", timestamp: "Sat, Oct 11 • 14:00", status: "completed", icon: "truck" },
+                { stage: "Arrived at Hub", location: data.destination_country || "International Hub", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
+                { stage: "Ready for Retail", location: "Global Network", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
+            ];
+        }
+
         let extendedData: BatchDetails = {
             ...data,
             ingredients: data.ingredients || (isBeef ? {
@@ -105,7 +153,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                 vi: "Thịt bò cao cấp (80%), Bún gạo, Gia vị, Muối biển."
             } : isMango ? {
                 en: "Organic Dried Mango (100%), No added sugar.",
-                ar: "مانجو مجفف عضوي (100٪) ، بدون سكر مضاف.",
+                ar: "مانجو مجфف عضوي (100٪) ، بدون سكر مضاف.",
                 ru: "Органическое сушеное манго (100%), без добавления сахара.",
                 vi: "Xoài sấy hữu cơ (100%), Không thêm đường."
             } : {
@@ -117,13 +165,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             nutrition: data.nutrition || (isMango ? { calories: 150, protein: 1, fat: 0, carbs: 38 } : { calories: 450, protein: 35, fat: 12, carbs: 55 }),
             halal_cert_url: data.halal_cert_url || "/certificates/standard-cert.pdf",
             manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
-            history: [
-                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: "Fri, Oct 10 • 08:30", status: "completed", icon: "package" },
-                { stage: "Quality Check (AI)", location: "Line 1", timestamp: "Fri, Oct 10 • 09:15", status: "completed", icon: "warehouse" },
-                { stage: "Cold Chain Logistics", location: "Universal Transit", timestamp: "Sat, Oct 11 • 14:00", status: "completed", icon: "truck" },
-                { stage: "Arrived at Hub", location: data.destination_country || "International Hub", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
-                { stage: "Ready for Retail", location: "Global Network", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
-            ]
+            history
         };
 
         // IPFS Fetch Logic
@@ -434,5 +476,27 @@ export async function approveCompany(id: string): Promise<boolean> {
     } catch (e) {
         console.error('Failed to approve company', e);
         return false;
+    }
+}
+
+export async function getTemplates(): Promise<SupplyChainTemplate[]> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/templates`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to fetch templates:', e);
+        return [];
+    }
+}
+
+export async function getTemplateDetails(id: string): Promise<SupplyChainTemplate | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/templates/${id}`, { cache: 'no-store' });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to fetch template details:', e);
+        return null;
     }
 }

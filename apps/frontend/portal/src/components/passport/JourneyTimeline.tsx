@@ -1,19 +1,21 @@
 import { motion } from 'framer-motion';
-import { Package, Truck, MapPin, ChefHat } from 'lucide-react';
+import { Package, Truck, MapPin, ChefHat, Leaf, CheckCircle } from 'lucide-react';
 
 interface TimelineEvent {
     stage: string;
     location: string;
     timestamp: string;
     status: 'completed' | 'current' | 'future';
-    icon: 'package' | 'truck' | 'warehouse' | 'fork';
+    icon: 'package' | 'truck' | 'warehouse' | 'fork' | 'leaf' | 'check';
 }
 
 const ICONS = {
     package: Package,
     truck: Truck,
     warehouse: MapPin,
-    fork: ChefHat
+    fork: ChefHat,
+    leaf: Leaf,
+    check: CheckCircle
 };
 
 export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {

@@ -32,6 +32,10 @@
 - `DATABASE_URL`: Строка подключения к базе.
 - **Railway Token**: Используется для мониторинга деплоя по API (хранить только в CI/CD).
 
+## 📜 Бизнес-логика (Blueprint)
+Все детальные спецификации цепочек поставок, жизненного цикла партий и дорожная карта «точек роста» (Templates, Escrow, Compliance) описаны в новом документе:
+👉 [BUSINESS_LOGIC.md](file:///Users/apple/Global%20FoodTech%20Bridge/docs/BUSINESS_LOGIC.md)
+
 ## 🚢 Деплой (CI/CD)
 - **Backend**: Railway (автодеплой при пуше в `main`).
 - **Frontend**: Vercel (автодеплой при пуше в `main`).

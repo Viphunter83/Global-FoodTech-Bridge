@@ -73,6 +73,13 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		CertificatesIPFS:   req.CertificatesIPFS,
 	}
 
+	if req.TemplateID != "" {
+		templateUUID, err := uuid.Parse(req.TemplateID)
+		if err == nil {
+			batch.TemplateID = &templateUUID
+		}
+	}
+
 	if batch.UnitOfMeasure == "" {
 		batch.UnitOfMeasure = "kg" // Default
 	}

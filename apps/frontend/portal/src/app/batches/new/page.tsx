@@ -8,15 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
-import { PackagePlus, CheckCircle, Loader2, Calendar as CalendarIcon, Upload, FileText, MapPin } from 'lucide-react';
-import Link from 'next/link';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useLanguage } from '@/components/providers/LanguageProvider';
-import { AlertTriangle } from 'lucide-react'; // Import AlertIcon
+import { getTemplates, SupplyChainTemplate } from '@/lib/api';
+import { AlertTriangle, Layers } from 'lucide-react'; 
 
 export default function CreateBatchPage() {
     const { role, companyId } = useAuth(); // Get current role and companyId
@@ -25,21 +21,24 @@ export default function CreateBatchPage() {
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
     const [recentBatches, setRecentBatches] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [templates, setTemplates] = useState<SupplyChainTemplate[]>([]);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 
     // New Data Collection States (Phase 1)
     const [productionDate, setProductionDate] = useState<Date>();
     const [expirationDate, setExpirationDate] = useState<Date>();
 
-    useEffect(() => {
-        // Load recent batches on mount
-        const stored = localStorage.getItem('recent_batches');
-        if (stored) {
-            try {
-                setRecentBatches(JSON.parse(stored));
-            } catch (e) {
-                console.error('Failed to parse history', e);
-            }
         }
+
+        // Load Templates
+        const loadTemplates = async () => {
+            const data = await getTemplates();
+            setTemplates(data);
+            if (data.length > 0) {
+                setSelectedTemplateId(data[0].id);
+            }
+        };
+        loadTemplates();
     }, []);
 
     const saveToHistory = (id: string) => {
@@ -120,6 +119,7 @@ export default function CreateBatchPage() {
                 unit_of_measure: formData.get('unit_of_measure') as string,
                 origin_country: formData.get('origin_country') as string,
                 destination_country: formData.get('destination_country') as string,
+                template_id: selectedTemplateId,
                 token_uri: tokenUri, // Pass the IPFS hash here
                 certificates_ipfs: [] // Placeholder for future enhancement if needed
             };
@@ -234,7 +234,33 @@ export default function CreateBatchPage() {
                                     <option value="PHO_BO_SOUP">Vietnam Soup (Pho Bo)</option>
                                     <option value="MANGO_SHAKE">Mango Shake</option>
                                     <option value="DRIED_MANGO">Dried Mango (Global)</option>
-                                    <option value="FROZEN_FISH">Frozen Fish (Pacific)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="template_id" className="flex items-center gap-2">
+                                <Layers size={14} className="text-blue-500" />
+                                {t('form_select_template')}
+                            </Label>
+                            <div className="relative">
+                                <select
+                                    id="template_id"
+                                    name="template_id"
+                                    value={selectedTemplateId}
+                                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                >
+                                    {templates.length > 0 ? (
+                                        templates.map((tpl) => (
+                                            <option key={tpl.id} value={tpl.id}>
+                                                {tpl.name}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="">{t('loading')}...</option>
+                                    )}
                                 </select>
                             </div>
                         </div>

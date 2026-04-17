@@ -29,6 +29,7 @@ type Batch struct {
 	MaxTemp            *float64         `json:"max_temp,omitempty"`
 	TokenURI           *string          `json:"token_uri,omitempty"`
 	CertificatesIPFS   []string         `json:"certificates_ipfs"`
+	TemplateID         *uuid.UUID       `json:"template_id,omitempty"`
 }
 
 type CreateBatchRequest struct {
@@ -40,6 +41,7 @@ type CreateBatchRequest struct {
 	DestinationCountry string   `json:"destination_country"`
 	TokenURI           string   `json:"token_uri,omitempty"`
 	CertificatesIPFS   []string `json:"certificates_ipfs"`
+	TemplateID         string   `json:"template_id,omitempty"`
 }
 
 type UpdateBlockchainRequest struct {
