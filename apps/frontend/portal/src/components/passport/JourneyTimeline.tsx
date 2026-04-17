@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { Package, Truck, MapPin, ChefHat, Leaf, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 
