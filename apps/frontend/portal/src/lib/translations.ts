@@ -125,6 +125,8 @@ export type TranslationKey =
     | 'form_origin_location'
     | 'form_destination_country'
     | 'form_unit_of_measure'
+    | 'unit_kg'
+    | 'unit_lbs'
     | 'unit_units'
     | 'live_tracking_active'
     | 'timeline_departed_origin'
