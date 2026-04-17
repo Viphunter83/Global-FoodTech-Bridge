@@ -142,6 +142,7 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-4 space-y-4">
+                                    <div className="space-y-1.5">
                                         <div className="flex justify-between text-xs font-medium">
                                             <span className="text-slate-500">{t('monitoring_health_check')}</span>
                                             <span className={service.status === 'SUCCESS' || service.status === 'DEPLOYED' ? 'text-emerald-600' : 'text-slate-400'}>
