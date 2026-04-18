@@ -47,6 +47,11 @@ func main() {
 	companySvc := service.NewCompanyService(companyRepo, walletSvc)
 	templateSvc := service.NewTemplateService(templateRepo)
 
+	// Ensure default templates are present (no crutches, but demo-ready)
+	if err := templateSvc.InitDefaults(context.Background()); err != nil {
+		log.Printf("Warning: failed to seed default templates: %v", err)
+	}
+
 	handler := transport.NewHandler(svc, companySvc, templateSvc)
 
 	// Init Router

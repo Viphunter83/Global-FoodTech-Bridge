@@ -83,3 +83,84 @@ func (r *TemplateRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain
 
 	return &t, nil
 }
+func (r *TemplateRepository) SeedDefaults(ctx context.Context) error {
+	// Check if templates exist
+	var count int
+	err := r.db.QueryRow(ctx, "SELECT COUNT(*) FROM supply_chain_templates").Scan(&count)
+	if err != nil {
+		return fmt.Errorf("failed to check templates count: %w", err)
+	}
+
+	if count > 0 {
+		return nil // Already seeded
+	}
+
+	// 1. Cold Chain
+	var coldID uuid.UUID
+	err = r.db.QueryRow(ctx, `
+		INSERT INTO supply_chain_templates (name, description) 
+		VALUES ('Standard Cold Chain', 'General supply chain for temperature-sensitive products like beef or fish.')
+		RETURNING id
+	`).Scan(&coldID)
+	if err != nil {
+		return err
+	}
+
+	steps := []struct {
+		order int
+		name  string
+		icon  string
+		cert  string
+	}{
+		{1, "Produced & Packed", "package", ""},
+		{2, "Quality Check (AI)", "check", "HEALTH_CERT"},
+		{3, "International Transit", "truck", "COLD_CHAIN_CERT"},
+		{4, "Regional Hub Arrival", "warehouse", ""},
+		{5, "Final Delivery", "fork", ""},
+	}
+
+	for _, s := range steps {
+		_, err = r.db.Exec(ctx, `
+			INSERT INTO template_steps (template_id, step_order, name, icon, required_cert)
+			VALUES ($1, $2, $3, $4, $5)
+		`, coldID, s.order, s.name, s.icon, s.cert)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 2. Ambient Food
+	var ambientID uuid.UUID
+	err = r.db.QueryRow(ctx, `
+		INSERT INTO supply_chain_templates (name, description) 
+		VALUES ('Ambient Goods Export', 'Safe transit for dry goods with standard shelf life.')
+		RETURNING id
+	`).Scan(&ambientID)
+	if err != nil {
+		return err
+	}
+
+	ambientSteps := []struct {
+		order int
+		name  string
+		icon  string
+		cert  string
+	}{
+		{1, "Harvested & Dried", "leaf", ""},
+		{2, "Vacuum Packaging", "package", ""},
+		{3, "Export Logistics", "truck", "PHYTOSANITARY_CERT"},
+		{4, "Ready for Distribution", "warehouse", ""},
+	}
+
+	for _, s := range ambientSteps {
+		_, err = r.db.Exec(ctx, `
+			INSERT INTO template_steps (template_id, step_order, name, icon, required_cert)
+			VALUES ($1, $2, $3, $4, $5)
+		`, ambientID, s.order, s.name, s.icon, s.cert)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

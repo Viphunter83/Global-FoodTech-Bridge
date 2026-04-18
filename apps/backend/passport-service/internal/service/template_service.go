@@ -21,6 +21,10 @@ func (s *TemplateService) ListTemplates(ctx context.Context) ([]domain.Template,
 	return s.repo.List(ctx)
 }
 
+func (s *TemplateService) InitDefaults(ctx context.Context) error {
+	return s.repo.SeedDefaults(ctx)
+}
+
 func (s *TemplateService) GetTemplate(ctx context.Context, idStr string) (*domain.Template, error) {
 	id, err := uuid.Parse(idStr)
 	if err != nil {

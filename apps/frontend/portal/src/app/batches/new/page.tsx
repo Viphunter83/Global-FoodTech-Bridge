@@ -21,7 +21,10 @@ import {
     Calendar as CalendarIcon, 
     Upload, 
     FileText, 
-    MapPin 
+    MapPin,
+    RefreshCw,
+    X,
+    FileCheck
 } from 'lucide-react'; 
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -38,25 +41,53 @@ export default function CreateBatchPage() {
     const [templates, setTemplates] = useState<SupplyChainTemplate[]>([]);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 
-    // New Data Collection States (Phase 1)
+    // New states for error handling and dynamic compliance
+    const [isTemplatesLoading, setIsTemplatesLoading] = useState(true);
+    const [templatesError, setTemplatesError] = useState<string | null>(null);
+    const [requiredCerts, setRequiredCerts] = useState<string[]>([]);
+    const [uploadedCerts, setUploadedCerts] = useState<Record<string, File>>({});
+
     const [productionDate, setProductionDate] = useState<Date>();
     const [expirationDate, setExpirationDate] = useState<Date>();
+    const loadTemplates = async () => {
+        setIsTemplatesLoading(true);
+        setTemplatesError(null);
+        try {
+            const data = await getTemplates();
+            setTemplates(data);
+            if (data.length > 0) {
+                const firstTpl = data[0];
+                setSelectedTemplateId(firstTpl.id);
+                // Extract required certs from first template
+                const certs = firstTpl.steps?.map(s => s.required_cert).filter(Boolean) as string[] || [];
+                setRequiredCerts(Array.from(new Set(certs)));
+            }
+        } catch (err) {
+            console.error("Failed to load templates:", err);
+            setTemplatesError(t('compliance_empty_templates'));
+        } finally {
+            setIsTemplatesLoading(false);
+        }
+    };
+
     useEffect(() => {
         const history = localStorage.getItem('recent_batches');
         if (history) {
             setRecentBatches(JSON.parse(history));
         }
-
-        // Load Templates
-        const loadTemplates = async () => {
-            const data = await getTemplates();
-            setTemplates(data);
-            if (data.length > 0) {
-                setSelectedTemplateId(data[0].id);
-            }
-        };
         loadTemplates();
     }, []);
+
+    // Effect to update required certs when template changes
+    useEffect(() => {
+        const selected = templates.find(t => t.id === selectedTemplateId);
+        if (selected) {
+            const certs = selected.steps?.map(s => s.required_cert).filter(Boolean) as string[] || [];
+            setRequiredCerts(Array.from(new Set(certs)));
+            // Clear uploaded certs that are no longer needed
+            setUploadedCerts({});
+        }
+    }, [selectedTemplateId, templates]);
 
     const saveToHistory = (id: string) => {
         const newHistory = [id, ...recentBatches].slice(0, 5); // Keep last 5
@@ -98,20 +129,24 @@ export default function CreateBatchPage() {
             uploadPayload.append('manufacturer_id', manufacturer_id);
             uploadPayload.append('product_type', product_type);
             uploadPayload.append('batch_size', batch_size.toString());
+            uploadPayload.append('unit_of_measure', formData.get('unit_of_measure') as string);
+            uploadPayload.append('origin_country', formData.get('origin_country') as string);
+            uploadPayload.append('destination_country', formData.get('destination_country') as string);
             uploadPayload.append('ingredients', formData.get('ingredients') || '');
             if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
             if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
             uploadPayload.append('productionLocation', formData.get('production_location') || '');
             uploadPayload.append('originLocation', formData.get('origin_location') || '');
 
-            const certFiles = formData.getAll('certificates');
-            certFiles.forEach((file) => {
-                if (file instanceof File && file.size > 0) {
-                    uploadPayload.append('files', file);
-                }
+            // Build certificate mapping for backend
+            const certMapping: Record<string, string> = {};
+            Object.entries(uploadedCerts).forEach(([type, file]) => {
+                uploadPayload.append('files', file);
+                certMapping[file.name] = type;
             });
+            uploadPayload.append('cert_mapping', JSON.stringify(certMapping));
 
-            console.log("Uploading to IPFS...");
+            console.log("Uploading to IPFS with mapped certificates...", certMapping);
             const uploadRes = await fetch('/api/blockchain/ipfs/upload', {
                 method: 'POST',
                 // No Content-Type header needed for FormData; browser sets boundary
@@ -260,24 +295,40 @@ export default function CreateBatchPage() {
                                 {t('form_select_template')}
                             </Label>
                             <div className="relative">
-                                <select
-                                    id="template_id"
-                                    name="template_id"
-                                    value={selectedTemplateId}
-                                    onChange={(e) => setSelectedTemplateId(e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                >
-                                    {templates.length > 0 ? (
-                                        templates.map((tpl) => (
+                                {isTemplatesLoading ? (
+                                    <div className="flex items-center gap-2 h-10 px-3 text-sm text-gray-500 border rounded-md bg-gray-50">
+                                        <Loader2 size={14} className="animate-spin" />
+                                        {t('loading')}...
+                                    </div>
+                                ) : templatesError ? (
+                                    <div className="flex items-center justify-between h-10 px-3 text-sm text-red-500 border border-red-200 rounded-md bg-red-50">
+                                        <span className="truncate">{templatesError}</span>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={loadTemplates}
+                                            className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-100"
+                                        >
+                                            <RefreshCw size={14} />
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <select
+                                        id="template_id"
+                                        name="template_id"
+                                        value={selectedTemplateId}
+                                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    >
+                                        {templates.map((tpl) => (
                                             <option key={tpl.id} value={tpl.id}>
                                                 {tpl.name}
                                             </option>
-                                        ))
-                                    ) : (
-                                        <option value="">{t('loading')}...</option>
-                                    )}
-                                </select>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
                         </div>
 
@@ -432,27 +483,79 @@ export default function CreateBatchPage() {
                                 </div>
                             </div>
 
-                            {/* Certificates */}
-                            <div className="space-y-2">
-                                <Label htmlFor="certificates">
-                                    {t('form_certificates')}
+                            {/* Compliance - Dynamic Certificates */}
+                            <div className="space-y-4">
+                                <Label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    <FileCheck className="h-4 w-4 text-green-600" />
+                                    {t('compliance_required_docs')}
                                 </Label>
-                                <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="certificates" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border-gray-300">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">{t('form_certificates_sub')}</span></p>
-                                            <p className="text-xs text-gray-500">PDF, JPG or PNG</p>
-                                        </div>
-                                        <Input
-                                            id="certificates"
-                                            name="certificates"
-                                            type="file"
-                                            multiple
-                                            className="hidden"
-                                        />
-                                    </label>
-                                </div>
+                                
+                                {requiredCerts.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {requiredCerts.map((certType) => (
+                                            <div key={certType} className="relative group">
+                                                <div className={cn(
+                                                    "flex items-center justify-between p-3 border rounded-lg transition-all",
+                                                    uploadedCerts[certType] ? "bg-green-50 border-green-200" : "bg-white border-gray-200 hover:border-blue-300"
+                                                )}>
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <div className={cn(
+                                                            "p-2 rounded-md",
+                                                            uploadedCerts[certType] ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"
+                                                        )}>
+                                                            <Upload size={16} />
+                                                        </div>
+                                                        <div className="flex flex-col overflow-hidden text-left">
+                                                            <span className="text-xs font-medium text-gray-900 truncate uppercase">
+                                                                {certType.replace(/_/g, ' ')}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-500 truncate">
+                                                                {uploadedCerts[certType] ? uploadedCerts[certType].name : t('btn_upload_file')}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {uploadedCerts[certType] ? (
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                const newCerts = { ...uploadedCerts };
+                                                                delete newCerts[certType];
+                                                                setUploadedCerts(newCerts);
+                                                            }}
+                                                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                                        >
+                                                            <X size={14} />
+                                                        </Button>
+                                                    ) : (
+                                                        <div className="relative">
+                                                            <input
+                                                                type="file"
+                                                                id={`file-${certType}`}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) {
+                                                                        setUploadedCerts(prev => ({ ...prev, [certType]: file }));
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Button type="button" variant="outline" size="sm" className="h-8 text-xs">
+                                                                {t('btn_upload_file')}
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-4 text-center border border-dashed rounded-lg bg-gray-50">
+                                        <p className="text-xs text-gray-400">{t('compliance_optional_docs')}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

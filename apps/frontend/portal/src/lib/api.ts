@@ -1,5 +1,5 @@
 export interface BatchCertificate {
-    hash: string;
+    uri: string;
     type: string;
     name: string;
 }
@@ -224,6 +224,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                     if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
                         extendedData.certificates = ipfsData.certificates.map((cert: any) => ({
                             name: cert.name,
+                            type: cert.type || "OTHER",
                             uri: cert.uri.replace('ipfs://', ipfsGateway)
                         }));
                     }
