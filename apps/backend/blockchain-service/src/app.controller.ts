@@ -19,6 +19,11 @@ export class AppController {
         return this.blockchainService.getBatchPublicData(batchId);
     }
 
+    @Get('history/:batchId')
+    async getHistory(@Param('batchId') batchId: string) {
+        return this.blockchainService.getBatchHistory(batchId);
+    }
+
     @Post('violation')
     async reportViolation(@Body() body: { batchId: string; details: string }) {
         const txHash = await this.blockchainService.registerViolation(body.batchId, body.details);

@@ -233,6 +233,97 @@ export class BlockchainService implements OnModuleInit {
     }
 
 
+    async getBatchHistory(batchId: string): Promise<any[]> {
+        if (this.isMockMode) {
+            return [
+                { event: 'BatchCreated', stage: 'Производство', details: 'Партия создана и заверена в блокчейне', timestamp: Date.now() - 3600000, actor: 'Производитель' },
+                { event: 'TransferCompleted', stage: 'Логистика', details: 'Владение передано логистической компании', timestamp: Date.now() - 1800000, actor: 'Логистический партнер' }
+            ];
+        }
+
+        try {
+            const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
+            const filter = {
+                address: await this.contract.getAddress(),
+                fromBlock: 0,
+                toBlock: 'latest',
+            };
+
+            // Query events
+            const [created, transfers, completed, violations] = await Promise.all([
+                this.contract.queryFilter(this.contract.filters.BatchCreated(tokenId)),
+                this.contract.queryFilter(this.contract.filters.TransferInitiated(tokenId)),
+                this.contract.queryFilter(this.contract.filters.TransferCompleted(tokenId)),
+                this.contract.queryFilter(this.contract.filters.ViolationReported(tokenId))
+            ]);
+
+            const allEvents = [
+                ...created.map(e => ({ type: 'BatchCreated', log: e })),
+                ...transfers.map(e => ({ type: 'TransferInitiated', log: e })),
+                ...completed.map(e => ({ type: 'TransferCompleted', log: e })),
+                ...violations.map(e => ({ type: 'ViolationReported', log: e }))
+            ];
+
+            // Resolve block timestamps and format
+            const history = await Promise.all(allEvents.map(async (item) => {
+                const log = item.log as any;
+                const block = await this.provider.getBlock(log.blockNumber);
+                const timestamp = block ? block.timestamp * 1000 : Date.now();
+
+                let stage = 'Process';
+                let details = 'Blockchain event recorded';
+                let actor = 'System';
+
+                const resolveActor = (address: string) => {
+                    const addr = address.toLowerCase();
+                    if (addr === this.manufacturerWallet.address.toLowerCase()) return 'Производитель (Manufacturer)';
+                    if (addr === this.logisticsWallet?.address.toLowerCase()) return 'Логистический партнер (Logistics)';
+                    if (addr === this.retailerWallet?.address.toLowerCase()) return 'Ритейлер (Retailer)';
+                    return `Участник (${address.substring(0, 6)}...)`;
+                };
+
+                switch (item.type) {
+                    case 'BatchCreated':
+                        stage = 'Производство';
+                        details = 'Партия успешно создана и заверена в блокчейне (Notarized)';
+                        actor = resolveActor(log.args[2]);
+                        break;
+                    case 'TransferInitiated':
+                        stage = 'Транзит';
+                        details = `Инициирована передача прав на партию участнику ${resolveActor(log.args[2])}`;
+                        actor = resolveActor(log.args[1]);
+                        break;
+                    case 'TransferCompleted':
+                        stage = 'Передача прав';
+                        details = `Передача прав подтверждена. Текущий владелец: ${resolveActor(log.args[2])}`;
+                        actor = resolveActor(log.args[2]);
+                        break;
+                    case 'ViolationReported':
+                        stage = '🚨 НАРУШЕНИЕ';
+                        details = `Зафиксировано нарушение условий SLA: ${log.args[1]}`;
+                        actor = 'IoT Gateway (Autonomous Notary)';
+                        break;
+                }
+
+                return {
+                    event: item.type,
+                    stage,
+                    details,
+                    actor,
+                    timestamp,
+                    blockNumber: log.blockNumber,
+                    transactionHash: log.transactionHash
+                };
+            }));
+
+            return history.sort((a, b) => a.timestamp - b.timestamp);
+
+        } catch (error) {
+            this.logger.error(`Failed to fetch history for ${batchId}`, error);
+            return [];
+        }
+    }
+
     async grantRole(role: string, targetAddress: string): Promise<string> {
         this.logger.log(`Granting Role ${role} to ${targetAddress}`);
 

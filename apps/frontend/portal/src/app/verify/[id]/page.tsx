@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getBlockchainStatus, getTelemetry, BlockchainStatus, Telemetry } from '@/lib/api';
-import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar } from 'lucide-react';
+import { getBlockchainStatus, getTelemetry, getBlockchainHistory, BlockchainStatus, Telemetry, BlockchainEvent } from '@/lib/api';
+import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar, History } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
 import { BlockchainProof } from '@/components/ui/BlockchainProof';
+import { BlockchainHistory } from '@/components/ui/BlockchainHistory';
 
 const TelemetryChart = dynamic(
     () => import('@/components/ui/TelemetryChart').then((mod) => mod.TelemetryChart),
@@ -21,19 +22,22 @@ export default function VerifyPage() {
     const [batch, setBatch] = useState<any>(null);
     const [status, setStatus] = useState<BlockchainStatus | null>(null);
     const [telemetry, setTelemetry] = useState<Telemetry[]>([]);
+    const [bcHistory, setBcHistory] = useState<BlockchainEvent[]>([]);
 
     useEffect(() => {
         if (!batchId) return;
 
         const fetchData = async () => {
-            const [batchData, bcData, telemData] = await Promise.all([
+            const [batchData, bcData, telemData, historyData] = await Promise.all([
                 import('@/lib/api').then(mod => mod.getBatchDetails(batchId)),
                 import('@/lib/api').then(mod => mod.getBlockchainStatus(batchId)),
-                import('@/lib/api').then(mod => mod.getTelemetry(batchId))
+                import('@/lib/api').then(mod => mod.getTelemetry(batchId)),
+                import('@/lib/api').then(mod => mod.getBlockchainHistory(batchId))
             ]);
             setBatch(batchData);
             setStatus(bcData);
             setTelemetry(telemData);
+            setBcHistory(historyData);
             setLoading(false);
         };
 
@@ -119,26 +123,8 @@ export default function VerifyPage() {
                     </CardContent>
                 </Card>
 
-                {/* 2. JOURNEY MAP */}
-                <Card className="shadow-md border-0">
-                    <CardContent className="p-6">
-                        <h3 className="font-bold text-gray-900 mb-6 flex items-center">
-                            <MapPin className="h-5 w-5 mr-2 text-green-600" />
-                            Journey History
-                        </h3>
-
-                        <div className="relative pl-6 border-l-2 border-green-200 space-y-8">
-                            {batch.history && batch.history.map((step: any, idx: number) => (
-                                <div key={idx} className="relative">
-                                    <div className={`absolute -left-[29px] top-0 h-4 w-4 rounded-full border-4 border-white shadow-sm ${step.status === 'completed' || step.status === 'current' ? 'bg-green-600' : 'bg-gray-300'}`}></div>
-                                    <p className="text-xs text-gray-500 font-bold mb-1">{step.timestamp}</p>
-                                    <h4 className="font-semibold text-gray-800">{step.stage}</h4>
-                                    <p className="text-sm text-gray-600">{step.location}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* 2. BLOCKCHAIN VERIFIED JOURNEY */}
+                <BlockchainHistory history={bcHistory} />
 
                 {/* 3. TEMPERATURE PROOF */}
                 <Card className="shadow-md border-0">

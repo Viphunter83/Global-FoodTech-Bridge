@@ -69,6 +69,16 @@ export interface Alert {
     created_at: string;
 }
 
+export interface BlockchainEvent {
+    event: string;
+    stage: string;
+    details: string;
+    actor: string;
+    timestamp: number;
+    blockNumber: number;
+    transactionHash: string;
+}
+
 export interface Company {
     id: string;
     name: string;
@@ -340,6 +350,22 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
             verified: false,
             owner: MANUFACTURER_ADDR
         };
+    }
+}
+
+export async function getBlockchainHistory(batchId: string): Promise<BlockchainEvent[]> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/history/${batchId}`, {
+            headers: {
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
+            cache: 'no-store'
+        });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to fetch blockchain history:', e);
+        return [];
     }
 }
 
