@@ -4,7 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 
 const outfit = Outfit({ 
-    subsets: ["latin", "latin-ext", "cyrillic"],
+    subsets: ["latin", "latin-ext"],
     variable: '--font-outfit',
     display: 'swap',
 });
