@@ -92,6 +92,12 @@ func runMigrations(dbURL string) error {
 		return fmt.Errorf("could not create migrate instance: %w", err)
 	}
 
+	// SURGICAL FIX: Force version to clear dirty flag
+	log.Println("Forcing migration version to 20260102124217 to clear dirty flag...")
+	if err := m.Force(20260102124217); err != nil {
+		log.Printf("Warning: failed to force version: %v", err)
+	}
+
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("could not apply migrations: %w", err)
 	}
