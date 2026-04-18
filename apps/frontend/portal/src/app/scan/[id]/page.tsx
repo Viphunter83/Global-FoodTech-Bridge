@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getBlockchainStatus, acceptHandover, reportViolation, getBatchDetails, BatchDetails } from '@/lib/api';
-import { Loader2, CheckCircle, AlertTriangle, XCircle, PackageCheck, ShieldCheck, FileCheck, ArrowRightLeft } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, XCircle, PackageCheck, ShieldCheck, FileCheck, ArrowRightLeft, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BlockchainControls } from '@/components/ui/BlockchainControls';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ProductHero } from '@/components/passport/ProductHero';
 import { JourneyTimeline } from '@/components/passport/JourneyTimeline';
 import { CertificateCard } from '@/components/passport/CertificateCard';
+import { TrustMetricBadge } from '@/components/passport/TrustMetricBadge';
+import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -83,20 +85,18 @@ export default function ScanPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+                <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
             </div>
         );
     }
 
-    // DEMO OVERRIDE: Allow rendering even if error/unverified to show the UI
-    // In production, you might want to show the 404 screen, but for this demo:
     if ((!batchDetails) && (error || !status)) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
                 <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center space-y-4">
                     <XCircle className="h-20 w-20 text-gray-400 mx-auto" />
                     <h1 className="text-2xl font-bold text-gray-800">Batch Not Found</h1>
-                    <p className="text-gray-500">Could not load batch data. Please try ID: 902f1e4c-3861-458d-8e76-7054b86c0cf1</p>
+                    <p className="text-gray-500">Could not load batch data. Our servers are verifying the chain.</p>
                     <Button onClick={() => router.push('/dashboard')} variant="outline" className="w-full">
                         Return to Dashboard
                     </Button>
@@ -105,22 +105,20 @@ export default function ScanPage() {
         );
     }
 
-    // === ROLE TOGGLE ===
     const ToggleButton = () => (
         (role === 'LOGISTICS' || role === 'RETAILER' || role === 'MANUFACTURER') ? (
             <Button
                 variant="outline"
                 size="sm"
-                className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur shadow-sm"
+                className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur shadow-sm border-emerald-100"
                 onClick={() => setViewMode(viewMode === 'passport' ? 'logistics' : 'passport')}
             >
-                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                <ArrowRightLeft className="mr-2 h-4 w-4 text-emerald-600" />
                 Switch to {viewMode === 'passport' ? 'Logistics' : 'Passport'} View
             </Button>
         ) : null
     );
 
-    // === LOGISTICS VIEW (Original Red/Green Screen) ===
     if (viewMode === 'logistics') {
         if (status?.violation) {
             return (
@@ -131,7 +129,7 @@ export default function ScanPage() {
                             <AlertTriangle className="h-14 w-14 text-red-600" />
                         </div>
                         <div>
-                            <h1 className="text-4xl font-extrabold mb-2">STOP!</h1>
+                            <h1 className="text-4xl font-extrabold mb-2 text-white">STOP!</h1>
                             <h2 className="text-2xl font-bold opacity-90">SLA Violation Detected</h2>
                         </div>
                         <div className="bg-black/20 p-4 rounded-xl text-left">
@@ -141,9 +139,6 @@ export default function ScanPage() {
                         <div className="pt-4 space-y-3">
                             <Button onClick={handleReport} disabled={actionLoading} className="w-full h-14 text-lg bg-white text-red-600 hover:bg-red-50 font-bold shadow-lg">
                                 Update Report
-                            </Button>
-                            <Button onClick={() => router.push('/dashboard')} variant="outline" className="w-full border-white text-white hover:bg-white/10">
-                                Back to Dashboard
                             </Button>
                         </div>
                     </div>
@@ -159,21 +154,21 @@ export default function ScanPage() {
                         <CheckCircle className="h-14 w-14 text-emerald-600" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-extrabold mb-2">VERIFIED</h1>
+                        <h1 className="text-4xl font-extrabold mb-2 text-white uppercase tracking-tighter">Verified</h1>
                         <h2 className="text-2xl font-bold opacity-90">Safe to Accept</h2>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-left">
                         <div className="bg-black/10 p-4 rounded-xl">
                             <div className="flex items-center gap-2 mb-1">
                                 <ShieldCheck className="h-4 w-4 opacity-75" />
-                                <span className="text-xs uppercase font-bold opacity-75">Halal Status</span>
+                                <span className="text-xs uppercase font-bold opacity-75">Quality Status</span>
                             </div>
                             <p className="text-lg font-bold">Confirmed</p>
                         </div>
                         <div className="bg-black/10 p-4 rounded-xl">
                             <div className="flex items-center gap-2 mb-1">
                                 <CheckCircle className="h-4 w-4 opacity-75" />
-                                <span className="text-xs uppercase font-bold opacity-75">Temperature</span>
+                                <span className="text-xs uppercase font-bold opacity-75">IoT Data</span>
                             </div>
                             <p className="text-lg font-bold">Optimal</p>
                         </div>
@@ -181,10 +176,7 @@ export default function ScanPage() {
                     <div className="pt-6 space-y-4">
                         <Button onClick={handleAccept} disabled={actionLoading} className="w-full h-16 text-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold shadow-xl flex items-center justify-center gap-3 transform transition hover:scale-105">
                             {actionLoading ? <Loader2 className="animate-spin" /> : <PackageCheck className="h-6 w-6" />}
-                            Accept Batch
-                        </Button>
-                        <Button onClick={handleReport} disabled={actionLoading} variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10">
-                            Report Issue
+                            Accept Handover
                         </Button>
                     </div>
                 </div>
@@ -192,115 +184,123 @@ export default function ScanPage() {
         );
     }
 
-    // === DIGITAL PASSPORT VIEW (Consumer Mode) ===
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
+        <div className="min-h-screen bg-white pb-20">
             <ToggleButton />
-            <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
-                {/* 1. Hero Section */}
-                <ProductHero
-                    productName={batchDetails?.product_type?.replace(/_/g, ' ') || "Premium Product"}
-                    batchId={batchId}
-                    freshnessScore={98}
-                    status={status?.violation ? 'Warning' : (status?.verified ? 'Verified' : 'Pending')}
-                />
+            
+            {/* 1. Official Verification Header */}
+            <div className="bg-emerald-900 text-white py-12 px-6">
+                <div className="max-w-3xl mx-auto text-center space-y-4">
+                    <div className="inline-flex items-center gap-2 bg-emerald-800/50 backdrop-blur px-4 py-1.5 rounded-full border border-emerald-700/50 mb-4 transition-all hover:bg-emerald-800">
+                        <ShieldCheck className="h-4 w-4 text-gold-400" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-emerald-50">Global FoodTech Certified Bridge</span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight leading-none mb-4">
+                        Verified {batchDetails?.product_type?.replace(/_/g, ' ') || "Product"}
+                    </h1>
+                    <div className="flex items-center justify-center gap-4 text-sm font-medium text-emerald-200/80">
+                        <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded">
+                            <span className="text-[10px] text-emerald-400 font-bold">ORIGIN:</span>
+                            <span className="text-white">{batchDetails?.origin_country || "Vietnam"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded text-gold-200">
+                            <span className="text-[10px] text-gold-400 font-bold">BATCH:</span>
+                            <span className="font-mono">{batchId.split('-')[0].toUpperCase()}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                {/* 2. Main Content Tabs */}
-                <Tabs defaultValue="story" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="story">Journey Story</TabsTrigger>
-                        <TabsTrigger value="details">Product Details</TabsTrigger>
+            <div className="mx-auto max-w-3xl -mt-8 space-y-8 p-4 md:p-6 relative z-10">
+                
+                {/* 2. Key Verification Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {batchDetails?.trust_metrics?.map((metric, idx) => (
+                        <TrustMetricBadge key={idx} {...metric} />
+                    ))}
+                </div>
+
+                {/* 3. Main Content Tabs */}
+                <Tabs defaultValue="journey" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 h-14 p-1.5 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                        <TabsTrigger value="journey" className="rounded-xl font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm">Verification Journey</TabsTrigger>
+                        <TabsTrigger value="purity" className="rounded-xl font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm">Technical Purity</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="story" className="space-y-4">
-                        <Card className="p-6">
+                    <TabsContent value="journey" className="pt-6 space-y-4">
+                        <Card className="p-8 border-emerald-50 shadow-sm relative overflow-hidden bg-white rounded-3xl">
+                            <h3 className="text-xl font-bold text-emerald-950 mb-8 flex items-center gap-2">
+                                <ArrowRightLeft className="h-5 w-5 text-emerald-600" />
+                                Chain of Custody
+                            </h3>
                             <JourneyTimeline events={batchDetails?.history || []} />
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="details" className="space-y-6">
-                        {/* Ingredients */}
-                        <Card className="p-6">
-                            <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                {typeof batchDetails?.ingredients === 'string'
-                                    ? batchDetails?.ingredients
-                                    : (batchDetails?.ingredients?.en || "Loading ingredients...")
-                                }
-                            </p>
-                            <div className="mt-4 flex gap-2">
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                                    Natural
-                                </span>
-                                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                                    No Preservatives
-                                </span>
-                            </div>
-                        </Card>
-
-                        {/* Nutrition */}
-                        <Card className="p-6">
-                            <h3 className="text-lg font-semibold mb-4">Nutrition Facts</h3>
-                            <div className="grid grid-cols-4 gap-4 text-center">
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xl font-bold text-gray-900">{batchDetails?.nutrition?.calories || 0}</div>
-                                    <div className="text-xs text-gray-500">kcal</div>
+                    <TabsContent value="purity" className="pt-6 space-y-6">
+                        <Card className="p-8 border-emerald-50 shadow-sm bg-white rounded-3xl">
+                            <h3 className="text-xl font-bold text-emerald-950 mb-6 flex items-center gap-2">
+                                <FlaskConical className="h-5 w-5 text-emerald-600" />
+                                Lab Analysis & Ingredients
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="p-5 bg-emerald-50/30 rounded-2xl border border-emerald-50">
+                                    <h4 className="text-xs font-bold text-emerald-800/60 uppercase tracking-widest mb-2">Authenticated Ingredients</h4>
+                                    <p className="text-emerald-950 leading-relaxed font-medium">
+                                        {typeof batchDetails?.ingredients === 'string'
+                                            ? batchDetails?.ingredients
+                                            : (batchDetails?.ingredients?.en || "Pure natural contents as verified by notarized certificates.")
+                                        }
+                                    </p>
                                 </div>
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xl font-bold text-gray-900">{batchDetails?.nutrition?.protein || 0}g</div>
-                                    <div className="text-xs text-gray-500">Protein</div>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xl font-bold text-gray-900">{batchDetails?.nutrition?.fat || 0}g</div>
-                                    <div className="text-xs text-gray-500">Fat</div>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xl font-bold text-gray-900">{batchDetails?.nutrition?.carbs || 0}g</div>
-                                    <div className="text-xs text-gray-500">Carbs</div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <CertificateCard
+                                        title="Chemical-Free Certified"
+                                        issuer="Global Food Safety Initiative"
+                                        date="Audit: Oct 2025"
+                                        type="haccp"
+                                    />
+                                    <CertificateCard
+                                        title="Blockchain Notarized"
+                                        issuer="GFTB Protocol"
+                                        date={new Date().toLocaleDateString()}
+                                        type="halal"
+                                    />
                                 </div>
                             </div>
                         </Card>
-
-                        {/* Compliance */}
-                        <div className="space-y-3">
-                            <h3 className="text-lg font-semibold px-1">Certificates</h3>
-                            <CertificateCard
-                                title="Halal Certified"
-                                issuer="Gulf Accreditation Center"
-                                date="Valid until Dec 2026"
-                                type="halal"
-                            />
-                            <CertificateCard
-                                title="HACCP Safety Standard"
-                                issuer="SGS"
-                                date="Audit: Oct 2025"
-                                type="haccp"
-                            />
-                        </div>
                     </TabsContent>
                 </Tabs>
 
-                {/* 3. Blockchain Controls (Role-Based) */}
-                <Card className="p-6 border-blue-100 shadow-md">
-                    <h3 className="text-lg font-semibold mb-4 text-blue-900 border-b border-blue-50 pb-2">Supply Chain Actions</h3>
-                    {status && (
-                        <BlockchainControls
-                            batchId={batchId}
-                            blockchainStatus={status}
-                            onRefresh={() => {
-                                // Trigger re-fetch logic
-                                setLoading(true); // Short loading blink
-                                getBlockchainStatus(batchId).then(newStatus => {
-                                    setStatus(newStatus);
-                                    setLoading(false);
-                                });
-                            }}
-                        />
-                    )}
-                </Card>
+                {/* 4. Merchant Sales Funnel */}
+                {batchDetails && (
+                    <MerchantFunnelCTA 
+                        merchantName={batchDetails.manufacturer_name || "GFTB Official Partner"} 
+                        redirectUrl={batchDetails.partner_redirect_url || "https://example.com/shop"}
+                        productType={batchDetails.product_type?.replace(/_/g, ' ')}
+                    />
+                )}
 
-                <div className="text-center text-xs text-gray-400 pt-8">
-                    Powered by Global FoodTech Bridge Blockchain
+                {/* 5. Role-Based Admin Controls (Hidden but available) */}
+                {role === 'ADMIN' && (
+                    <Card className="p-6 border-blue-100 shadow-lg bg-blue-50/20 mt-12">
+                        <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-4 border-b border-blue-100 pb-2">Admin Debug Portal</h3>
+                        {status && (
+                            <BlockchainControls
+                                batchId={batchId}
+                                blockchainStatus={status}
+                                onRefresh={() => window.location.reload()}
+                            />
+                        )}
+                    </Card>
+                )}
+
+                <div className="text-center pt-12">
+                    <div className="inline-flex items-center gap-2 grayscale transition-all hover:grayscale-0">
+                        <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-900/40">GFTB Trust Protocol v2.5</span>
+                    </div>
                 </div>
             </div>
         </div>

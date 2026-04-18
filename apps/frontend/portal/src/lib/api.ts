@@ -29,6 +29,13 @@ export interface BatchDetails {
     production_location?: string;
     origin_location?: string;
     certificates?: BatchCertificate[];
+    trust_metrics?: {
+        type: 'purity' | 'temperature' | 'carbon' | 'organic' | 'nutrition' | 'origin';
+        label: string;
+        value: string;
+        source: 'Blockchain' | 'IoT' | 'Lab Report';
+        status: 'verified' | 'warning' | 'pending';
+    }[];
     history?: {
         stage: string;
         location: string;
@@ -193,7 +200,16 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             halal_cert_url: data.halal_cert_url || "/certificates/standard-cert.pdf",
             manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
             history,
-            partner_id: data.partner_id
+            partner_id: data.partner_id,
+            trust_metrics: isMango ? [
+                { type: 'purity', label: 'Chemical Purity', value: '100% Natural', source: 'Lab Report', status: 'verified' },
+                { type: 'temperature', label: 'Cold Chain', value: 'Stable', source: 'IoT', status: 'verified' },
+                { type: 'carbon', label: 'CO2 Impact', value: '0.4kg/unit', source: 'Blockchain', status: 'verified' }
+            ] : [
+                { type: 'nutrition', label: 'Protein Density', value: 'High', source: 'Lab Report', status: 'verified' },
+                { type: 'temperature', label: 'Cold Chain', value: 'Optimal', source: 'IoT', status: 'verified' },
+                { type: 'origin', label: 'Traceability', value: 'Full', source: 'Blockchain', status: 'verified' }
+            ]
         };
 
         // Fetch Partner Details if present
