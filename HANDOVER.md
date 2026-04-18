@@ -19,22 +19,24 @@
 
 ### 2. Frontend: `portal` (Next.js)
 - **Стек**: Next.js 14 (App Router), Lucide, Tailwind.
-- **Языки**: EN, RU, AR, VI (Вьетнамский). Все переводы в `lib/translations.ts`.
-- **Интеграция**:
-    - `BlockchainControls.tsx`: Логика нотаризации и передачи прав (Handover).
-    - `BatchDetailsClient.tsx`: Визуализация таймлайна и маршрута.
+- **Безопасность**: Firebase Auth + Firestore RBAC (Role Based Access Control).
+- **Ключевые папки**:
+    - `src/components/passport`: Универсальные компоненты верификации (`TrustMetricBadge`, `MerchantFunnelCTA`).
+    - `src/components/providers`: `AuthProvider.tsx` — логика инициализации сессии и ролей.
+    - `lib/api.ts`: Центральный слой данных, маппинг метаданных и блокчейн-статусов.
 
 ## 🛡 Безопасность и Секреты
 Все секреты выведены из кода в переменные среды. Шаблон в [.env.example](.env.example).
 
 ### Ключевые переменные:
 - `NEXT_PUBLIC_PASSPORT_SERVICE_URL`: URL бэкенда.
-- `DATABASE_URL`: Строка подключения к базе.
-- **Railway Token**: Используется для мониторинга деплоя по API (хранить только в CI/CD).
+- `NEXT_PUBLIC_FIREBASE_API_KEY`: Ключ для Auth/Firestore.
+- `DATABASE_URL`: Строка подключения к базе (Postgres).
+- `INTERNAL_API_KEY`: Секрет для авторизации запросов между сервисами.
 
 ## 📜 Бизнес-логика (Blueprint)
-Все детальные спецификации цепочек поставок, жизненного цикла партий и дорожная карта «точек роста» (Templates, Escrow, Compliance) описаны в новом документе:
-👉 [BUSINESS_LOGIC.md](file:///Users/apple/Global%20FoodTech%20Bridge/docs/BUSINESS_LOGIC.md)
+Все детальные спецификации цепочек поставок, жизненного цикла партий и дорожная карта «точек роста» (Templates, Escrow, Compliance) описаны в:
+👉 [BUSINESS_LOGIC_BLUEPRINT.md](BUSINESS_LOGIC_BLUEPRINT.md)
 
 ## 🚢 Деплой (CI/CD)
 - **Backend**: Railway (автодеплой при пуше в `main`).
@@ -42,9 +44,10 @@
 - **URL**: `global-foodtech-bridge-production.up.railway.app`
 
 ## 🛤 Текущий Roadmap
-1. **Интеграция Карт**: Заменить заглушку в `BatchDetailsClient.tsx` на реальную карту (Mapbox или Leaflet).
-2. **Admin Panel**: Реализовать графический интерфейс для управления `SLA Registry` (температурные режимы и сроки).
-3. **IoT Simulator**: Улучшить симуляцию данных для демонстрации «холодовой цепи» в реальном времени.
+1. **Universal Portals**: (ЗАВЕРШЕНО) — реализация универсального паспорта продукта с бэйджами доверия.
+2. **Merchant Funnels**: (ЗАВЕРШЕНО) — интеграция кнопок покупки для монетизации трафика ритейлеров.
+3. **Map Integration**: Заменить заглушку в `JourneyTimeline` на реальную карту маршрута.
+4. **IoT Simulator**: Улучшить симуляцию данных для демонстрации «холодовой цепи» в реальном времени.
 
 ---
 **Примечание для следующей сессии**: Система полностью готова. При создании новых партий обязательно заполнять поля `OriginCountry`, `DestinationCountry` и `ProductionLocation` для корректной работы международного таймлайна.

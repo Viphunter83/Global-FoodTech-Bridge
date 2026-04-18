@@ -9,6 +9,7 @@ The project consists of 5 main components:
 | Service | Type | Hosting | Description |
 | :--- | :--- | :--- | :--- |
 | **Frontend Portal** | Next.js | **Vercel** | User interface for all roles. |
+| **Auth & Security** | Firebase | **Google Cloud** | Identity Management & Role Storage. |
 | **Blockchain Service** | Node.js | **Railway** | Manages Custodial Wallets & Polygon transactions. |
 | **IoT Service** | Go | **Railway** | Ingests sensor data & alerts. |
 | **Passport Service** | Go | **Railway** | Digital Passport API. |
@@ -16,15 +17,16 @@ The project consists of 5 main components:
 
 ---
 
-## 📋 Step 1: Database Setup (Railway)
+## 🔑 Step 1.5: Firebase & Security Setup (MANDATORY)
 
-1.  Create a **New Project** on Railway.
-2.  Add a **PostgreSQL** database service.
-3.  Copy the `DATABASE_URL` (Connection String).
-4.  **Initialize Schema**:
-    *   Connect to the DB using a tool like TablePlus or PgAdmin.
-    *   Run the schema scripts found in `packages/database/schema.sql` (if available) or export your local schema.
-    *   *Note: Ensure PostgREST is enabled if you use it, or switch IoT/Passport to use direct DB connections.*
+1.  **Create Firebase Project**: Go to [Firebase Console](https://console.firebase.google.com/).
+2.  **Enable Authentication**: 
+    *   Enable **Google** as a Sign-in provider.
+    *   Add Authorized Domains: `localhost`, `[your-site].vercel.app`.
+3.  **Enable Firestore**:
+    *   Create a database in "Production Mode".
+    *   **Apply Security Rules**: Copy the content of `firestore.rules` from the project root and paste it into the Firebase Console -> Firestore -> Rules.
+4.  **Register Web App**: Add a "Web App" to the project and copy the `firebaseConfig` object values.
 
 ---
 
@@ -66,9 +68,16 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
 2.  **Root Directory**: `apps/frontend/portal`
 3.  **Environment Variables**:
     *   You need the **Public Domains** provided by Railway for the backend services.
-    *   `NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL`: `https://[blockchain-service].railway.app/api/v1`
-    *   `NEXT_PUBLIC_IOT_SERVICE_URL`: `https://[iot-service].railway.app/api/v1`
-    *   `NEXT_PUBLIC_PASSPORT_SERVICE_URL`: `https://[passport-service].railway.app/api/v1`
+    *   `NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL`: `https://blockchain-service.up.railway.app/api/v1`
+    *   `NEXT_PUBLIC_IOT_SERVICE_URL`: `https://iot-service.up.railway.app/api/v1`
+    *   `NEXT_PUBLIC_PASSPORT_SERVICE_URL`: `https://passport-service.up.railway.app/api/v1`
+    *   `NEXT_PUBLIC_FIREBASE_API_KEY`: `...`
+    *   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`: `...`
+    *   `NEXT_PUBLIC_FIREBASE_PROJECT_ID`: `...`
+    *   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`: `...`
+    *   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`: `...`
+    *   `NEXT_PUBLIC_FIREBASE_APP_ID`: `...`
+    *   `NEXT_PUBLIC_INTERNAL_API_KEY`: `[Shared Secret for Backend Auth]`
 
 ---
 
