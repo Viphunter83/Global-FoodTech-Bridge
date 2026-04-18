@@ -2,13 +2,15 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// Firebase configuration using environment variables for security.
+// These variables must be prefixed with NEXT_PUBLIC_ to be accessible in the browser.
 const firebaseConfig = {
-    projectId: "global-foodtech-bridge-prod",
-    appId: "1:883616117431:web:8775ad9f79c4c3461b5332",
-    storageBucket: "global-foodtech-bridge-prod.firebasestorage.app",
-    apiKey: "AIzaSyDMPUvzJ5VUkZKkObIvJB84wNycsyH3BgU",
-    authDomain: "global-foodtech-bridge-prod.firebaseapp.com",
-    messagingSenderId: "883616117431",
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
