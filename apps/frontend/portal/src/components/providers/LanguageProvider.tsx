@@ -20,6 +20,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const savedLang = localStorage.getItem('gfb-language') as Language;
         if (savedLang && (savedLang === 'en' || savedLang === 'ru' || savedLang === 'ar' || savedLang === 'vi')) {
             setLanguage(savedLang);
+            // Apply initial direction
+            if (savedLang === 'ar') {
+                document.documentElement.dir = 'rtl';
+                document.documentElement.lang = 'ar';
+            } else {
+                document.documentElement.dir = 'ltr';
+                document.documentElement.lang = savedLang;
+            }
         }
     }, []);
 

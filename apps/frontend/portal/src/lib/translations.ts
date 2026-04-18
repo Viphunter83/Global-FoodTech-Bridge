@@ -170,6 +170,15 @@ export type TranslationKey =
     | 'status_verified'
     | 'required'
     | 'farm_to_fork_journey'
+    | 'auth_login_title'
+    | 'auth_welcome_back'
+    | 'auth_sign_in_google'
+    | 'auth_email_label'
+    | 'auth_password_label'
+    | 'auth_admin_access_only'
+    | 'auth_sign_in_email'
+    | 'hero_cta_track'
+    | 'hero_cta_dashboard'
     | 'loading';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -341,7 +350,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         admin_companies: 'Companies',
         admin_monitoring: 'Monitoring',
         admin_back_to_app: 'Back to App',
-        admin_operator_title: 'Platform Operator'
+        admin_operator_title: 'Platform Operator',
+        auth_login_title: 'Secure Access',
+        auth_welcome_back: 'Identity Verification',
+        auth_sign_in_google: 'Sign in with Google',
+        auth_email_label: 'Professional Email',
+        auth_password_label: 'Security Token',
+        auth_admin_access_only: 'Access Restricted to Contracted Partners Only.',
+        auth_sign_in_email: 'Sign in with Email',
+        hero_cta_track: 'Begin Verification',
+        hero_cta_dashboard: 'Access Bridge Portal'
     },
     ru: {
         app_title_suffix: 'Менеджер по цепочкам поставок',
@@ -511,7 +529,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         admin_companies: 'Компании',
         admin_monitoring: 'Мониторинг',
         admin_back_to_app: 'Вернуться в приложение',
-        admin_operator_title: 'Оператор платформы'
+        admin_operator_title: 'Оператор платформы',
+        auth_login_title: 'Безопасный доступ',
+        auth_welcome_back: 'Верификация личности',
+        auth_sign_in_google: 'Войти через Google',
+        auth_email_label: 'Корпоративный Email',
+        auth_password_label: 'Пароль',
+        auth_admin_access_only: 'Доступ ограничен только для контрактных партнеров.',
+        auth_sign_in_email: 'Войти через почту',
+        hero_cta_track: 'Начать проверку',
+        hero_cta_dashboard: 'Портал управления'
     },
     ar: {
         app_title_suffix: 'مدير سلسلة التوريد',
@@ -681,7 +708,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         admin_companies: 'الشركات',
         admin_monitoring: 'المراقبة',
         admin_back_to_app: 'العودة للتطبيق',
-        admin_operator_title: 'مشغل المنصة'
+        admin_operator_title: 'مشغل المنصة',
+        auth_login_title: 'وصول آمن',
+        auth_welcome_back: 'التحقق من الهوية',
+        auth_sign_in_google: 'تسجيل الدخول عبر Google',
+        auth_email_label: 'البريد الإلكتروني المهني',
+        auth_password_label: 'رمز الأمان',
+        auth_admin_access_only: 'الوصول مقتصر على الشركاء المتعاقدين فقط.',
+        auth_sign_in_email: 'تسجيل الدخول عبر البريد',
+        hero_cta_track: 'بدء التحقق',
+        hero_cta_dashboard: 'مدخل جسر البيانات'
     },
     vi: {
         app_title_suffix: 'Quản lý Chuỗi cung ứng',
@@ -851,6 +887,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         admin_companies: 'Công ty',
         admin_monitoring: 'Giám sát',
         admin_back_to_app: 'Quay lại Ứng dụng',
-        admin_operator_title: 'Điều hành Nền tảng'
+        admin_operator_title: 'Điều hành Nền tảng',
+        auth_login_title: 'Truy cập Bảo mật',
+        auth_welcome_back: 'Xác minh Danh tính',
+        auth_sign_in_google: 'Đăng nhập với Google',
+        auth_email_label: 'Email Chuyên nghiệp',
+        auth_password_label: 'Mã Bảo mật',
+        auth_admin_access_only: 'Truy cập chỉ dành cho Đối tác đã ký kết.',
+        auth_sign_in_email: 'Đăng nhập bằng Email',
+        hero_cta_track: 'Bắt đầu Xác minh',
+        hero_cta_dashboard: 'Truy cập Cổng Kết nối'
     }
 };

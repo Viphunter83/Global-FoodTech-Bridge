@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // Basic font
+import { Outfit, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = Outfit({ 
+    subsets: ["latin", "latin-ext", "cyrillic"],
+    variable: '--font-outfit',
+    display: 'swap',
+});
+
+const cormorant = Cormorant_Garamond({
+    subsets: ["latin", "latin-ext", "cyrillic", "vietnamese"],
+    weight: ['300', '400', '500', '600', '700'],
+    variable: '--font-cormorant',
+    display: 'swap',
+});
 
 export const metadata: Metadata = {
-    title: "Global FoodTech Bridge",
-    description: "Supply Chain Manager",
+    title: "GFTB Bridge | Global FoodTech Transparency",
+    description: "International supply chain bridge protected by IoT and Blockchain.",
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -20,8 +31,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={inter.className}>
+        <html lang="en" className={`${outfit.variable} ${cormorant.variable}`}>
+            <body className="font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary">
                 <AuthProvider>
                     <LanguageProvider>
                         <DemoStateProvider>

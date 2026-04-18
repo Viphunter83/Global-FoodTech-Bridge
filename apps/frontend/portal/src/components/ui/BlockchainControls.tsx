@@ -26,30 +26,34 @@ export function BlockchainControls({ batchId, blockchainStatus }: BlockchainCont
     // Use specific batch status or fallback to props
     const status = getBatchState(batchId) || blockchainStatus;
 
-    const DebugFooter = () => (
-        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-300 font-mono">v3.2-pairing</span>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs text-gray-400 hover:text-red-500"
-                    onClick={() => {
-                        resetBatchState(batchId);
-                        window.location.reload();
-                    }}
-                >
-                    Reset Demo
-                </Button>
+    const DebugFooter = () => {
+        if (role !== 'ADMIN') return null;
+        
+        return (
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-300 font-mono">v3.2-pairing</span>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs text-gray-400 hover:text-red-500"
+                        onClick={() => {
+                            resetBatchState(batchId);
+                            window.location.reload();
+                        }}
+                    >
+                        Reset Demo
+                    </Button>
+                </div>
+                {/* Live State Debugger */}
+                <div className="text-[10px] font-mono text-gray-400 bg-gray-50 p-2 rounded">
+                    <div>Owner: {status.owner || 'None'}</div>
+                    <div>Status: {status.status}</div>
+                    <div>Paired: {status.sensorPaired ? 'Yes' : 'No'}</div>
+                </div>
             </div>
-            {/* Live State Debugger */}
-            <div className="text-[10px] font-mono text-gray-400 bg-gray-50 p-2 rounded">
-                <div>Owner: {status.owner || 'None'}</div>
-                <div>Status: {status.status}</div>
-                <div>Paired: {status.sensorPaired ? 'Yes' : 'No'}</div>
-            </div>
-        </div>
-    );
+        );
+    };
 
     const handleNotarize = async () => {
         setLoading(true);

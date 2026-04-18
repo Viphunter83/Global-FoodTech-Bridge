@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Search, ShieldCheck, Thermometer, Globe } from 'lucide-react';
+import { ArrowRight, Search, ShieldCheck, Thermometer, Globe, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { motion } from 'framer-motion';
 
 export default function Home() {
     const [batchId, setBatchId] = useState('');
@@ -20,74 +22,173 @@ export default function Home() {
         }
     };
 
+    const fadeInUp = {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.6 }
+    };
+
     return (
-        <main className="flex flex-col items-center">
-            {/* Hero Section */}
-            <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950">
-                <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center space-y-8">
-                    <div className="space-y-4 max-w-3xl">
-                        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
-                            {t('hero_title')}
-                        </h1>
-                        <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400 max-w-[700px] mx-auto">
-                            {t('hero_subtitle')}
-                        </p>
-                    </div>
+        <main className="flex flex-col items-center bg-background min-h-screen">
+            {/* Hero Section with Cinematic Background */}
+            <section className="relative w-full min-h-[90vh] flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/hero-bridge.png"
+                        alt="Global Supply Chain Bridge"
+                        fill
+                        className="object-cover opacity-60 dark:opacity-40 scale-105"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/60 to-background" />
+                </div>
 
-                    {/* Tracking Input */}
-                    <div className="w-full max-w-md space-y-2">
-                        <form onSubmit={handleTrack} className="flex space-x-2">
-                            <Input
-                                placeholder={t('track_placeholder')}
-                                className="flex-1 h-12 text-lg"
-                                value={batchId}
-                                onChange={(e) => setBatchId(e.target.value)}
-                            />
-                            <Button type="submit" size="lg" className="h-12 px-6">
-                                <Search className="mr-2 h-5 w-5" />
-                                {t('track_button')}
-                            </Button>
-                        </form>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-                        <Button variant="outline" size="lg" asChild>
-                            <Link href="/dashboard">
-                                <span className="flex items-center">
-                                    {t('business_dashboard')} <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="container relative z-10 px-4 md:px-6 mx-auto">
+                    <div className="flex flex-col items-center text-center space-y-12 max-w-5xl mx-auto">
+                        <motion.div 
+                            className="space-y-6"
+                            initial="initial"
+                            animate="animate"
+                            variants={{
+                                initial: { opacity: 0 },
+                                animate: { opacity: 1, transition: { staggerChildren: 0.2 } }
+                            }}
+                        >
+                            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border-primary/20 text-primary text-xs font-bold uppercase tracking-widest leading-none">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                                 </span>
-                            </Link>
-                        </Button>
+                                Blockchain Verified Supply Chain
+                            </motion.div>
+                            
+                            <motion.h1 
+                                variants={fadeInUp}
+                                className="text-5xl md:text-8xl font-serif font-bold tracking-tight text-foreground leading-[1.1]"
+                            >
+                                {t('hero_title').split('.')[0]}<span className="text-secondary">.</span>
+                            </motion.h1>
+                            
+                            <motion.p 
+                                variants={fadeInUp}
+                                className="text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+                            >
+                                {t('hero_subtitle')}
+                            </motion.p>
+                        </motion.div>
+
+                        {/* Interactive Verification Widget */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.8, duration: 0.8 }}
+                            className="w-full max-w-2xl p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 shadow-2xl"
+                        >
+                            <div className="glass rounded-[2.4rem] p-4 md:p-8 flex flex-col md:flex-row items-stretch gap-4">
+                                <form onSubmit={handleTrack} className="flex-1 flex flex-col sm:flex-row gap-3">
+                                    <div className="relative flex-1">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                            <Search className="h-5 w-5" />
+                                        </div>
+                                        <Input
+                                            placeholder={t('track_placeholder')}
+                                            className="w-full h-16 pl-12 pr-6 rounded-2xl bg-background/50 border-primary/10 focus:ring-secondary/50 focus:border-secondary text-lg transition-all"
+                                            value={batchId}
+                                            onChange={(e) => setBatchId(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
+                                        {t('hero_cta_track')}
+                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </form>
+                            </div>
+                        </motion.div>
+
+                        <motion.div 
+                            variants={fadeInUp}
+                            initial="initial"
+                            animate="animate"
+                            transition={{ delay: 1.2 }}
+                            className="flex items-center gap-8 text-sm font-medium text-muted-foreground/80 opacity-60"
+                        >
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" />
+                                Fully Automated
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" />
+                                Real-time IoT
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" />
+                                Immutable Ledger
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
 
-            {/* Features Grid */}
-            <section className="w-full py-16 bg-white dark:bg-gray-900 border-t border-gray-100">
-                <div className="container px-4 md:px-6 mx-auto grid gap-10 md:grid-cols-3">
-                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                        <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
-                            <Globe className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-xl font-bold">{t('feature_traceability_title')}</h3>
-                        <p className="text-gray-500">{t('feature_traceability_desc')}</p>
+            {/* Feature Modules */}
+            <section className="w-full py-24 relative">
+                <div className="container px-4 md:px-6 mx-auto">
+                    <div className="grid gap-8 md:grid-cols-3">
+                        <FeatureCard 
+                            icon={<Globe className="h-8 w-8" />}
+                            title={t('feature_traceability_title')}
+                            desc={t('feature_traceability_desc')}
+                            delay={0.2}
+                        />
+                        <FeatureCard 
+                            icon={<Thermometer className="h-8 w-8" />}
+                            title={t('feature_iot_title')}
+                            desc={t('feature_iot_desc')}
+                            delay={0.4}
+                        />
+                        <FeatureCard 
+                            icon={<ShieldCheck className="h-8 w-8" />}
+                            title={t('feature_blockchain_title')}
+                            desc={t('feature_blockchain_desc')}
+                            delay={0.6}
+                        />
                     </div>
-                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                        <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-2">
-                            <Thermometer className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-xl font-bold">{t('feature_iot_title')}</h3>
-                        <p className="text-gray-500">{t('feature_iot_desc')}</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center space-y-3 p-6 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                        <div className="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2">
-                            <ShieldCheck className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-xl font-bold">{t('feature_blockchain_title')}</h3>
-                        <p className="text-gray-500">{t('feature_blockchain_desc')}</p>
-                    </div>
+
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="mt-24 p-8 md:p-16 rounded-[3rem] bg-primary/5 border border-primary/10 flex flex-col items-center text-center space-y-8"
+                    >
+                        <h2 className="text-3xl md:text-5xl font-serif font-bold">{t('monitoring_trust_index_title')}</h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto text-lg leading-relaxed">
+                            {t('monitoring_trust_index_desc')}
+                        </p>
+                        <Button variant="outline" size="lg" asChild className="rounded-full px-8 h-14 font-bold border-primary text-primary hover:bg-primary hover:text-white transition-colors">
+                            <Link href="/dashboard">
+                                {t('hero_cta_dashboard')}
+                            </Link>
+                        </Button>
+                    </motion.div>
                 </div>
             </section>
         </main>
+    );
+}
+
+function FeatureCard({ icon, title, desc, delay }: { icon: React.ReactNode, title: string, desc: string, delay: number }) {
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay, duration: 0.8 }}
+            viewport={{ once: true }}
+            className="group relative p-8 rounded-[2rem] glass hover:bg-background/80 transition-all border-primary/5 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
+        >
+            <div className="mb-6 p-4 rounded-2xl bg-primary/5 text-primary w-fit group-hover:bg-primary group-hover:text-white transition-colors duration-500">
+                {icon}
+            </div>
+            <h3 className="text-2xl font-serif font-bold mb-4">{title}</h3>
+            <p className="text-muted-foreground leading-relaxed">{desc}</p>
+        </motion.div>
     );
 }
