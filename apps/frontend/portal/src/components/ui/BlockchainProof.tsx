@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Hash, Link as LinkIcon, ExternalLink, Info, Award, Fingerprint } from 'lucide-react';
+import { ShieldCheck, Hash, Link as LinkIcon, ExternalLink, Info, Award, Fingerprint, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ interface BlockchainProofProps {
     issuer?: string;
     timestamp?: string;
     batchId: string;
+    violation?: string;
 }
 
 // Map of known entities for human-readability
@@ -30,23 +31,36 @@ const getIdentity = (addr?: string) => {
     return IDENTITY_MAP[addr] || `${addr.substring(0, 8)}...${addr.substring(addr.length - 4)}`;
 };
 
-export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId }: BlockchainProofProps) {
+export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, violation }: BlockchainProofProps) {
     const explorerUrl = txHash ? `https://amoy.polygonscan.com/tx/${txHash}` : '#';
 
     return (
-        <Card className="border-2 border-green-100 bg-white/50 backdrop-blur-sm overflow-hidden shadow-sm">
-            <CardHeader className="bg-green-50/50 pb-3 border-b border-green-100">
-                <CardTitle className="text-sm font-bold text-green-800 flex items-center justify-between">
+        <Card className={`border-2 overflow-hidden shadow-sm transition-all duration-500 ${violation ? 'border-red-200 bg-red-50/10' : 'border-green-100 bg-white/50 backdrop-blur-sm'}`}>
+            <CardHeader className={`pb-3 border-b ${violation ? 'bg-red-50/50 border-red-100' : 'bg-green-50/50 border-green-100'}`}>
+                <CardTitle className={`text-sm font-bold flex items-center justify-between ${violation ? 'text-red-800' : 'text-green-800'}`}>
                     <span className="flex items-center gap-2">
-                        <Award className="h-5 w-5 text-green-600" />
-                        CERTIFICATE OF INTEGRITY
+                        {violation ? <AlertTriangle className="h-5 w-5 text-red-600 animate-pulse" /> : <Award className="h-5 w-5 text-green-600" />}
+                        {violation ? 'COMPLIANCE BREACH RECORDED' : 'CERTIFICATE OF INTEGRITY'}
                     </span>
-                    <span className="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                        Immutable Record
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-tighter ${violation ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>
+                        {violation ? 'Proof of Breach' : 'Immutable Record'}
                     </span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
+                
+                {/* SLA Violation Alert (Only if exists) */}
+                {violation && (
+                    <div className="bg-red-100/50 border border-red-200 p-4 rounded-lg space-y-2">
+                        <p className="text-[10px] uppercase font-bold text-red-500 tracking-wider">Blockchain-Verified Alarm</p>
+                        <p className="text-sm font-bold text-red-900 leading-tight">
+                            {violation}
+                        </p>
+                        <p className="text-[10px] text-red-700 italic">
+                            This event was notarized automatically by the IoT gateway as unforgeable proof for insurance claims and audits.
+                        </p>
+                    </div>
+                )}
                 
                 {/* 1. The Seal */}
                 <div className="flex flex-col items-center text-center space-y-2 py-2">

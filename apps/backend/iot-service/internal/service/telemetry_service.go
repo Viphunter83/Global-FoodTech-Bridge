@@ -39,6 +39,16 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 	}
 
 	// 2. Logic: SLA Check
+	reading := &domain.Reading{
+		ID:                 uuid.New(),
+		BatchID:            batchUUID,
+		Timestamp:          time.Now(),
+		TemperatureCelsius: req.TemperatureCelsius,
+		LocationLat:        req.LocationLat,
+		LocationLon:        req.LocationLon,
+		DeviceID:           req.DeviceID,
+	}
+
 	// Fetch Batch Limits from Passport Service
 	limits, err := s.getBatchLimits(req.BatchID)
 	if err != nil {
@@ -76,7 +86,8 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 			}
 
 			// 2.1 Sync with Blockchain (Reliability Hardening)
-			if err := s.reportViolationToBlockchain(req.BatchID, msg); err != nil {
+			evidence := fmt.Sprintf("%s | ReadingID: %s | Time: %s", msg, reading.ID.String(), reading.Timestamp.Format(time.RFC3339))
+			if err := s.reportViolationToBlockchain(req.BatchID, evidence); err != nil {
 				log.Printf("Failed to notarize violation on-chain: %v", err)
 			}
 		}
@@ -85,17 +96,6 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 		if req.TemperatureCelsius > -18.0 {
 			log.Printf("[ALARM] BATCH %s VIOLATION! Temp: %.2f°C (Legacy Check)", req.BatchID, req.TemperatureCelsius)
 		}
-	}
-
-	// 3. Entity Construction
-	reading := &domain.Reading{
-		ID:                 uuid.New(),
-		BatchID:            batchUUID,
-		Timestamp:          time.Now(),
-		TemperatureCelsius: req.TemperatureCelsius,
-		LocationLat:        req.LocationLat,
-		LocationLon:        req.LocationLon,
-		DeviceID:           req.DeviceID,
 	}
 
 	// 4. Persistence

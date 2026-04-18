@@ -166,6 +166,7 @@ export default function VerifyPage() {
                     dataHash={batch.token_uri?.replace('ipfs://', '')}
                     issuer={batch.manufacturer_id}
                     timestamp={new Date(batch.created_at).toLocaleString()}
+                    violation={status.violation || undefined}
                 />
 
                 <div className="text-center pb-8 pt-4">
