@@ -37,6 +37,7 @@ type Batch struct {
 	TokenURI           *string            `json:"token_uri,omitempty"`
 	Certificates       []BatchCertificate `json:"certificates"`
 	TemplateID         *uuid.UUID         `json:"template_id,omitempty"`
+	PartnerID          *uuid.UUID         `json:"partner_id,omitempty"`
 }
 
 type CreateBatchRequest struct {
@@ -49,6 +50,7 @@ type CreateBatchRequest struct {
 	TokenURI           string             `json:"token_uri,omitempty"`
 	Certificates       []BatchCertificate `json:"certificates"`
 	TemplateID         string             `json:"template_id,omitempty"`
+	PartnerID          string             `json:"partner_id,omitempty"`
 }
 
 type UpdateBlockchainRequest struct {

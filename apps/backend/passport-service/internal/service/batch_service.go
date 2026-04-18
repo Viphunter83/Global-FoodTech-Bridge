@@ -6,6 +6,8 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/domain"
 	"github.com/global-foodtech-bridge/passport-service/internal/repository/postgres"
 	"github.com/google/uuid"
+	"log"
+	"fmt"
 )
 
 type SLARule struct {
@@ -20,11 +22,15 @@ var SLARegistry = map[string]SLARule{
 }
 
 type BatchService struct {
-	repo *postgres.BatchRepository
+	repo           *postgres.BatchRepository
+	complianceRepo *postgres.ComplianceRepository
 }
 
-func NewBatchService(repo *postgres.BatchRepository) *BatchService {
-	return &BatchService{repo: repo}
+func NewBatchService(repo *postgres.BatchRepository, complianceRepo *postgres.ComplianceRepository) *BatchService {
+	return &BatchService{
+		repo:           repo,
+		complianceRepo: complianceRepo,
+	}
 }
 
 func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRequest) (*domain.CreateBatchResponse, error) {
@@ -50,14 +56,35 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		return nil, errors.New("invalid manufacturer_id format")
 	}
 
-	// 2. Mapping & SLA Rules
-	rule, exists := SLARegistry[req.ProductType]
-	if !exists {
-		// Default safe ambient/dry cargo limits if unknown
-		rule = SLARule{MinTemp: 0.0, MaxTemp: 30.0}
+	// 2. Dynamic Compliance & SLA Rules
+	rules, err := s.complianceRepo.GetRules(ctx, req.DestinationCountry, req.ProductType)
+	if err != nil {
+		log.Printf("Warning: failed to fetch compliance rules: %v", err)
 	}
 
-	// 3. Entity Creation
+	var minTemp, maxTemp *float64
+	for _, rule := range rules {
+		if rule.RequirementType == "SLA_TEMP" {
+			minTemp = rule.MinValue
+			maxTemp = rule.MaxValue
+		}
+		
+		// 3. Mandatory Document Check
+		if rule.RequirementType == "CERTIFICATE" && rule.IsMandatory {
+			found := false
+			for _, cert := range req.Certificates {
+				if cert.Type == rule.RequirementName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return nil, fmt.Errorf("mandatory certificate missing for %s: %s", req.DestinationCountry, rule.RequirementName)
+			}
+		}
+	}
+
+	// 4. Entity Construction
 	batch := &domain.Batch{
 		ManufacturerID:     manufacturerUUID,
 		ProductType:        req.ProductType,
@@ -67,8 +94,8 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		DestinationCountry: req.DestinationCountry,
 		USFStatus:          domain.StatusPending,
 		BlockchainHash:     nil,
-		MinTemp:            &rule.MinTemp,
-		MaxTemp:            &rule.MaxTemp,
+		MinTemp:            minTemp,
+		MaxTemp:            maxTemp,
 		TokenURI:           &req.TokenURI,
 		Certificates:       req.Certificates,
 	}
@@ -80,20 +107,21 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		}
 	}
 
+	if req.PartnerID != "" {
+		partnerUUID, err := uuid.Parse(req.PartnerID)
+		if err == nil {
+			batch.PartnerID = &partnerUUID
+		}
+	}
+
 	if batch.UnitOfMeasure == "" {
 		batch.UnitOfMeasure = "kg" // Default
-	}
-	if batch.OriginCountry == "" {
-		batch.OriginCountry = "Unknown"
-	}
-	if batch.DestinationCountry == "" {
-		batch.DestinationCountry = "Global"
 	}
 	if batch.Certificates == nil {
 		batch.Certificates = []domain.BatchCertificate{}
 	}
 
-	// 3. Persistence
+	// 5. Persistence
 	id, err := s.repo.Create(ctx, batch)
 	if err != nil {
 		return nil, err
@@ -103,6 +131,10 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		BatchID: id,
 		Status:  "created",
 	}, nil
+}
+
+func (s *BatchService) GetPartner(ctx context.Context, id string) (*domain.Partner, error) {
+	return s.complianceRepo.GetPartner(ctx, id)
 }
 
 func (s *BatchService) GetBatch(ctx context.Context, idStr string) (*domain.Batch, error) {

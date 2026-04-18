@@ -331,7 +331,7 @@ export function BatchDetailsClient({ batch, telemetry, blockchain, alerts }: Bat
                     </div>
 
                     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center">
-                        <DashboardQR batchId={batch.id} />
+                        <DashboardQR batchId={batch.id} partnerRedirectUrl={batch.partner_redirect_url} />
                         <p className="mt-2 text-center text-xs text-gray-500">{t('scan_share')}</p>
                     </div>
 

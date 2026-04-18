@@ -41,8 +41,9 @@ func main() {
 	repo := postgres.NewBatchRepository(dbpool)
 	companyRepo := postgres.NewCompanyRepository(dbpool)
 	templateRepo := postgres.NewTemplateRepository(dbpool)
+	complianceRepo := postgres.NewComplianceRepository(dbpool)
 
-	svc := service.NewBatchService(repo)
+	svc := service.NewBatchService(repo, complianceRepo)
 	walletSvc := service.NewWalletService()
 	companySvc := service.NewCompanyService(companyRepo, walletSvc)
 	templateSvc := service.NewTemplateService(templateRepo)

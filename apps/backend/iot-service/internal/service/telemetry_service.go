@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"bytes"
 
 	"github.com/global-foodtech-bridge/iot-service/internal/domain"
 	"github.com/global-foodtech-bridge/iot-service/internal/repository/postgres"
@@ -73,6 +74,11 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 			if err := s.repo.SaveAlert(ctx, alert); err != nil {
 				log.Printf("Failed to save alert: %v", err)
 			}
+
+			// 2.1 Sync with Blockchain (Reliability Hardening)
+			if err := s.reportViolationToBlockchain(req.BatchID, msg); err != nil {
+				log.Printf("Failed to notarize violation on-chain: %v", err)
+			}
 		}
 	} else {
 		// Legacy/Fallback Logic
@@ -123,6 +129,51 @@ func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchRespons
 	}
 	
 	return &data, nil
+}
+
+func (s *TelemetryService) reportViolationToBlockchain(batchID string, msg string) error {
+	blockchainURL := os.Getenv("BLOCKCHAIN_SERVICE_URL")
+	if blockchainURL == "" {
+		blockchainURL = "http://blockchain-service:3000/api/v1"
+	}
+
+	apiKey := os.Getenv("INTERNAL_API_KEY")
+
+	payload := map[string]string{
+		"batchId": batchID,
+		"details": msg,
+	}
+	body, _ := json.Marshal(payload)
+
+	var lastErr error
+	for attempt := 1; attempt <= 3; attempt++ {
+		req, err := http.NewRequest("POST", fmt.Sprintf("%s/blockchain/violation", blockchainURL), bytes.NewBuffer(body))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		if apiKey != "" {
+			req.Header.Set("x-api-key", apiKey)
+		}
+
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode < 400 {
+				log.Printf("Successfully notarized violation for batch %s (Attempt %d)", batchID, attempt)
+				return nil
+			}
+			lastErr = fmt.Errorf("blockchain service error: %d", resp.StatusCode)
+		} else {
+			lastErr = err
+		}
+
+		log.Printf("Attempt %d failed to notarize violation: %v. Retrying in 2s...", attempt, lastErr)
+		time.Sleep(2 * time.Second)
+	}
+
+	return fmt.Errorf("failed to notarize violation after 3 attempts: %v", lastErr)
 }
 
 func (s *TelemetryService) GetAlerts(ctx context.Context, batchID string) ([]*domain.Alert, error) {

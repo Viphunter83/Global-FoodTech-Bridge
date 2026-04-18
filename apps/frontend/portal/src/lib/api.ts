@@ -21,6 +21,8 @@ export interface BatchDetails {
     destination_country?: string;
     unit_of_measure?: string;
     template_id?: string | null;
+    partner_id?: string | null;
+    partner_redirect_url?: string | null;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
@@ -180,8 +182,22 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             nutrition: data.nutrition || (isMango ? { calories: 150, protein: 1, fat: 0, carbs: 38 } : { calories: 450, protein: 35, fat: 12, carbs: 55 }),
             halal_cert_url: data.halal_cert_url || "/certificates/standard-cert.pdf",
             manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
-            history
+            history,
+            partner_id: data.partner_id
         };
+
+        // Fetch Partner Details if present
+        if (data.partner_id) {
+            try {
+                const partnerRes = await fetch(`${PASSPORT_URL}/partners/${data.partner_id}`, { cache: 'no-store' });
+                if (partnerRes.ok) {
+                    const partnerData = await partnerRes.json();
+                    extendedData.partner_redirect_url = partnerData.verification_redirect_url;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch partner details", err);
+            }
+        }
 
         // IPFS Fetch Logic
         if (data.token_uri) {
@@ -350,7 +366,10 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/notarize`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
             body: JSON.stringify({ batchId, dataHash }),
             cache: 'no-store'
         });
