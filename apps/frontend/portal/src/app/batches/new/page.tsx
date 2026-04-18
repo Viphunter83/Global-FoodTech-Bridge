@@ -107,6 +107,13 @@ export default function CreateBatchPage() {
         setCreatedBatchId(null);
         setError(null);
 
+        // Security check for environment configuration
+        if (!process.env.NEXT_PUBLIC_INTERNAL_API_KEY) {
+            setError('Security configuration missing: NEXT_PUBLIC_INTERNAL_API_KEY is not defined in Vercel. Please add it to enable blockchain features.');
+            setIsLoading(false);
+            return;
+        }
+
         const formData = new FormData(event.currentTarget);
 
         // Core fields for current API
