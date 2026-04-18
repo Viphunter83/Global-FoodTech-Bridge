@@ -13,6 +13,8 @@ interface AuthContextType {
     companyId: string | null;
     loading: boolean;
     logout: () => Promise<void>;
+    setRole: (role: UserRole) => void;
+    setCompanyId: (id: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, role, companyId, loading, logout }}>
+        <AuthContext.Provider value={{ user, role, companyId, loading, logout, setRole, setCompanyId }}>
             {!loading && children}
         </AuthContext.Provider>
     );
