@@ -19,6 +19,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LoadingScreen = () => (
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-[9999]">
+        <div className="relative w-16 h-16 mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin" />
+            <div className="absolute inset-2 rounded-full border-4 border-gold-100 border-b-gold-500 animate-spin-reverse" />
+        </div>
+        <div className="flex flex-col items-center">
+            <p className="text-emerald-900 font-medium tracking-wide font-sans animate-pulse">Establishing Secure Bridge...</p>
+            <span className="text-xs text-emerald-600/60 mt-2">Verifying Node Identity</span>
+        </div>
+    </div>
+);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<UserRole>('PENDING');
@@ -27,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            setLoading(true);
+            // Only set loading to true if we are transitioning to a user
+            if (firebaseUser) setLoading(true);
+            
             setUser(firebaseUser);
             
             if (firebaseUser) {
@@ -42,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setRole(data.role as UserRole);
                         setCompanyId(data.companyId || null);
                     } else {
-                        // 2. Fallback: Check email (for initial admin setup) or default to PARTNER
+                        // 2. Fallback: Check email (for initial admin setup)
                         if (firebaseUser.email?.includes('admin') || firebaseUser.email === 'olegvakin@gmail.com') {
                             setRole('ADMIN');
                         } else {
@@ -53,27 +68,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (error) {
                     console.error("Error fetching user role:", error);
                     setRole('PENDING');
+                    // Ensure we don't hang on error
+                } finally {
+                    setLoading(false);
                 }
             } else {
                 // Remove session cookie
                 document.cookie = 'gftb-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
                 setRole('PENDING');
                 setCompanyId(null);
+                setLoading(false);
             }
-            
-            setLoading(false);
         });
 
         return () => unsubscribe();
     }, []);
 
     const logout = async () => {
+        setLoading(true);
         await signOut(auth);
     };
 
     return (
         <AuthContext.Provider value={{ user, role, companyId, loading, logout, setRole, setCompanyId }}>
-            {!loading && children}
+            {loading ? <LoadingScreen /> : children}
         </AuthContext.Provider>
     );
 }
