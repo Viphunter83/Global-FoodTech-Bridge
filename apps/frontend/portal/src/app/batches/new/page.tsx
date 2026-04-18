@@ -386,7 +386,7 @@ export default function CreateBatchPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 items-end">
                             <div className="space-y-2">
                                 <Label htmlFor="origin_country">{t('form_production_location')}</Label>
                                 <Input
@@ -426,7 +426,7 @@ export default function CreateBatchPage() {
                             </div>
 
                             {/* Location Data */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4 items-end">
                                 <div className="space-y-2">
                                     <Label htmlFor="production_location">{t('form_production_location')}</Label>
                                     <div className="relative">
@@ -454,7 +454,7 @@ export default function CreateBatchPage() {
                             </div>
 
                             {/* Dates Row */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4 items-end">
                                 <div className="space-y-2 text-left">
                                     <Label>{t('form_production_date')}</Label>
                                     <Popover>
