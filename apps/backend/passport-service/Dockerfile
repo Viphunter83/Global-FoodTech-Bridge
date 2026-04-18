@@ -7,6 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+RUN go mod tidy
 
 # Build the binary
 # CGO_ENABLED=0 for static binary, though less critical on Debian, still good practice
