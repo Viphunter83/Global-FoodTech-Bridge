@@ -1,0 +1,2 @@
+ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS min_temp FLOAT;
+ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS max_temp FLOAT;

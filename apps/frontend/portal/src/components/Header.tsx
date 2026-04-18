@@ -13,27 +13,33 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 max-w-screen-2xl items-center mx-auto px-4">
-                <div className="mr-4 flex flex-1 items-center">
-                    <Link href="/" className="mr-6 flex items-center space-x-2">
-                        <span className="font-bold inline-block">
-                            GFTB
-                        </span>
-                        <span className="hidden lg:inline-block font-medium text-xs text-muted-foreground">
-                            Global Supply Chain
-                        </span>
+        <header className="sticky top-0 z-50 w-full glass border-b border-primary/10 transition-all duration-300">
+            <div className="container flex h-16 max-w-screen-2xl items-center mx-auto px-4 md:px-8">
+                <div className="mr-4 flex flex-1 items-center gap-8">
+                    <Link href="/" className="flex items-center space-x-3 group">
+                        <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                            <PackageSearch className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-xl tracking-tight text-foreground">
+                                GFTB <span className="text-primary">Bridge</span>
+                            </span>
+                            <span className="hidden lg:inline-block font-medium text-[10px] uppercase tracking-widest text-muted-foreground/80">
+                                Global Supply Chain
+                            </span>
+                        </div>
                     </Link>
                     
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-                        <Link href="/batches/new" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                    <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
+                        <Link href="/batches/new" className="transition-all hover:text-primary text-foreground/70">
                             {t('menu_create_batch')}
                         </Link>
-                        <Link href="/how-it-works" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                        <Link href="/how-it-works" className="transition-all hover:text-primary text-foreground/70">
                             {t('menu_how_it_works')}
                         </Link>
-                        <Link href="/admin/companies" className="transition-colors hover:text-foreground/80 text-foreground/60 font-semibold text-primary">
+                        <Link href="/admin/companies" className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary border border-primary/10 hover:bg-primary/10 transition-all">
+                            <LayoutDashboard className="h-3.5 w-3.5" />
                             {t('menu_admin')}
                         </Link>
                     </nav>

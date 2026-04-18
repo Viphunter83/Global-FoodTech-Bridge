@@ -10,17 +10,6 @@ import (
 	"fmt"
 )
 
-type SLARule struct {
-	MinTemp float64
-	MaxTemp float64
-}
-
-var SLARegistry = map[string]SLARule{
-	"PHO_BO_SOUP": {MinTemp: -25.0, MaxTemp: -18.0},
-	"MANGO_SHAKE": {MinTemp: 2.0, MaxTemp: 6.0},
-	"DRIED_MANGO": {MinTemp: 10.0, MaxTemp: 25.0}, // Universal addition
-}
-
 type BatchService struct {
 	repo           *postgres.BatchRepository
 	complianceRepo *postgres.ComplianceRepository
