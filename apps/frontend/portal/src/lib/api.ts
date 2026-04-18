@@ -302,7 +302,12 @@ export async function getTelemetry(id: string, minLimit: number = -22, maxLimit:
 export async function getBlockchainStatus(id: string): Promise<BlockchainStatus> {
     // Pure API call. No local storage fallbacks here.
     try {
-        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/status/${id}`, { cache: 'no-store' });
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/status/${id}`, { 
+            headers: {
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
+            cache: 'no-store' 
+        });
         if (!res.ok) {
             // Default "New Batch" state for fresh items
             return {
@@ -409,7 +414,10 @@ export async function initiateHandover(batchId: string, toAddress: string): Prom
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
             body: JSON.stringify({ batchId, toAddress }),
             cache: 'no-store'
         });
@@ -429,7 +437,10 @@ export async function acceptHandover(batchId: string): Promise<{ status: string;
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/accept`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
             body: JSON.stringify({ batchId }),
             cache: 'no-store'
         });
@@ -449,7 +460,10 @@ export async function reportViolation(batchId: string, details: string): Promise
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/violation`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+            },
             body: JSON.stringify({ batchId, details }),
             cache: 'no-store'
         });

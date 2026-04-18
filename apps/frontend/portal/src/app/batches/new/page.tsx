@@ -149,6 +149,9 @@ export default function CreateBatchPage() {
             console.log("Uploading to IPFS with mapped certificates...", certMapping);
             const uploadRes = await fetch('/api/blockchain/ipfs/upload', {
                 method: 'POST',
+                headers: {
+                    'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
+                },
                 // No Content-Type header needed for FormData; browser sets boundary
                 body: uploadPayload,
             });
