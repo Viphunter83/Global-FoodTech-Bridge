@@ -6,6 +6,7 @@ import { getBlockchainStatus, getTelemetry, BlockchainStatus, Telemetry } from '
 import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
+import { BlockchainProof } from '@/components/ui/BlockchainProof';
 
 const TelemetryChart = dynamic(
     () => import('@/components/ui/TelemetryChart').then((mod) => mod.TelemetryChart),
@@ -157,6 +158,15 @@ export default function VerifyPage() {
                         </p>
                     </CardContent>
                 </Card>
+
+                {/* 4. BLOCKCHAIN PROOF & TRANSPARENCY */}
+                <BlockchainProof 
+                    batchId={batchId}
+                    txHash={status.txHash}
+                    dataHash={batch.token_uri?.replace('ipfs://', '')}
+                    issuer={batch.manufacturer_id}
+                    timestamp={new Date(batch.created_at).toLocaleString()}
+                />
 
                 <div className="text-center pb-8 pt-4">
                     <p className="text-xs text-gray-400">Powered by Global FoodTech Bridge Blockchain</p>
