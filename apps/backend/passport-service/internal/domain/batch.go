@@ -20,7 +20,7 @@ type BatchCertificate struct {
 	Name string `json:"name"`
 }
 
-// ProductBatch represents a production batch of food
+// Batch represents a production batch of food
 type Batch struct {
 	ID                 uuid.UUID          `json:"id"`
 	CreatedAt          time.Time          `json:"created_at"`

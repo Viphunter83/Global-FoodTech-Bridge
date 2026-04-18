@@ -313,6 +313,20 @@ export default function CreateBatchPage() {
                                             <RefreshCw size={14} />
                                         </Button>
                                     </div>
+                                ) : templates.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center p-4 border border-dashed rounded-md bg-gray-50 text-gray-400">
+                                        <p className="text-xs italic mb-2 text-center">{t('compliance_empty_templates') || 'No templates available.'}</p>
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={loadTemplates}
+                                            className="h-8 text-xs gap-1.5"
+                                        >
+                                            <RefreshCw size={12} />
+                                            {t('btn_retry') || 'Initialize System'}
+                                        </Button>
+                                    </div>
                                 ) : (
                                     <select
                                         id="template_id"

@@ -84,81 +84,96 @@ func (r *TemplateRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain
 	return &t, nil
 }
 func (r *TemplateRepository) SeedDefaults(ctx context.Context) error {
-	// Check if templates exist
-	var count int
-	err := r.db.QueryRow(ctx, "SELECT COUNT(*) FROM supply_chain_templates").Scan(&count)
-	if err != nil {
-		return fmt.Errorf("failed to check templates count: %w", err)
-	}
-
-	if count > 0 {
-		return nil // Already seeded
-	}
-
-	// 1. Cold Chain
-	var coldID uuid.UUID
-	err = r.db.QueryRow(ctx, `
-		INSERT INTO supply_chain_templates (name, description) 
-		VALUES ('Standard Cold Chain', 'General supply chain for temperature-sensitive products like beef or fish.')
-		RETURNING id
-	`).Scan(&coldID)
-	if err != nil {
-		return err
-	}
-
-	steps := []struct {
-		order int
-		name  string
-		icon  string
-		cert  string
-	}{
-		{1, "Produced & Packed", "package", ""},
-		{2, "Quality Check (AI)", "check", "HEALTH_CERT"},
-		{3, "International Transit", "truck", "COLD_CHAIN_CERT"},
-		{4, "Regional Hub Arrival", "warehouse", ""},
-		{5, "Final Delivery", "fork", ""},
-	}
-
-	for _, s := range steps {
-		_, err = r.db.Exec(ctx, `
-			INSERT INTO template_steps (template_id, step_order, name, icon, required_cert)
-			VALUES ($1, $2, $3, $4, $5)
-		`, coldID, s.order, s.name, s.icon, s.cert)
-		if err != nil {
-			return err
+	defaultTemplates := []struct {
+		name        string
+		description string
+		steps       []struct {
+			order int
+			name  string
+			icon  string
+			cert  string
 		}
-	}
-
-	// 2. Ambient Food
-	var ambientID uuid.UUID
-	err = r.db.QueryRow(ctx, `
-		INSERT INTO supply_chain_templates (name, description) 
-		VALUES ('Ambient Goods Export', 'Safe transit for dry goods with standard shelf life.')
-		RETURNING id
-	`).Scan(&ambientID)
-	if err != nil {
-		return err
-	}
-
-	ambientSteps := []struct {
-		order int
-		name  string
-		icon  string
-		cert  string
 	}{
-		{1, "Harvested & Dried", "leaf", ""},
-		{2, "Vacuum Packaging", "package", ""},
-		{3, "Export Logistics", "truck", "PHYTOSANITARY_CERT"},
-		{4, "Ready for Distribution", "warehouse", ""},
+		{
+			name:        "Standard Cold Chain",
+			description: "General supply chain for temperature-sensitive products like beef or fish.",
+			steps: []struct {
+				order int
+				name  string
+				icon  string
+				cert  string
+			}{
+				{1, "Produced & Packed", "package", ""},
+				{2, "Quality Check (AI)", "check", "HEALTH_CERT"},
+				{3, "Cold Chain Logistics", "truck", "COLD_CHAIN_CERT"},
+				{4, "Regional Hub Arrival", "warehouse", ""},
+				{5, "Final Delivery", "fork", ""},
+			},
+		},
+		{
+			name:        "Ambient Goods Export",
+			description: "Safe transit for dry goods with standard shelf life.",
+			steps: []struct {
+				order int
+				name  string
+				icon  string
+				cert  string
+			}{
+				{1, "Harvested & Dried", "leaf", ""},
+				{2, "Vacuum Packaging", "package", ""},
+				{3, "Export Logistics", "truck", "PHYTOSANITARY_CERT"},
+				{4, "Ready for Distribution", "warehouse", ""},
+			},
+		},
 	}
 
-	for _, s := range ambientSteps {
-		_, err = r.db.Exec(ctx, `
-			INSERT INTO template_steps (template_id, step_order, name, icon, required_cert)
-			VALUES ($1, $2, $3, $4, $5)
-		`, ambientID, s.order, s.name, s.icon, s.cert)
+	for _, dt := range defaultTemplates {
+		var templateID uuid.UUID
+		// check if exists
+		err := r.db.QueryRow(ctx, "SELECT id FROM supply_chain_templates WHERE name = $1", dt.name).Scan(&templateID)
 		if err != nil {
-			return err
+			if err == pgx.ErrNoRows {
+				// insert
+				err = r.db.QueryRow(ctx, `
+					INSERT INTO supply_chain_templates (name, description) 
+					VALUES ($1, $2)
+					RETURNING id
+				`, dt.name, dt.description).Scan(&templateID)
+				if err != nil {
+					return fmt.Errorf("failed to insert template %s: %w", dt.name, err)
+				}
+			} else {
+				return fmt.Errorf("failed to check existence of template %s: %w", dt.name, err)
+			}
+		}
+
+		// Sync steps
+		for _, s := range dt.steps {
+			var stepID uuid.UUID
+			err = r.db.QueryRow(ctx, "SELECT id FROM template_steps WHERE template_id = $1 AND step_order = $2", templateID, s.order).Scan(&stepID)
+			if err != nil {
+				if err == pgx.ErrNoRows {
+					_, err = r.db.Exec(ctx, `
+						INSERT INTO template_steps (template_id, step_order, name, icon, required_cert)
+						VALUES ($1, $2, $3, $4, $5)
+					`, templateID, s.order, s.name, s.icon, s.cert)
+					if err != nil {
+						return fmt.Errorf("failed to insert step %d for template %s: %w", s.order, dt.name, err)
+					}
+				} else {
+					return fmt.Errorf("failed to check step %d for template %s: %w", s.order, dt.name, err)
+				}
+			} else {
+				// Update existing step to ensure required_cert is set (fix previous partial seeds)
+				_, err = r.db.Exec(ctx, `
+					UPDATE template_steps 
+					SET name = $1, icon = $2, required_cert = $3
+					WHERE id = $4
+				`, s.name, s.icon, s.cert, stepID)
+				if err != nil {
+					return fmt.Errorf("failed to update step %d for template %s: %w", s.order, dt.name, err)
+				}
+			}
 		}
 	}
 
