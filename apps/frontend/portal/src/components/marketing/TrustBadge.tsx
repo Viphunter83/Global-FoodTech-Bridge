@@ -1,14 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { PackageSearch } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 interface TrustBadgeProps {
     name: string;
     description: string;
+    icon: LucideIcon;
 }
 
-export function TrustBadge({ name, description }: TrustBadgeProps) {
+export function TrustBadge({ name, description, icon: Icon }: TrustBadgeProps) {
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -17,7 +18,7 @@ export function TrustBadge({ name, description }: TrustBadgeProps) {
             className="flex flex-col items-center gap-4 p-6 rounded-[2rem] glass border-primary/5 hover:border-primary/20 transition-all group"
         >
             <div className="h-16 w-16 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                <PackageSearch className="h-8 w-8 text-primary group-hover:text-white" />
+                <Icon className="h-8 w-8 text-primary group-hover:text-white" />
             </div>
             <div className="text-center">
                 <p className="text-sm font-black uppercase tracking-widest text-foreground">{name}</p>

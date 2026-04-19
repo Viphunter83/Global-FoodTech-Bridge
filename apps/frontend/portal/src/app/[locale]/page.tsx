@@ -18,7 +18,11 @@ import {
     Factory,
     Truck,
     Fingerprint,
-    Database
+    Database,
+    Warehouse,
+    FileCheck,
+    Store,
+    ClipboardCheck
 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from '@/navigation';
@@ -280,8 +284,10 @@ export default function Home() {
                                     ))}
                                 </ul>
                                 <div className="pt-8">
-                                    <Button size="lg" className="h-16 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all">
-                                        {t('Marketing.partner_btn')}
+                                    <Button size="lg" asChild className="h-16 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all">
+                                        <Link href="/contact?subject=partner">
+                                            {t('Marketing.partner_btn')}
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
@@ -355,12 +361,12 @@ export default function Home() {
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                        <TrustBadge name={t('Tracking.ecosystem_logistics')} description={t('Tracking.hcmc_location')} />
-                        <TrustBadge name={t('Tracking.ecosystem_customs')} description={t('Tracking.ru_location')} />
-                        <TrustBadge name={t('Tracking.ecosystem_retail')} description={t('Tracking.uae_location')} />
-                        <TrustBadge name={t('Tracking.ecosystem_audit')} description={t('Tracking.halal_cert')} />
-                        <TrustBadge name={t('Tracking.ecosystem_iot')} description={t('Tracking.tive_integration')} />
-                        <TrustBadge name={t('Tracking.ecosystem_l2')} description={t('Tracking.polygon_mainnet')} />
+                        <TrustBadge name={t('Tracking.ecosystem_logistics')} description={t('Tracking.hcmc_location')} icon={Warehouse} />
+                        <TrustBadge name={t('Tracking.ecosystem_customs')} description={t('Tracking.ru_location')} icon={FileCheck} />
+                        <TrustBadge name={t('Tracking.ecosystem_retail')} description={t('Tracking.uae_location')} icon={Store} />
+                        <TrustBadge name={t('Tracking.ecosystem_audit')} description={t('Tracking.halal_cert')} icon={ClipboardCheck} />
+                        <TrustBadge name={t('Tracking.ecosystem_iot')} description={t('Tracking.tive_integration')} icon={Cpu} />
+                        <TrustBadge name={t('Tracking.ecosystem_l2')} description={t('Tracking.polygon_mainnet')} icon={Database} />
                     </div>
                 </div>
             </section>
@@ -370,11 +376,15 @@ export default function Home() {
                 <div className="container px-4 md:px-6 mx-auto text-center space-y-10">
                     <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter">{t('Marketing.ready_title')}</h2>
                     <div className="flex flex-wrap justify-center gap-6">
-                        <Button size="lg" className="h-16 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105">
-                            {t('Marketing.contact_sales')}
+                        <Button size="lg" asChild className="h-16 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105">
+                            <Link href="/contact?subject=sales">
+                                {t('Marketing.contact_sales')}
+                            </Link>
                         </Button>
-                        <Button size="lg" variant="outline" className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
-                            {t('Marketing.view_docs')}
+                        <Button size="lg" variant="outline" asChild className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
+                            <a href="https://docs.gftb.bridge" target="_blank" rel="noopener noreferrer">
+                                {t('Marketing.view_docs')}
+                            </a>
                         </Button>
                     </div>
                     
