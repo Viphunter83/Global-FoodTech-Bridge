@@ -1,8 +1,7 @@
-
 const { ethers } = require("ethers");
 
 const RPC_URL = "https://rpc-amoy.polygon.technology";
-const ADMIN_KEY = "7f270a660aa883584852ab117075c3ef46271c0c6ac4012108740c06497f1f96";
+const ADMIN_KEY = process.env.PRIVATE_KEY;
 const CONTRACT_ADDRESS = "0x34991cE9703C683e83C639A60632192fCa82728e";
 
 // Roles from smart contract

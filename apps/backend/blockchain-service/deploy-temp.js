@@ -1,8 +1,7 @@
-
 const { ethers } = require("ethers");
 
 const RPC_URL = "https://rpc-amoy.polygon.technology";
-const ADMIN_KEY = "7f270a660aa883584852ab117075c3ef46271c0c6ac4012108740c06497f1f96";
+const ADMIN_KEY = process.env.PRIVATE_KEY;
 
 // New Custodial Addresses
 const LOGISTICS_ADDR = "0x1b9ba7069eb01d54fE7E8fC563274f945576B73a";

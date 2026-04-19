@@ -2,7 +2,7 @@
 const { ethers } = require("ethers");
 
 const RPC_URL = "https://rpc-amoy.polygon.technology";
-const ADMIN_KEY = "11d9aa36e00148c062a2511f63071bfb50f57d5df9c5abf64fdb67a9c1779e89"; // The funded wallet
+const ADMIN_KEY = process.env.PRIVATE_KEY; // The funded wallet
 
 const LOGISTICS_ADDR = "0x1b9ba7069eb01d54fE7E8fC563274f945576B73a";
 const RETAILER_ADDR = "0xB69B16B4b22e65BfCe544774DA9947E61506Fea0";
