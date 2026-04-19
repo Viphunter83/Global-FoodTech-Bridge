@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { DashboardMap } from "@/components/ui/DashboardMap";
 const TelemetryChart = dynamic(
-    () => import("@/components/ui/TelemetryChart").then((mod) => mod.TelemetryChart),
+    () => import("@/components/ui/TelemetryChart"),
     { ssr: false, loading: () => <div className="h-[300px] w-full bg-primary/5 animate-pulse rounded-2xl" /> }
 );
 import { BlockchainControls } from "@/components/ui/BlockchainControls";
