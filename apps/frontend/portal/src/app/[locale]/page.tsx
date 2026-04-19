@@ -77,7 +77,7 @@ export default function Home() {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                                 </span>
-                                Blockchain Verified Supply Chain
+                                {t('Marketing.blockchain_verified_badge')}
                             </motion.div>
                             
                             <motion.h1 
@@ -190,33 +190,33 @@ export default function Home() {
             <section className="w-full py-32 bg-primary/[0.02]">
                 <div className="container px-4 md:px-6 mx-auto">
                     <div className="text-center max-w-3xl mx-auto mb-24 space-y-4">
-                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">The Process</h2>
-                        <h3 className="text-4xl md:text-6xl font-serif font-black italic tracking-tighter italic">From Origin to Verification</h3>
+                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">{t('Marketing.the_process')}</h2>
+                        <h3 className="text-4xl md:text-6xl font-serif font-black italic tracking-tighter italic">{t('Marketing.process_subtitle')}</h3>
                     </div>
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <ProcessStep 
                             icon={Factory}
-                            title="Passport Creation"
-                            description="Manufacturers generate a Digital Passport with GPS coordinates and audit certificates."
+                            title={t('Marketing.passport_creation_title')}
+                            description={t('Marketing.passport_creation_desc')}
                             index={0}
                         />
                         <ProcessStep 
-                            icon={Truck}
-                            title="IoT Monitoring"
-                            description="TIVE™ sensors record humidity and temperature directly to the blockchain."
+                            icon={Thermometer}
+                            title={t('Marketing.iot_monitoring_title')}
+                            description={t('Marketing.iot_monitoring_desc')}
                             index={1}
                         />
                         <ProcessStep 
                             icon={Fingerprint}
-                            title="Crypto Handover"
-                            description="Dual-signed signatures prove ownership transfer at every logistic node."
+                            title={t('Marketing.crypto_handover_title')}
+                            description={t('Marketing.crypto_handover_desc')}
                             index={2}
                         />
                         <ProcessStep 
-                            icon={ScanLine}
-                            title="Consumer Proof"
-                            description="Every scan provides mathematical proof of authenticity and quality."
+                            icon={Globe}
+                            title={t('Marketing.consumer_proof_title')}
+                            description={t('Marketing.consumer_proof_desc')}
                             index={3}
                         />
                     </div>
@@ -237,7 +237,7 @@ export default function Home() {
                             <div className="relative max-w-md mx-auto">
                                 <div className="absolute inset-0 bg-secondary/20 blur-[100px] rounded-full opacity-30" />
                                 <Image 
-                                    src="/verification_funnel_mockup_1776611061826.png"
+                                    src="/images/mockup-phone.png"
                                     alt="Consumer Sales Funnel Integration"
                                     width={500}
                                     height={1000}
@@ -248,7 +248,7 @@ export default function Home() {
                                         <Zap className="h-5 w-5" />
                                         <span className="font-black text-xs uppercase tracking-widest">+24% Sales</span>
                                     </div>
-                                    <p className="text-[10px] font-medium text-muted-foreground">Increased customer loyalty through radical transparency.</p>
+                                    <p className="text-[10px] font-medium text-muted-foreground">{t('Marketing.merchant_subtitle')}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -268,10 +268,10 @@ export default function Home() {
                                 </p>
                                 <ul className="space-y-4">
                                     {[
-                                        "Seamless Shopify/Custom Store integration",
-                                        "Direct 'Buy Now' buttons on verification page",
-                                        "Collect consumer insights & ESG metrics",
-                                        "Verified authenticity as a marketing premium"
+                                        t('Marketing.merchant_feature_1'),
+                                        t('Marketing.merchant_feature_2'),
+                                        t('Marketing.merchant_feature_3'),
+                                        t('Marketing.merchant_feature_4')
                                     ].map((item, i) => (
                                         <li key={i} className="flex items-center gap-3 text-foreground/80 font-medium">
                                             <CheckCircle2 className="h-5 w-5 text-secondary" />
@@ -281,7 +281,7 @@ export default function Home() {
                                 </ul>
                                 <div className="pt-8">
                                     <Button size="lg" className="h-16 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all">
-                                        Partner with GFTB Bridge
+                                        {t('Marketing.partner_btn')}
                                     </Button>
                                 </div>
                             </div>
@@ -291,14 +291,14 @@ export default function Home() {
             </section>
 
             {/* Interactive Search Tool (Moved here for better flow) */}
-            <section id="search-widget" className="w-full py-32 bg-slate-950/20">
+            <section id="search-widget" className="w-full py-32 bg-slate-950/20 text-foreground">
                 <div className="container px-4 md:px-6 mx-auto text-center space-y-12">
                     <div className="space-y-4">
-                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">Try it Live</h2>
-                        <h3 className="text-4xl md:text-5xl font-serif font-black italic tracking-tighter">Enter a Product Passport ID</h3>
+                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">{t('Marketing.try_it_live')}</h2>
+                        <h3 className="text-4xl md:text-5xl font-serif font-black italic tracking-tighter">{t('Marketing.enter_passport_id')}</h3>
                     </div>
 
-                    <div className="w-full flex flex-col items-center gap-8">
+                    <div className="w-full flex flex-col items-center gap-8 text-foreground">
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -337,7 +337,7 @@ export default function Home() {
                                     >
                                         {id.slice(0, 8)}...
                                     </button>
-                                ))}
+                                )) }
                             </div>
                         </div>
                     </div>
@@ -355,12 +355,12 @@ export default function Home() {
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                        <TrustBadge name="Logistics Hub" description="Ho Chi Minh City" />
-                        <TrustBadge name="Customs Portal" description="Russian Federation" />
-                        <TrustBadge name="Retail Partner" description="UAE Export Node" />
-                        <TrustBadge name="Audit Body" description="Global Halal Cert" />
-                        <TrustBadge name="IoT Network" description="Tive Integration" />
-                        <TrustBadge name="L2 Network" description="Polygon Mainnet" />
+                        <TrustBadge name={t('Tracking.ecosystem_logistics')} description={t('Tracking.hcmc_location')} />
+                        <TrustBadge name={t('Tracking.ecosystem_customs')} description={t('Tracking.ru_location')} />
+                        <TrustBadge name={t('Tracking.ecosystem_retail')} description={t('Tracking.uae_location')} />
+                        <TrustBadge name={t('Tracking.ecosystem_audit')} description={t('Tracking.halal_cert')} />
+                        <TrustBadge name={t('Tracking.ecosystem_iot')} description={t('Tracking.tive_integration')} />
+                        <TrustBadge name={t('Tracking.ecosystem_l2')} description={t('Tracking.polygon_mainnet')} />
                     </div>
                 </div>
             </section>
@@ -368,20 +368,20 @@ export default function Home() {
             {/* CTA Footer */}
             <section className="w-full py-24 bg-gradient-to-t from-primary/10 to-transparent">
                 <div className="container px-4 md:px-6 mx-auto text-center space-y-10">
-                    <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter">Ready to secure your future?</h2>
+                    <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter">{t('Marketing.ready_title')}</h2>
                     <div className="flex flex-wrap justify-center gap-6">
                         <Button size="lg" className="h-16 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105">
-                            Contact Sales
+                            {t('Marketing.contact_sales')}
                         </Button>
                         <Button size="lg" variant="outline" className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
-                            View Documentation
+                            {t('Marketing.view_docs')}
                         </Button>
                     </div>
                     
                     <div className="pt-20 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-8 text-muted-foreground/60 text-xs font-bold uppercase tracking-widest">
                         <div className="flex items-center gap-4">
                             <Database className="h-4 w-4" />
-                            <span>Powered by Polygon Mainnet</span>
+                            <span>{t('Marketing.blockchain_badge')}</span>
                         </div>
                         <div className="flex gap-8">
                             <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
@@ -390,7 +390,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             Gateway Operational
+                             {t('Marketing.operational_status')}
                         </div>
                     </div>
                 </div>

@@ -16,6 +16,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { GFTBLogo } from './GFTBLogo';
+
 
 export function Header() {
     const t = useTranslations();
@@ -27,14 +29,7 @@ export function Header() {
             <div className="container flex h-16 max-w-screen-2xl items-center mx-auto px-4 md:px-8">
                 <div className="mr-4 flex flex-1 items-center gap-8">
                     <Link href="/" className="flex items-center space-x-3 group">
-                        <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                            <PackageSearch className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-xl tracking-tight text-foreground">
-                                GFTB <span className="text-secondary">Bridge</span>
-                            </span>
-                        </div>
+                        <GFTBLogo className="h-10" />
                     </Link>
                     
                     {/* Desktop Navigation */}
