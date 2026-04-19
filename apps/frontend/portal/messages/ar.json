@@ -140,6 +140,11 @@
   },
   "Compliance": {
     "violation_title": "تم تسجيل انتهاك للامتثال",
+    "violation_desc": "تم خرق سلسلة العهدة. لا تستهلك.",
+    "verified_direct": "موثق. مباشرة من المصدر.",
+    "shop_brand": "متجر العلامة التجارية",
+    "buy_now": "اشتري الآن",
+    "brand_story_short": "أخلاقي. شفاف. عالمي.",
     "violation_details": "التفاصيل:",
     "sla_violations_title": "تنبيه: تم اكتشاف انتهاكات SLA",
     "sla_violations_desc": "تم تسجيل انتهاكات الامتثال في تاريخ blockchain.",

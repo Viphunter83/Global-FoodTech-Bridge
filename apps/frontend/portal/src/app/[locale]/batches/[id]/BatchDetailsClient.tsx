@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { BlockchainProof } from '@/components/blockchain/BlockchainProof';
+import { MerchantDetailsCard } from '@/components/marketing/MerchantDetailsCard';
+
 
 interface BatchDetailsClientProps {
     batch: any;
@@ -124,12 +126,21 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                 </div>
 
                 {/* Product Hero Section */}
-                <div className="mb-12">
+                <div className="mb-8">
                     <ProductHero 
                         productName={batch.product_type.replace('_', ' ')}
                         batchId={batch.id}
                         status={effectiveBlockchain.verified && !effectiveBlockchain.violation && alerts.length === 0 ? 'Verified' : (effectiveBlockchain.violation || alerts.length > 0 ? 'Warning' : 'Pending')}
                         trustMetrics={batch.trust_metrics}
+                    />
+                </div>
+
+                {/* Merchant Sales Funnel */}
+                <div className="mb-12">
+                    <MerchantDetailsCard 
+                        merchantName={batch.manufacturer_id.toUpperCase()}
+                        redirectUrl={batch.partner_redirect_url}
+                        description={batch.marketing_story?.[locale] || batch.marketing_story?.en}
                     />
                 </div>
 

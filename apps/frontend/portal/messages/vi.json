@@ -144,6 +144,11 @@
     "form_certificates_sub": "Nhấp để tải lên hoặc kéo thả"
   },
   "Compliance": {
+    "violation_desc": "Chuỗi hành trình sản phẩm bị phá vỡ. Không tiêu thụ.",
+    "verified_direct": "Đã xác minh. Trình tiếp từ nguồn.",
+    "shop_brand": "Cửa hàng của hãng",
+    "buy_now": "Mua ngay",
+    "brand_story_short": "Đạo đức. Minh bạch. Toàn cầu.",
     "violation_title": "Ghi nhận Vi phạm Tuân thủ",
     "violation_details": "Chi tiết:",
     "sla_violations_title": "Chú ý: Phát hiện Vi phạm SLA",

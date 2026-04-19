@@ -144,6 +144,11 @@
     "form_certificates_sub": "Click to upload or drag and drop"
   },
   "Compliance": {
+    "violation_desc": "Chain of custody broken. Do not consume.",
+    "verified_direct": "Verified. Direct from Source.",
+    "shop_brand": "Shop this Brand",
+    "buy_now": "Buy Now",
+    "brand_story_short": "Ethical. Transparent. Global.",
     "violation_title": "Compliance Violation Recorded",
     "violation_details": "Details:",
     "sla_violations_title": "Attention: SLA Violations Detected",
