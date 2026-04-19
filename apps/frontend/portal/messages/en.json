@@ -21,11 +21,30 @@
     "btn_download_report": "Export Compliance Audit (PDF)"
   },
   "Hero": {
-    "title": "Trust Your Supply Chain.",
-    "subtitle": "End-to-end traceability for global food trade. Secured by Blockchain, Verified by IoT.",
-    "cta_track": "Begin Verification",
-    "cta_dashboard": "Access Bridge Portal",
-    "try_demo": "Try demo ID:"
+    "title": "Trust every knot in your supply chain.",
+    "subtitle": "Global trade tracking that moves at the speed of trust. Powered by Polygon Mainnet, verified by real-time IoT.",
+    "cta_track": "Verify a Passport",
+    "cta_dashboard": "Partner Access",
+    "try_demo": "Select a live batch to demo:"
+  },
+  "Marketing": {
+    "hard_trust_title": "Why Global FoodTech Bridge?",
+    "hard_trust_subtitle": "Moving from 'Trust me' to 'Verify the Math'.",
+    "iot_feature_title": "Autonomous Witness",
+    "iot_feature_desc": "IoT sensors act as an objective third party, recording temperature and location without human interference.",
+    "bc_feature_title": "Immutable Truth",
+    "bc_feature_desc": "Every violation and handoff is notarized on Polygon, creating a legal-grade audit trail.",
+    "merchant_title": "The Conversion Multiplier",
+    "merchant_subtitle": "Direct loyalty starts with radical transparency.",
+    "merchant_funnel_title": "From Trust to Checkout",
+    "merchant_funnel_desc": "Our Digital Passport doesn't just verify quality—it drives revenue. After a consumer scans your products, they are led directly into your marketing funnel and e-commerce portal.",
+    "ecosystem_title": "The Network of Trust",
+    "ecosystem_subtitle": "Powering international trade corridors."
+  },
+  "CaseStudy": {
+    "verified_logistics": "Logistics Hubs",
+    "customs_approved": "Customs Portals",
+    "retail_chains": "Retail Networks"
   },
   "Features": {
     "traceability_title": "Global Traceability",

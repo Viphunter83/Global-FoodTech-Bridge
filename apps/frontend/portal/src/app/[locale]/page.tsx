@@ -4,11 +4,28 @@ import { Link } from '@/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Search, ShieldCheck, Thermometer, Globe, CheckCircle2 } from 'lucide-react';
+import { 
+    ArrowRight, 
+    Search, 
+    ShieldCheck, 
+    Thermometer, 
+    Globe, 
+    CheckCircle2, 
+    Zap, 
+    BarChart3, 
+    Cpu, 
+    ScanLine,
+    Factory,
+    Truck,
+    Fingerprint,
+    Database
+} from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from '@/navigation';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { ProcessStep } from '@/components/marketing/ProcessStep';
+import { TrustBadge } from '@/components/marketing/TrustBadge';
 
 export default function Home() {
     const [batchId, setBatchId] = useState('');
@@ -23,15 +40,19 @@ export default function Home() {
     };
 
     const fadeInUp = {
-        initial: { opacity: 0, y: 20 },
+        initial: { opacity: 0, y: 30 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.6 }
+        transition: { duration: 0.8 }
+    };
+
+    const staggerContainer = {
+        animate: { transition: { staggerChildren: 0.1 } }
     };
 
     return (
         <main className="flex flex-col items-center bg-background min-h-screen">
             {/* Hero Section with Cinematic Background */}
-            <section className="relative w-full min-h-[90vh] flex items-center justify-center overflow-hidden">
+            <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="/hero-bridge.png"
@@ -49,10 +70,7 @@ export default function Home() {
                             className="space-y-6"
                             initial="initial"
                             animate="animate"
-                            variants={{
-                                initial: { opacity: 0 },
-                                animate: { opacity: 1, transition: { staggerChildren: 0.2 } }
-                            }}
+                            variants={staggerContainer}
                         >
                             <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border-primary/20 text-primary text-xs font-bold uppercase tracking-widest leading-none">
                                 <span className="relative flex h-2 w-2">
@@ -64,156 +82,319 @@ export default function Home() {
                             
                             <motion.h1 
                                 variants={fadeInUp}
-                                className="text-5xl md:text-8xl font-serif font-bold tracking-tight text-foreground leading-[1.1] text-shadow"
+                                className="text-6xl md:text-9xl font-serif font-black tracking-tighter text-foreground leading-[0.9] text-shadow"
                             >
                                 {t('Hero.title').split('.')[0]}<span className="text-secondary">.</span>
                             </motion.h1>
                             
                             <motion.p 
                                 variants={fadeInUp}
-                                className="text-lg md:text-2xl text-muted-foreground/90 max-w-3xl mx-auto leading-relaxed text-shadow"
+                                className="text-lg md:text-2xl text-muted-foreground/90 max-w-3xl mx-auto leading-relaxed font-medium"
                             >
                                 {t('Hero.subtitle')}
                             </motion.p>
-                        </motion.div>
 
-                        {/* Interactive Verification Widget */}
-                        <div className="w-full flex flex-col items-center gap-6">
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.8, duration: 0.8 }}
-                                className="w-full max-w-2xl p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 shadow-2xl"
-                            >
-                                <div className="glass rounded-[2.4rem] p-4 md:p-8 flex flex-col md:flex-row items-stretch gap-4">
-                                    <form onSubmit={handleTrack} className="flex-1 flex flex-col sm:flex-row gap-3">
-                                        <div className="relative flex-1">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                                <Search className="h-5 w-5" />
-                                            </div>
-                                            <Input
-                                                placeholder={t('Hero.try_demo')}
-                                                className="w-full h-16 pl-12 pr-6 rounded-2xl bg-background/50 border-primary/10 focus:ring-secondary/50 focus:border-secondary text-lg transition-all"
-                                                value={batchId}
-                                                onChange={(e) => setBatchId(e.target.value)}
-                                            />
-                                        </div>
-                                        <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
-                                            {t('Hero.cta_track')}
-                                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                        </Button>
-                                    </form>
-                                </div>
+                            <motion.div variants={fadeInUp} className="flex flex-wrap items-center justify-center gap-4 pt-4">
+                                <Button size="lg" onClick={() => document.getElementById('search-widget')?.scrollIntoView({ behavior: 'smooth' })} className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white shadow-2xl shadow-primary/20 hover:scale-105 transition-all">
+                                    {t('Hero.cta_track')}
+                                </Button>
+                                <Button size="lg" variant="outline" asChild className="h-16 px-8 rounded-2xl text-lg font-bold border-primary/20 glass hover:bg-white/5 transition-all">
+                                    <Link href="/dashboard">
+                                        {t('Hero.cta_dashboard')}
+                                    </Link>
+                                </Button>
                             </motion.div>
-
-                            {/* Quick Examples */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 1.2 }}
-                                className="flex flex-wrap items-center gap-3 text-sm text-white/70 animate-in fade-in slide-in-from-top-4 duration-1000 delay-500 fill-mode-both"
-                            >
-                                <span>{t('Hero.try_demo')}</span>
-                                <div className="flex gap-2">
-                                    {['2cbade92-e88e-48a8-a682-94ae0a0205e8', 'cde03dc1-202b-43c7-a0cd-7cbcbbeeb884'].map((id) => (
-                                        <button
-                                            key={id}
-                                            onClick={() => setBatchId(id)}
-                                            className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-xs font-mono"
-                                        >
-                                            {id.slice(0, 8)}...
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </div>
-
-                        <motion.div 
-                            variants={fadeInUp}
-                            initial="initial"
-                            animate="animate"
-                            transition={{ delay: 1.4 }}
-                            className="flex items-center gap-8 text-sm font-medium text-muted-foreground/80"
-                        >
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary" />
-                                Fully Automated
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary" />
-                                Real-time IoT
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary" />
-                                Immutable Ledger
-                            </div>
                         </motion.div>
-
                     </div>
                 </div>
             </section>
 
-            {/* Feature Modules */}
-            <section className="w-full py-24 relative">
+            {/* The Hard Trust Advantage */}
+            <section className="w-full py-32 relative overflow-hidden">
                 <div className="container px-4 md:px-6 mx-auto">
-                    <div className="grid gap-8 md:grid-cols-3">
-                        <FeatureCard 
-                            icon={<Globe className="h-8 w-8" />}
-                            title={t('Features.traceability_title')}
-                            desc={t('Features.traceability_desc')}
-                            delay={0.2}
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                            className="space-y-8"
+                        >
+                            <div className="space-y-4">
+                                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">{t('Marketing.hard_trust_subtitle')}</h2>
+                                <h3 className="text-4xl md:text-6xl font-serif font-black italic tracking-tighter leading-tight">
+                                    {t('Marketing.hard_trust_title')}
+                                </h3>
+                            </div>
+                            
+                            <div className="grid gap-6">
+                                <div className="flex gap-4 p-6 rounded-3xl glass border-primary/5 hover:border-primary/20 transition-all">
+                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Cpu className="text-primary h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-bold mb-2">{t('Marketing.iot_feature_title')}</h4>
+                                        <p className="text-muted-foreground text-sm leading-relaxed">{t('Marketing.iot_feature_desc')}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 p-6 rounded-3xl glass border-primary/5 hover:border-primary/20 transition-all">
+                                    <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="text-secondary h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-bold mb-2">{t('Marketing.bc_feature_title')}</h4>
+                                        <p className="text-muted-foreground text-sm leading-relaxed">{t('Marketing.bc_feature_desc')}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                        
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                            className="relative group"
+                        >
+                            <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full opacity-30 group-hover:opacity-50 transition-opacity" />
+                            <div className="relative glass p-4 rounded-[3rem] border-primary/10 shadow-2xl">
+                                <div className="bg-slate-950 rounded-[2.5rem] p-8 font-mono text-xs space-y-4 text-emerald-400 overflow-hidden">
+                                    <div className="flex gap-2 mb-6">
+                                        <div className="h-3 w-3 rounded-full bg-red-500/50" />
+                                        <div className="h-3 w-3 rounded-full bg-yellow-500/50" />
+                                        <div className="h-3 w-3 rounded-full bg-green-500/50" />
+                                    </div>
+                                    <p className="opacity-50"># GFTB-BRIDGE PROTOCOL v4.2</p>
+                                    <p>&gt; Initializing Immutable Ledger Sequence...</p>
+                                    <p className="text-blue-400">&gt; VERIFYING BATCH: 2cbade92-e88e-48a8-a682-94ae0a0205e8</p>
+                                    <p className="text-purple-400">&gt; IOT_SENSOR_SYNC: EMERSON_492 (ACTIVE)</p>
+                                    <p className="text-emerald-500">&gt; STATUS: [100% SECURE] NOTARIZED ON POLYGON MAINNET</p>
+                                    <div className="h-40 flex items-end gap-1 pt-8">
+                                        {[40, 70, 45, 90, 65, 80, 50, 95, 30, 85, 60, 75].map((h, i) => (
+                                            <motion.div 
+                                                key={i} 
+                                                initial={{ height: 0 }}
+                                                whileInView={{ height: `${h}%` }}
+                                                className="flex-1 bg-gradient-to-t from-emerald-500/20 to-emerald-500" 
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
+            {/* How it Works Journey */}
+            <section className="w-full py-32 bg-primary/[0.02]">
+                <div className="container px-4 md:px-6 mx-auto">
+                    <div className="text-center max-w-3xl mx-auto mb-24 space-y-4">
+                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">The Process</h2>
+                        <h3 className="text-4xl md:text-6xl font-serif font-black italic tracking-tighter italic">From Origin to Verification</h3>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <ProcessStep 
+                            icon={Factory}
+                            title="Passport Creation"
+                            description="Manufacturers generate a Digital Passport with GPS coordinates and audit certificates."
+                            index={0}
                         />
-                        <FeatureCard 
-                            icon={<Thermometer className="h-8 w-8" />}
-                            title={t('Features.iot_title')}
-                            desc={t('Features.iot_desc')}
-                            delay={0.4}
+                        <ProcessStep 
+                            icon={Truck}
+                            title="IoT Monitoring"
+                            description="TIVE™ sensors record humidity and temperature directly to the blockchain."
+                            index={1}
                         />
-                        <FeatureCard 
-                            icon={<ShieldCheck className="h-8 w-8" />}
-                            title={t('Features.blockchain_title')}
-                            desc={t('Features.blockchain_desc')}
-                            delay={0.6}
+                        <ProcessStep 
+                            icon={Fingerprint}
+                            title="Crypto Handover"
+                            description="Dual-signed signatures prove ownership transfer at every logistic node."
+                            index={2}
+                        />
+                        <ProcessStep 
+                            icon={ScanLine}
+                            title="Consumer Proof"
+                            description="Every scan provides mathematical proof of authenticity and quality."
+                            index={3}
                         />
                     </div>
+                </div>
+            </section>
 
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="mt-24 p-8 md:p-16 rounded-[3rem] bg-primary/5 border border-primary/10 flex flex-col items-center text-center space-y-8"
-                    >
-                        <h2 className="text-3xl md:text-5xl font-serif font-bold">{t('Compliance.sla_violations_title')}</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto text-lg leading-relaxed">
-                            {t('Compliance.sla_violations_desc')}
-                        </p>
-                        <Button variant="outline" size="lg" asChild className="rounded-full px-8 h-14 font-bold border-primary text-primary hover:bg-primary hover:text-white transition-colors">
-                            <Link href="/dashboard">
-                                {t('Hero.cta_dashboard')}
-                            </Link>
+            {/* Merchant / B2B Advantage */}
+            <section className="w-full py-32 relative overflow-hidden">
+                <div className="container px-4 md:px-6 mx-auto">
+                    <div className="grid lg:grid-cols-2 gap-24 items-center">
+                        <motion.div 
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                            className="order-last lg:order-first"
+                        >
+                            <div className="relative max-w-md mx-auto">
+                                <div className="absolute inset-0 bg-secondary/20 blur-[100px] rounded-full opacity-30" />
+                                <Image 
+                                    src="/verification_funnel_mockup_1776611061826.png"
+                                    alt="Consumer Sales Funnel Integration"
+                                    width={500}
+                                    height={1000}
+                                    className="relative rounded-[3rem] shadow-2xl border-4 border-white/10 hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute -bottom-10 -right-10 glass p-8 rounded-3xl border-primary/20 shadow-2xl space-y-4 max-w-[200px]">
+                                    <div className="flex items-center gap-2 text-primary">
+                                        <Zap className="h-5 w-5" />
+                                        <span className="font-black text-xs uppercase tracking-widest">+24% Sales</span>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-muted-foreground">Increased customer loyalty through radical transparency.</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                        
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-secondary">{t('Marketing.merchant_subtitle')}</h2>
+                                <h3 className="text-4xl md:text-6xl font-serif font-black italic tracking-tighter leading-tight">
+                                    {t('Marketing.merchant_title')}
+                                </h3>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                <h4 className="text-2xl font-bold text-foreground/90">{t('Marketing.merchant_funnel_title')}</h4>
+                                <p className="text-lg text-muted-foreground leading-relaxed">
+                                    {t('Marketing.merchant_funnel_desc')}
+                                </p>
+                                <ul className="space-y-4">
+                                    {[
+                                        "Seamless Shopify/Custom Store integration",
+                                        "Direct 'Buy Now' buttons on verification page",
+                                        "Collect consumer insights & ESG metrics",
+                                        "Verified authenticity as a marketing premium"
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-foreground/80 font-medium">
+                                            <CheckCircle2 className="h-5 w-5 text-secondary" />
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="pt-8">
+                                    <Button size="lg" className="h-16 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all">
+                                        Partner with GFTB Bridge
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Interactive Search Tool (Moved here for better flow) */}
+            <section id="search-widget" className="w-full py-32 bg-slate-950/20">
+                <div className="container px-4 md:px-6 mx-auto text-center space-y-12">
+                    <div className="space-y-4">
+                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">Try it Live</h2>
+                        <h3 className="text-4xl md:text-5xl font-serif font-black italic tracking-tighter">Enter a Product Passport ID</h3>
+                    </div>
+
+                    <div className="w-full flex flex-col items-center gap-8">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="w-full max-w-3xl p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 shadow-2xl"
+                        >
+                            <div className="glass rounded-[2.4rem] p-4 md:p-8 flex flex-col md:flex-row items-stretch gap-4">
+                                <form onSubmit={handleTrack} className="flex-1 flex flex-col sm:flex-row gap-3">
+                                    <div className="relative flex-1">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                            <Search className="h-5 w-5" />
+                                        </div>
+                                        <Input
+                                            placeholder="Batch UUID (e.g. 2cbade92...)"
+                                            className="w-full h-16 pl-12 pr-6 rounded-2xl bg-background/50 border-primary/10 focus:ring-secondary/50 focus:border-secondary text-lg transition-all"
+                                            value={batchId}
+                                            onChange={(e) => setBatchId(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
+                                        {t('Hero.cta_track')}
+                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </form>
+                            </div>
+                        </motion.div>
+
+                        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+                            <span className="font-bold uppercase tracking-widest text-[10px]">{t('Hero.try_demo')}</span>
+                            <div className="flex gap-2">
+                                {['2cbade92-e88e-48a8-a682-94ae0a0205e8', 'cde03dc1-202b-43c7-a0cd-7cbcbbeeb884'].map((id) => (
+                                    <button
+                                        key={id}
+                                        onClick={() => setBatchId(id)}
+                                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs font-mono"
+                                    >
+                                        {id.slice(0, 8)}...
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Ecosystem Section */}
+            <section className="w-full py-32">
+                <div className="container px-4 md:px-6 mx-auto">
+                    <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+                        <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">{t('Marketing.ecosystem_title')}</h2>
+                        <h3 className="text-4xl md:text-5xl font-serif font-black italic tracking-tighter italic">
+                            {t('Marketing.ecosystem_subtitle')}
+                        </h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                        <TrustBadge name="Logistics Hub" description="Ho Chi Minh City" />
+                        <TrustBadge name="Customs Portal" description="Russian Federation" />
+                        <TrustBadge name="Retail Partner" description="UAE Export Node" />
+                        <TrustBadge name="Audit Body" description="Global Halal Cert" />
+                        <TrustBadge name="IoT Network" description="Tive Integration" />
+                        <TrustBadge name="L2 Network" description="Polygon Mainnet" />
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Footer */}
+            <section className="w-full py-24 bg-gradient-to-t from-primary/10 to-transparent">
+                <div className="container px-4 md:px-6 mx-auto text-center space-y-10">
+                    <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter">Ready to secure your future?</h2>
+                    <div className="flex flex-wrap justify-center gap-6">
+                        <Button size="lg" className="h-16 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105">
+                            Contact Sales
                         </Button>
-                    </motion.div>
+                        <Button size="lg" variant="outline" className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
+                            View Documentation
+                        </Button>
+                    </div>
+                    
+                    <div className="pt-20 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-8 text-muted-foreground/60 text-xs font-bold uppercase tracking-widest">
+                        <div className="flex items-center gap-4">
+                            <Database className="h-4 w-4" />
+                            <span>Powered by Polygon Mainnet</span>
+                        </div>
+                        <div className="flex gap-8">
+                            <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                            <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+                            <Link href="#" className="hover:text-primary transition-colors">GDPR / ESG</Link>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                             Gateway Operational
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
     );
 }
-
-function FeatureCard({ icon, title, desc, delay }: { icon: React.ReactNode, title: string, desc: string, delay: number }) {
-    return (
-        <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.8 }}
-            viewport={{ once: true }}
-            className="group relative p-8 rounded-[2rem] glass hover:bg-background/80 transition-all border-primary/5 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
-        >
-            <div className="mb-6 p-4 rounded-2xl bg-primary/5 text-primary w-fit group-hover:bg-primary group-hover:text-white transition-colors duration-500">
-                {icon}
-            </div>
-            <h3 className="text-2xl font-serif font-bold mb-4">{title}</h3>
-            <p className="text-muted-foreground leading-relaxed">{desc}</p>
-        </motion.div>
-    );
-}
-

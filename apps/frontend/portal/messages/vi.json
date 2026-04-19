@@ -21,11 +21,30 @@
     "btn_download_report": "Xuất Biên bản Kiểm toán (PDF)"
   },
   "Hero": {
-    "title": "Tin tưởng Chuỗi cung ứng của bạn.",
-    "subtitle": "Truy xuất nguồn gốc từ đầu đến cuối cho thương mại thực phẩm toàn cầu. Bảo mật bởi Blockchain, Xác minh bởi IoT.",
-    "cta_track": "Bắt đầu Xác minh",
-    "cta_dashboard": "Truy cập Cổng Kết nối",
-    "try_demo": "Thử mã demo:"
+    "title": "Tin tưởng mọi mắt xích trong chuỗi cung ứng của bạn.",
+    "subtitle": "Theo dõi thương mại toàn cầu với tốc độ của niềm tin. Vận hành bởi Polygon Mainnet, xác minh bởi IoT thời gian thực.",
+    "cta_track": "Xác minh Hộ chiếu",
+    "cta_dashboard": "Cổng đối tác",
+    "try_demo": "Chọn một lô hàng thực tế để dùng thử:"
+  },
+  "Marketing": {
+    "hard_trust_title": "Tại sao chọn Global FoodTech Bridge?",
+    "hard_trust_subtitle": "Chuyển từ 'Tin tôi đi' sang 'Xác minh bằng Toán học'.",
+    "iot_feature_title": "Nhân chứng Tự trị",
+    "iot_feature_desc": "Cảm biến IoT đóng vai trò là bên thứ ba khách quan, ghi lại nhiệt độ và vị trí mà không có sự can thiệp của con người.",
+    "bc_feature_title": "Sự thật Bất biến",
+    "bc_feature_desc": "Mọi vi phạm và bàn giao đều được công chứng trên Polygon, tạo ra nhật ký kiểm toán chuẩn pháp lý.",
+    "merchant_title": "Số nhân Chuyển đổi",
+    "merchant_subtitle": "Sự trung thành bắt đầu từ tính minh bạch tuyệt đối.",
+    "merchant_funnel_title": "Từ Niềm tin đến Thanh toán",
+    "merchant_funnel_desc": "Hộ chiếu Số của chúng tôi không chỉ xác nhận chất lượng—nó còn thúc đẩy doanh thu. Sau khi người tiêu dùng quét sản phẩm, họ sẽ được dẫn trực tiếp vào phễu marketing và cổng thương mại điện tử của bạn.",
+    "ecosystem_title": "Mạng lưới Niềm tin",
+    "ecosystem_subtitle": "Vận hành các hành lang thương mại quốc tế."
+  },
+  "CaseStudy": {
+    "verified_logistics": "Trung tâm Logistics",
+    "customs_approved": "Cổng Hải quan",
+    "retail_chains": "Mạng lưới Bán lẻ"
   },
   "Features": {
     "traceability_title": "Truy xuất Toàn cầu",
