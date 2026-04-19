@@ -77,7 +77,7 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
     *   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`: `...`
     *   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`: `...`
     *   `NEXT_PUBLIC_FIREBASE_APP_ID`: `...`
-    *   `NEXT_PUBLIC_INTERNAL_API_KEY`: `[Shared Secret for Backend Auth]`
+    *   `INTERNAL_API_KEY`: `[Shared Secret for Backend Auth]`. **CRITICAL**: Do NOT use `NEXT_PUBLIC_` prefix for this key to prevent browser exposure.
 
 ---
 
@@ -90,3 +90,15 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
 2.  **Gas Funds**: Ensure the `PRIVATE_KEY` wallet has MATIC on Polygon Amoy.
 
 3.  **Database Connection**: Verify IoT and Passport services can reach the Postgres DB.
+
+## 🔍 Step 4: Troubleshooting & Diagnostics
+
+The portal includes a self-healing diagnostic suite. If you see a blank screen or errors, open the **Browser Console (F12)** and look for:
+
+1.  **`[GFTB-DIAGNOSTIC]`**: This will flag exactly which environment variables are missing from the Vercel configuration.
+2.  **`[GFTB-HYDRATION]`**: Confirms if the React client-side has successfully taken over from the server.
+3.  **`MISSING_MESSAGE: NotFound`**: Indicates that translations for the 404 page are missing (ensure `messages/*.json` are updated).
+
+### Common Fixes:
+*   **Redirect Loops**: Ensure Vercel's `NEXT_PUBLIC_*_URL` variables do not end with a trailing slash unless handled by the proxy logic.
+*   **404 on /new paths**: This is usually a hydration mismatch. Verify that `src/app/layout.tsx` is kept minimal and doesn't conflict with localized layouts.

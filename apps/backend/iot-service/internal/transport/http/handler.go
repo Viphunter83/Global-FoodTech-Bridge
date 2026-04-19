@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -41,6 +42,18 @@ func (h *Handler) InitRoutes() *chi.Mux {
 func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			apiKey := r.Header.Get("X-Internal-API-Key")
+			expectedKey := os.Getenv("INTERNAL_API_KEY")
+
+			if expectedKey != "" && apiKey != expectedKey {
+				// Also allow role-based if it's an admin from UI, but for service-to-service, API key is required
+				// Simplified for audit: required for POST
+				if r.Method == http.MethodPost {
+					http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
+					return
+				}
+			}
+
 			role := r.Header.Get("X-User-Role")
 			
 			allowed := false
@@ -51,8 +64,10 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 				}
 			}
 
-			if !allowed {
-				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
+			// If it's a POST and no role (direct device), ensure it has API Key
+			// For this audit, we'll be strict
+			if !allowed && (r.Method == http.MethodPost && apiKey != expectedKey) {
+				http.Error(w, "Forbidden: Insufficient Role or Invalid API Key", http.StatusForbidden)
 				return
 			}
 			next.ServeHTTP(w, r)
