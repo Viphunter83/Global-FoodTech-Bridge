@@ -1,6 +1,10 @@
-import type { Metadata } from "next";
+import { ReactNode } from "react";
 import { Outfit, Cormorant_Garamond } from "next/font/google";
-import "../globals.css";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { DemoStateProvider } from "@/components/providers/DemoStateProvider";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 import { Header } from "@/components/Header";
 
 const outfit = Outfit({ 
@@ -16,27 +20,11 @@ const cormorant = Cormorant_Garamond({
     display: 'swap',
 });
 
-export const metadata: Metadata = {
-    title: "GFTB Bridge | Global FoodTech Transparency",
-    description: "International supply chain bridge protected by IoT and Blockchain.",
-    icons: {
-        icon: "/favicon.svg",
-    },
-};
-
-import { AuthProvider } from "@/components/providers/AuthProvider";
-import { DemoStateProvider } from "@/components/providers/DemoStateProvider";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { locales } from '@/navigation';
-import { ClientHydrationLog } from "../../components/ClientHydrationLog";
-
 export default async function LocaleLayout({
     children,
     params: { locale },
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
     params: { locale: string };
 }) {
     // Providing all messages to the client
@@ -48,7 +36,7 @@ export default async function LocaleLayout({
     return (
         <html lang={locale} suppressHydrationWarning>
             <body 
-                className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary`}
+                className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background`}
                 suppressHydrationWarning
             >
                 <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
@@ -66,4 +54,3 @@ export default async function LocaleLayout({
         </html>
     );
 }
-

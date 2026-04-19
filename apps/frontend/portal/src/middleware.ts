@@ -15,6 +15,11 @@ export function middleware(request: NextRequest) {
     // 1. Handle internationalization first
     const response = intlMiddleware(request);
     
+    // If intlMiddleware is performing a redirect, return it immediately
+    if (response.status >= 300 && response.status < 400) {
+        return response;
+    }
+    
     // 2. Session verification logic
     const sessionToken = request.cookies.get('gftb-session');
 

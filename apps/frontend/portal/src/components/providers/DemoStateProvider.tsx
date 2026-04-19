@@ -48,13 +48,15 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const saveToStorage = (map: DemoStateMap) => {
+    // Persistence Sync
+    useEffect(() => {
+        if (!isInitialized) return;
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateMap));
         } catch (e) {
             console.error('Failed to persist demo state:', e);
         }
-    };
+    }, [stateMap, isInitialized]);
 
     const getBatchState = useCallback((batchId: string) => {
         return stateMap[batchId];
@@ -63,22 +65,14 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
     const updateBatchState = useCallback((batchId: string, updates: Partial<BlockchainStatus>) => {
         setStateMap(prev => {
             const current = prev[batchId] || {};
-            // If it's a new entry, we might need default values? 
-            // Usually updates are merging into existing, OR creating new valid state.
-            // Consumers (BlockchainControls) provide full updates usually or we merge.
-
             const newStateEntry = { ...current, ...updates } as BlockchainStatus;
-
-            const newMap = { ...prev, [batchId]: newStateEntry };
-            saveToStorage(newMap);
-            return newMap;
+            return { ...prev, [batchId]: newStateEntry };
         });
     }, []);
 
     const resetBatchState = useCallback((batchId: string) => {
         setStateMap(prev => {
             const { [batchId]: _, ...rest } = prev;
-            saveToStorage(rest);
             return rest;
         });
     }, []);
@@ -86,7 +80,6 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
     const clearAllDemoData = useCallback(() => {
         setStateMap({});
         localStorage.removeItem(STORAGE_KEY);
-        // Force reload to clear any lingering artifacts if needed, but react state update should handle it
         window.location.reload();
     }, []);
 
