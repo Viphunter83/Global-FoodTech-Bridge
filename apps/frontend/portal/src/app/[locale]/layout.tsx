@@ -30,6 +30,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/navigation';
+import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 
 export default async function LocaleLayout({
     children,
@@ -40,6 +41,9 @@ export default async function LocaleLayout({
 }) {
     // Providing all messages to the client
     const messages = await getMessages();
+    
+    // Server-side diagnostic
+    console.log(`[LocaleLayout] Rendering locale: ${locale}, messages found: ${messages ? Object.keys(messages).length : 0}`);
 
     return (
         <html lang={locale} suppressHydrationWarning>
@@ -47,7 +51,8 @@ export default async function LocaleLayout({
                 className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary`}
                 suppressHydrationWarning
             >
-                <NextIntlClientProvider messages={messages} locale={locale}>
+                <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
+                    <ClientHydrationLog />
                     <AuthProvider>
                         <DemoStateProvider>
                             <div className="relative flex min-h-screen flex-col">
