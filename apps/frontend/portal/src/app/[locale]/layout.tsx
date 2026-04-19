@@ -19,6 +19,9 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
     title: "GFTB Bridge | Global FoodTech Transparency",
     description: "International supply chain bridge protected by IoT and Blockchain.",
+    icons: {
+        icon: "/favicon.svg",
+    },
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";

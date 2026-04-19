@@ -3,7 +3,6 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Firebase configuration using environment variables for security.
-// These variables must be prefixed with NEXT_PUBLIC_ to be accessible in the browser.
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,6 +12,12 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Check if critical config is present to prevent SSR crashes
+const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+
+const app = isConfigValid 
+    ? initializeApp(firebaseConfig) 
+    : initializeApp({ apiKey: "empty", projectId: "empty", appId: "empty" });
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
