@@ -1,16 +1,16 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/navigation';
 import { PackageSearch, LayoutDashboard, Menu, X, LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import { LanguageSwitcher } from './ui/LanguageSwitcher';
-import { useLanguage } from '@/components/providers/LanguageProvider';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Header() {
-    const { t } = useLanguage();
+    const t = useTranslations();
     const { user, role, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -32,17 +32,17 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
                         <Link href="/how-it-works" className="transition-all hover:text-primary text-foreground/70">
-                            {t('menu_how_it_works')}
+                            {t('Menu.how_it_works')}
                         </Link>
                         {user && (
                             <Link href="/batches/new" className="transition-all hover:text-primary text-foreground/70">
-                                {t('menu_create_batch')}
+                                {t('Menu.create_batch')}
                             </Link>
                         )}
                         {role === 'ADMIN' && (
                             <Link href="/admin/companies" className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary border border-primary/10 hover:bg-primary/10 transition-all">
                                 <LayoutDashboard className="h-3.5 w-3.5" />
-                                {t('menu_admin')}
+                                {t('Menu.admin')}
                             </Link>
                         )}
                     </nav>
@@ -90,9 +90,9 @@ export function Header() {
                         className="fixed inset-0 top-16 z-50 h-[calc(100vh-4rem)] bg-background/95 backdrop-blur-md md:hidden"
                     >
                         <nav className="flex flex-col p-8 gap-6 text-xl font-bold">
-                            <Link href="/how-it-works" onClick={() => setIsMenuOpen(false)}>{t('menu_how_it_works')}</Link>
-                            {user && <Link href="/batches/new" onClick={() => setIsMenuOpen(false)}>{t('menu_create_batch')}</Link>}
-                            {role === 'ADMIN' && <Link href="/admin/companies" onClick={() => setIsMenuOpen(false)}>{t('menu_admin')}</Link>}
+                            <Link href="/how-it-works" onClick={() => setIsMenuOpen(false)}>{t('Menu.how_it_works')}</Link>
+                            {user && <Link href="/batches/new" onClick={() => setIsMenuOpen(false)}>{t('Menu.create_batch')}</Link>}
+                            {role === 'ADMIN' && <Link href="/admin/companies" onClick={() => setIsMenuOpen(false)}>{t('Menu.admin')}</Link>}
                             
                             <div className="mt-8 pt-8 border-t border-primary/10 flex flex-col gap-6">
                                 <div className="flex items-center justify-between">
@@ -116,3 +116,4 @@ export function Header() {
         </header>
     );
 }
+

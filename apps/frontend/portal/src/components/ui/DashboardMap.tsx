@@ -1,7 +1,8 @@
 'use client';
 
-import { MapPin } from 'lucide-react';
-import { useLanguage } from '@/components/providers/LanguageProvider';
+import { MapPin, Globe, Satellite } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
 
 interface DashboardMapProps {
     lat?: number;
@@ -10,38 +11,84 @@ interface DashboardMapProps {
 }
 
 export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR" }: DashboardMapProps) {
-    const { t } = useLanguage();
+    const t = useTranslations('Tracking');
 
     return (
-        <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-50 rounded-xl overflow-hidden border border-border shadow-inner">
-            {/* Grid Pattern Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-[inset_0_20px_40px_-10px_rgba(0,0,0,0.5)] group">
+            {/* High-Tech Grid & Scan Lines */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:8px_8px]"></div>
             
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 2 }}
+                className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" 
+            />
+
             {/* Abstract Global Connection Paths */}
-            <svg viewBox="0 0 800 400" className="absolute inset-0 w-full h-full text-blue-200/40 pointer-events-none">
-                <path d="M100,200 Q400,50 700,200" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="5,5" />
-                <path d="M150,250 Q400,350 650,250" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="5,5" />
+            <svg viewBox="0 0 800 400" className="absolute inset-0 w-full h-full text-primary/20 pointer-events-none group-hover:text-primary/40 transition-colors duration-1000">
+                <motion.path 
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 3, delay: 0.5 }}
+                    d="M100,200 Q400,50 700,200" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="5,10" 
+                />
+                <motion.path 
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 4, delay: 1 }}
+                    d="M150,250 Q400,350 650,250" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2,5" 
+                />
             </svg>
 
-            <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-background/80 backdrop-blur-sm border border-border px-4 py-2 rounded-full text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
-                    {t('live_tracking_active')}
+            <div className="absolute top-8 left-8 flex items-center gap-4 z-20">
+                <div className="flex h-10 px-4 items-center gap-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/5 shadow-2xl">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/80">{t('live_tracking_active')}</span>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 backdrop-blur-xl border border-white/5 text-primary/60">
+                    <Satellite size={16} />
                 </div>
             </div>
 
-            {/* Pulsing Base */}
+            <div className="absolute bottom-8 right-8 z-20">
+                <div className="p-5 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/5 shadow-2xl text-right">
+                    <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/40 leading-none mb-1">Satellite Reference</div>
+                    <div className="font-mono text-[10px] font-bold text-white tracking-widest">{lat.toFixed(6)} N / {lon.toFixed(6)} E</div>
+                </div>
+            </div>
+
+            {/* Pulsing Beacon */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="h-20 w-20 bg-blue-500/10 rounded-full animate-ping absolute -inset-6"></div>
-                <div className="relative group flex flex-col items-center">
-                    <div className="z-10 bg-blue-600 p-2 rounded-full text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                        <MapPin className="h-5 w-5 fill-current" />
-                    </div>
-                    <div className="mt-2 bg-background/90 backdrop-blur-md border border-border px-3 py-1.5 rounded-lg shadow-xl translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                        <div className="text-[10px] font-bold text-foreground leading-tight">{locationName}</div>
-                        <div className="text-[9px] text-muted-foreground font-mono">{lat.toFixed(4)}, {lon.toFixed(4)}</div>
+                <div className="h-40 w-40 bg-primary/10 rounded-full animate-ping absolute -inset-16 opacity-20"></div>
+                <div className="h-24 w-24 bg-primary/5 rounded-full animate-pulse absolute -inset-8"></div>
+                
+                <div className="relative group/pin flex flex-col items-center">
+                    <motion.div 
+                        whileHover={{ scale: 1.2, rotate: 10 }}
+                        className="z-10 bg-primary p-3 rounded-2xl text-white shadow-[0_0_40px_rgba(var(--primary-rgb),0.5)] cursor-pointer"
+                    >
+                        <MapPin className="h-6 w-6 fill-current" />
+                    </motion.div>
+                    
+                    <div className="mt-4 bg-white/10 backdrop-blur-3xl border border-white/10 p-5 rounded-[1.5rem] shadow-2xl translate-y-4 opacity-0 group-hover/pin:opacity-100 group-hover/pin:translate-y-0 transition-all duration-500 min-w-[200px]">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                <Globe size={14} />
+                            </div>
+                            <div className="text-xs font-serif font-black italic text-white tracking-tight">{locationName}</div>
+                        </div>
+                        <div className="h-[1px] w-full bg-white/5 my-3" />
+                        <div className="text-[9px] text-white/40 font-black uppercase tracking-widest leading-none">
+                            Blockchain Node Certified
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Vignette Overlay */}
+            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
         </div>
     );
 }

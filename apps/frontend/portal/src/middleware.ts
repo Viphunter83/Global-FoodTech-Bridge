@@ -1,34 +1,49 @@
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { locales, localePrefix } from './navigation';
+
+const intlMiddleware = createMiddleware({
+    locales,
+    localePrefix,
+    defaultLocale: 'en'
+});
 
 export function middleware(request: NextRequest) {
-    const sessionToken = request.cookies.get('gftb-session');
     const { pathname } = request.nextUrl;
-
-    // Protected paths
-    const isProtectedPath = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
     
-    // Auth path
-    const isAuthPath = pathname.startsWith('/auth/login');
+    // 1. Handle internationalization first
+    const response = intlMiddleware(request);
+    
+    // 2. Session verification logic
+    const sessionToken = request.cookies.get('gftb-session');
+
+    // Helper to check if a path (including locale) starts with certain strings
+    const matchesPath = (path: string, target: string) => {
+        const regex = new RegExp(`^/([a-z]{2}/)?${target.replace(/^\//, '')}`);
+        return regex.test(path);
+    };
+
+    const isProtectedPath = matchesPath(pathname, '/dashboard') || matchesPath(pathname, '/admin');
+    const isAuthPath = matchesPath(pathname, '/auth/login');
 
     if (isProtectedPath && !sessionToken) {
-        // Redirect to login if trying to access protected path without session
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+        // Redirect to login (preserving current locale set by intlMiddleware or using default)
+        const locale = pathname.split('/')[1] || 'en';
+        const loginUrl = new URL(`/${locale}/auth/login`, request.url);
+        return NextResponse.redirect(loginUrl);
     }
 
     if (isAuthPath && sessionToken) {
-        // Redirect to dashboard if already logged in and trying to access login page
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        const locale = pathname.split('/')[1] || 'en';
+        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }
 
-    return NextResponse.next();
+    return response;
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-    matcher: [
-        '/dashboard/:path*',
-        '/admin/:path*',
-        '/auth/login'
-    ],
+    // Match all paths except API, static files, and icons
+    matcher: ['/((?!api|_next|.*\\..*).*)']
 };
+

@@ -118,17 +118,32 @@ import { MANUFACTURER_ADDR } from './constants';
 
 const isServer = typeof window === 'undefined';
 
+// On server (SSR/API Routes), we call backend services directly.
+// On client (browser), we call our Next.js API proxies to hide keys.
 const PASSPORT_URL = isServer
-    ? (process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL || 'http://passport-service:8080/api/v1')
+    ? (process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL || 'http://localhost:8080/api/v1')
     : '/api/passport';
 
 const IOT_URL = isServer
-    ? (process.env.NEXT_PUBLIC_IOT_SERVICE_URL || 'http://iot-service:8081/api/v1')
+    ? (process.env.NEXT_PUBLIC_IOT_SERVICE_URL || 'http://localhost:8081/api/v1')
     : '/api/telemetry';
 
 const BLOCKCHAIN_URL = isServer
-    ? (process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3000/api/v1')
+    ? (process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://localhost:3000/api/v1')
     : '/api/blockchain';
+
+// Helper for headers (only needed on server-side calls)
+const getHeaders = (isPost = false) => {
+    const headers: Record<string, string> = {};
+    if (isPost) headers['Content-Type'] = 'application/json';
+    
+    // Server-side needs the key directly. Client-side proxy will inject it.
+    // NEVER expose the key on the client!
+    if (isServer) {
+        headers['x-api-key'] = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '';
+    }
+    return headers;
+};
 
 // --- API CLIENT ---
 
@@ -137,10 +152,6 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         const res = await fetch(`${PASSPORT_URL}/batches/${id}`, { cache: 'no-store' });
         if (!res.ok) return null;
         const data = await res.json();
-
-        // Base Mock Data with dynamic logic
-        const isBeef = data.product_type?.toLowerCase().includes('beef') || data.product_type?.toLowerCase().includes('meat');
-        const isMango = data.product_type?.toLowerCase().includes('mango');
 
         // Dynamic History/Timeline Logic
         let history: BatchDetails['history'] = [];
@@ -169,47 +180,22 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         }
 
         if (history.length === 0) {
+            // Default generic history if no template is assigned
             history = [
-                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: "Fri, Oct 10 • 08:30", status: "completed", icon: "package" },
-                { stage: "Quality Check (AI)", location: "Line 1", timestamp: "Fri, Oct 10 • 09:15", status: "completed", icon: "warehouse" },
-                { stage: "Cold Chain Logistics", location: "Universal Transit", timestamp: "Sat, Oct 11 • 14:00", status: "completed", icon: "truck" },
-                { stage: "Arrived at Hub", location: data.destination_country || "International Hub", timestamp: "Today • 07:45", status: "current", icon: "warehouse" },
-                { stage: "Ready for Retail", location: "Global Network", timestamp: "Est. Tomorrow", status: "future", icon: "fork" }
+                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: data.created_at, status: "completed", icon: "package" },
+                { stage: "Quality Check", location: "Verified", timestamp: "Success", status: "completed", icon: "check" },
+                { stage: "In Transit", location: "Global Network", timestamp: "Current", status: "current", icon: "truck" }
             ];
         }
 
         let extendedData: BatchDetails = {
             ...data,
-            ingredients: data.ingredients || (isBeef ? {
-                en: "Premium Beef (80%), Rice Noodles, Spices, Sea Salt.",
-                ar: "لحм بقري ممتاز (80٪) ، نودلز أرز ، بهارات ، ملح البحر.",
-                ru: "Говядина премиум (80%), Рисовая лапша, Специи, Морская соль.",
-                vi: "Thịt bò cao cấp (80%), Bún gạo, Gia vị, Muối biển."
-            } : isMango ? {
-                en: "Organic Dried Mango (100%), No added sugar.",
-                ar: "مانجو مجфف عضوي (100٪) ، بدون سكر مضاف.",
-                ru: "Органическое сушеное манго (100%), без добавления сахара.",
-                vi: "Xoài sấy hữu cơ (100%), Không thêm đường."
-            } : {
-                en: "Natural Organic Product",
-                ar: "منتج عضوي طبيعي",
-                ru: "Натуральный органический продукт",
-                vi: "Sản phẩm hữu cơ tự nhiên"
-            }),
-            nutrition: data.nutrition || (isMango ? { calories: 150, protein: 1, fat: 0, carbs: 38 } : { calories: 450, protein: 35, fat: 12, carbs: 55 }),
+            ingredients: data.ingredients,
+            nutrition: data.nutrition,
             halal_cert_url: data.halal_cert_url || "/certificates/standard-cert.pdf",
             manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
             history,
             partner_id: data.partner_id,
-            trust_metrics: isMango ? [
-                { type: 'purity', label: 'Chemical Purity', value: '100% Natural', source: 'Lab Report', status: 'verified' },
-                { type: 'temperature', label: 'Cold Chain', value: 'Stable', source: 'IoT', status: 'verified' },
-                { type: 'carbon', label: 'CO2 Impact', value: '0.4kg/unit', source: 'Blockchain', status: 'verified' }
-            ] : [
-                { type: 'nutrition', label: 'Protein Density', value: 'High', source: 'Lab Report', status: 'verified' },
-                { type: 'temperature', label: 'Cold Chain', value: 'Optimal', source: 'IoT', status: 'verified' },
-                { type: 'origin', label: 'Traceability', value: 'Full', source: 'Blockchain', status: 'verified' }
-            ]
         };
 
         // Fetch Partner Details if present
@@ -228,41 +214,25 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         // IPFS Fetch Logic
         if (data.token_uri) {
             try {
-                // Use a public gateway. Ideally, use env var for gateway.
                 const ipfsGateway = "https://gateway.pinata.cloud/ipfs/";
-                // token_uri might be just the hash or ipfs://hash
                 const hash = data.token_uri.replace('ipfs://', '');
 
                 const ipfsRes = await fetch(`${ipfsGateway}${hash}`);
                 if (ipfsRes.ok) {
                     const ipfsData = await ipfsRes.json();
-
-                    // Merge IPFS data
-                    // Attributes format: [{ trait_type: "Ingredients", value: "..." }, ...]
                     const attributes = ipfsData.attributes || [];
                     const getAttr = (key: string) => attributes.find((a: any) => a.trait_type === key)?.value;
 
-                    // Update Ingredients if present
-                    const ipfsIngredients = getAttr("Ingredients");
-                    if (ipfsIngredients) {
-                        // Assuming IPFS text is English/Generic for now, unless structured
-                        extendedData.ingredients = {
-                            en: ipfsIngredients,
-                            ar: "المكونات من المستند الرقمي", // Placeholder for translation
-                            ru: ipfsIngredients, // Fallback
-                            vi: ipfsIngredients // Fallback
-                        };
+                    // Update Ingredients if present in IPFS
+                    if (getAttr("Ingredients")) {
+                        extendedData.ingredients = getAttr("Ingredients");
                     }
 
-                    // Update Dates
                     extendedData.production_date = getAttr("Production Date");
                     extendedData.expiration_date = getAttr("Expiration Date");
-
-                    // Update Locations
                     extendedData.production_location = getAttr("Production Location");
                     extendedData.origin_location = getAttr("Origin Location");
 
-                    // Update Certificates
                     if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
                         extendedData.certificates = ipfsData.certificates.map((cert: any) => ({
                             name: cert.name,
@@ -288,56 +258,27 @@ export async function getTelemetry(id: string, minLimit: number = -22, maxLimit:
     try {
         const res = await fetch(`${IOT_URL}/telemetry/${id}`, { cache: 'no-store' });
 
-        let data = [];
         if (res.ok) {
-            data = await res.json();
+            return await res.json();
         }
 
-        // MOCK: Generate realistic curve based on actual SLA limits
-        if (!data || data.length === 0) {
-            const now = Date.now();
-            const mockData: Telemetry[] = [];
-            // Target roughly the middle of the safe zone
-            const targetAvg = (minLimit + maxLimit) / 2;
-            const variance = Math.abs(maxLimit - minLimit) * 0.2;
-
-            for (let i = 0; i < 96; i++) {
-                const time = now - (i * 15 * 60 * 1000);
-                // "Sawtooth" pattern around the safe zone
-                const cycle = Math.sin(i / 2);
-                let temp = targetAvg + (cycle * variance);
-
-                mockData.push({
-                    timestamp: new Date(time).toISOString(),
-                    temperature_celsius: parseFloat(temp.toFixed(1)),
-                    device_id: "dev_01",
-                    location_lat: 10.7 + (Math.random() * 0.01), // Near equator by default if no loc
-                    location_lon: 106.6 + (Math.random() * 0.01)
-                });
-            }
-            return mockData.reverse();
-        }
-
-        return data;
+        return [];
     } catch (e) {
-        console.warn('Failed to fetch telemetry, using mock:', e);
+        console.warn('Failed to fetch telemetry:', e);
         return [];
     }
 }
 
 export async function getBlockchainStatus(id: string): Promise<BlockchainStatus> {
-    // Pure API call. No local storage fallbacks here.
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/status/${id}`, { 
-            headers: {
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(),
             cache: 'no-store' 
         });
+        
         if (!res.ok) {
-            // Default "New Batch" state for fresh items
             return {
-                status: 'Pending',
+                status: 'New',
                 verified: false,
                 owner: MANUFACTURER_ADDR,
                 pendingOwner: null,
@@ -347,8 +288,6 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
         }
 
         const data = await res.json();
-        // data = { exists: boolean, txHash?: string, timestamp?: number }
-
         return {
             status: data.exists ? 'Notarized' : 'Pending',
             verified: data.exists,
@@ -360,7 +299,6 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
         };
     } catch (e) {
         console.error('Failed to fetch blockchain status:', e);
-        // Default error fallback (safe default)
         return {
             status: 'Offline',
             verified: false,
@@ -372,9 +310,7 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
 export async function getBlockchainHistory(batchId: string): Promise<BlockchainEvent[]> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/history/${batchId}`, {
-            headers: {
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(),
             cache: 'no-store'
         });
         if (!res.ok) return [];
@@ -388,23 +324,12 @@ export async function getBlockchainHistory(batchId: string): Promise<BlockchainE
 export async function getAlerts(id: string): Promise<Alert[]> {
     try {
         const res = await fetch(`${IOT_URL}/telemetry/${id}/alerts`, { cache: 'no-store' });
-
-        let data = [];
         if (res.ok) {
-            data = await res.json();
+            return await res.json();
         }
-
-        // MOCK: Smart Alerts matching the "Sawtooth" telemetry story
-        // Fallback if no real alerts are found (MVP/Demo mode)
-        if (!data || data.length === 0) {
-            // Return cleaned list for Demo "Happy Path"
-            return [];
-        }
-
-        return data;
+        return [];
     } catch (e) {
-        console.warn('Failed to fetch alerts, falling back to mock:', e);
-        // Fallback on error
+        console.warn('Failed to fetch alerts:', e);
         return [];
     }
 }
@@ -413,35 +338,27 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/notarize`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(true),
             body: JSON.stringify({ batchId, dataHash }),
             cache: 'no-store'
         });
 
         if (!res.ok) {
-            console.warn('Backend notarize failed, return mock success');
-            return { status: 'success', txHash: '0x_demo_fallback_' + Date.now() };
+            const errData = await res.json().catch(() => ({}));
+            return { status: 'error', error: errData.error || 'Notarization failed' };
         }
 
         return await res.json();
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to notarize batch:', e);
-        return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
+        return { status: 'error', error: e.message };
     }
 }
 
-/**
- * Updates the blockchain transaction hash for a batch in the main database.
- */
 export async function updateBatchBlockchainHash(batchId: string, blockchainHash: string) {
     const response = await fetch(`${PASSPORT_URL}/batches/${batchId}/blockchain`, {
         method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: getHeaders(true),
         body: JSON.stringify({ blockchain_hash: blockchainHash }),
     });
 
@@ -456,22 +373,19 @@ export async function initiateHandover(batchId: string, toAddress: string): Prom
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(true),
             body: JSON.stringify({ batchId, toAddress }),
             cache: 'no-store'
         });
 
         if (!res.ok) {
-            console.warn('Backend initiate failed, return mock success');
-            return { status: 'success', txHash: '0x_demo_fallback_' + Date.now() };
+            const errData = await res.json().catch(() => ({}));
+            return { status: 'error', error: errData.error || 'Initiation failed' };
         }
         return await res.json();
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to initiate handover', e);
-        return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
+        return { status: 'error', error: e.message };
     }
 }
 
@@ -479,22 +393,19 @@ export async function acceptHandover(batchId: string): Promise<{ status: string;
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/accept`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(true),
             body: JSON.stringify({ batchId }),
             cache: 'no-store'
         });
 
         if (!res.ok) {
-            console.warn('Backend accept failed, return mock success');
-            return { status: 'success', txHash: '0x_demo_fallback_' + Date.now() };
+            const errData = await res.json().catch(() => ({}));
+            return { status: 'error', error: errData.error || 'Acceptance failed' };
         }
         return await res.json();
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to accept handover', e);
-        return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
+        return { status: 'error', error: e.message };
     }
 }
 
@@ -502,22 +413,19 @@ export async function reportViolation(batchId: string, details: string): Promise
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/violation`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || ''
-            },
+            headers: getHeaders(true),
             body: JSON.stringify({ batchId, details }),
             cache: 'no-store'
         });
 
         if (!res.ok) {
-            console.warn('Backend report failed, return mock success');
-            return { status: 'success', txHash: '0x_demo_fallback_' + Date.now() };
+            const errData = await res.json().catch(() => ({}));
+            return { status: 'error', error: errData.error || 'Violation report failed' };
         }
         return await res.json();
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to report violation', e);
-        return { status: 'success', txHash: '0x_demo_offline_' + Date.now() };
+        return { status: 'error', error: e.message };
     }
 }
 
@@ -527,16 +435,12 @@ export async function createCompany(data: { name: string; type: string; producti
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/companies`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(true),
             body: JSON.stringify(data),
             cache: 'no-store'
         });
 
-        if (!res.ok) {
-            console.error('Failed to create company');
-            return null;
-        }
-
+        if (!res.ok) return null;
         return await res.json();
     } catch (e) {
         console.error('Admin API Error:', e);
@@ -546,10 +450,12 @@ export async function createCompany(data: { name: string; type: string; producti
 
 export async function getCompanies(): Promise<Company[]> {
     try {
-        const res = await fetch(`${PASSPORT_URL}/admin/companies`, { cache: 'no-store' });
+        const res = await fetch(`${PASSPORT_URL}/admin/companies`, { 
+            headers: getHeaders(),
+            cache: 'no-store' 
+        });
         if (!res.ok) return [];
-        const data = await res.json();
-        return data || [];
+        return await res.json();
     } catch (e) {
         console.error('Admin API Error:', e);
         return [];
@@ -560,7 +466,7 @@ export async function approveCompany(id: string): Promise<boolean> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/companies/${id}/approve`, {
             method: 'POST',
-            referrerPolicy: 'no-referrer', // Avoid some CORS issues locally
+            headers: getHeaders(),
             cache: 'no-store'
         });
         return res.ok;
@@ -572,7 +478,10 @@ export async function approveCompany(id: string): Promise<boolean> {
 
 export async function getTemplates(): Promise<SupplyChainTemplate[]> {
     try {
-        const res = await fetch(`${PASSPORT_URL}/templates`, { cache: 'no-store' });
+        const res = await fetch(`${PASSPORT_URL}/templates`, { 
+            headers: getHeaders(),
+            cache: 'no-store' 
+        });
         if (!res.ok) return [];
         return await res.json();
     } catch (e) {
@@ -583,7 +492,10 @@ export async function getTemplates(): Promise<SupplyChainTemplate[]> {
 
 export async function getTemplateDetails(id: string): Promise<SupplyChainTemplate | null> {
     try {
-        const res = await fetch(`${PASSPORT_URL}/templates/${id}`, { cache: 'no-store' });
+        const res = await fetch(`${PASSPORT_URL}/templates/${id}`, { 
+            headers: getHeaders(),
+            cache: 'no-store' 
+        });
         if (!res.ok) return null;
         return await res.json();
     } catch (e) {

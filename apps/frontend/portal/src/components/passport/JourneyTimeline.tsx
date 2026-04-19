@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Package, Truck, MapPin, ChefHat, Leaf, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
-import { useLanguage } from '@/components/providers/LanguageProvider';
+import { useTranslations } from 'next-intl';
 
 interface TimelineEvent {
     stage: string;
@@ -24,12 +24,13 @@ const ICONS = {
 };
 
 export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
-    const { t } = useLanguage();
+    const t = useTranslations('Tracking');
+    const tCommon = useTranslations('Common');
 
     return (
-        <div className="py-8">
-            <h3 className="mb-6 text-xl font-semibold">{t('farm_to_fork_journey')}</h3>
-            <div className="relative space-y-8 pl-4 before:absolute before:left-3 before:top-2 before:h-full before:w-0.5 before:bg-gray-200">
+        <div className="py-12">
+            <h3 className="mb-10 text-2xl font-serif font-black italic tracking-tight text-foreground">{t('farm_to_fork_journey')}</h3>
+            <div className="relative space-y-12 pl-6 before:absolute before:left-3 before:top-4 before:h-[calc(100%-1rem)] before:w-[2px] before:bg-gradient-to-b before:from-primary/40 before:via-primary/20 before:to-transparent">
                 {events.map((event, idx) => {
                     const Icon = ICONS[event.icon];
                     const isCompleted = event.status === 'completed' || event.status === 'current';
@@ -40,44 +41,56 @@ export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
                             key={idx}
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
-                            transition={{ delay: idx * 0.2 }}
-                            className="relative flex items-start gap-4"
+                            transition={{ delay: idx * 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="relative flex items-start gap-6 group"
                         >
                             <div className={`
-                                z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 
-                                ${event.status === 'current' ? 'border-sky-500 bg-sky-50 text-sky-600 shadow-lg shadow-sky-200' :
+                                z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-500
+                                ${event.status === 'current' ? 'border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-110' :
                                     isCompleted ? 'border-emerald-500 bg-emerald-50 text-emerald-600' :
-                                        'border-gray-200 bg-white text-gray-300'}
+                                        'border-muted bg-background text-muted-foreground/30'}
                             `}>
-                                <Icon size={14} />
+                                <Icon size={18} className={event.status === 'current' ? 'animate-pulse' : ''} />
                             </div>
 
-                            <div className="flex-1 pb-8">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="font-bold text-gray-900">{event.stage}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-3 mb-2">
+                                    <span className={`text-lg font-serif font-black italic tracking-tight ${event.status === 'future' ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                                        {event.stage}
+                                    </span>
+                                    
                                     {event.status === 'current' && (
-                                        <span className="animate-pulse rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-600">
-                                            LIVE
+                                        <span className="inline-flex items-center rounded-lg bg-primary/10 px-3 py-1 text-[9px] font-black tracking-[0.2em] text-primary animate-pulse border border-primary/20 uppercase">
+                                            {t('live_badge')}
                                         </span>
                                     )}
                                     
                                     {hasComplianceRequirement && (
-                                        <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                                        <div className={`inline-flex items-center gap-2 rounded-lg px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] border transition-colors ${
                                             event.is_compliant 
                                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                                             : 'bg-amber-50 text-amber-700 border-amber-200'
                                         }`}>
                                             {event.is_compliant ? (
-                                                <ShieldCheck size={10} />
+                                                <ShieldCheck size={12} />
                                             ) : (
-                                                <AlertCircle size={10} />
+                                                <AlertCircle size={12} className="animate-bounce" />
                                             )}
-                                            {event.is_compliant ? t('status_verified') : `${t('required')}: ${event.required_cert}`}
+                                            {event.is_compliant ? t('status_verified') : `${tCommon('required')}: ${event.required_cert}`}
                                         </div>
                                     )}
                                 </div>
-                                <div className="text-sm text-gray-600">{event.location}</div>
-                                <div className="mt-1 text-xs font-mono text-gray-400">{event.timestamp}</div>
+                                
+                                <div className={`flex items-center gap-2 text-sm font-medium ${event.status === 'future' ? 'text-muted-foreground/20' : 'text-muted-foreground'}`}>
+                                    <MapPin size={14} className="opacity-40" />
+                                    {event.location}
+                                </div>
+                                
+                                {event.timestamp && (
+                                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/30 font-mono text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                                        {event.timestamp}
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     );
