@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/navigation';
 import { getBlockchainStatus, acceptHandover, reportViolation, getBatchDetails, BatchDetails } from '@/lib/api';
 import { Loader2, CheckCircle, AlertTriangle, XCircle, PackageCheck, ShieldCheck, FileCheck, ArrowRightLeft, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';

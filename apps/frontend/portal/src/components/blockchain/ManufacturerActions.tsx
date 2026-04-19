@@ -34,10 +34,10 @@ export function ManufacturerActions({
                 <Button 
                     onClick={onNotarize} 
                     disabled={loading}
-                    className="w-full h-16 text-xs font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 text-white border-0 shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-[0.98]"
+                    className="w-full min-h-16 h-auto py-4 text-xs font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 text-white border-0 shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
                 >
-                    {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : <ShieldCheck className="mr-3 h-5 w-5" />}
-                    {t('btn_notarize')}
+                    {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5 shrink-0" /> : <ShieldCheck className="mr-3 h-5 w-5 shrink-0" />}
+                    <span className="block">{t('btn_notarize')}</span>
                 </Button>
             </div>
         );
@@ -71,10 +71,10 @@ export function ManufacturerActions({
                     onClick={onTransfer} 
                     disabled={loading}
                     variant="outline" 
-                    className="w-full h-16 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98]"
+                    className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
                 >
-                    <Truck className="mr-3 h-5 w-5" />
-                    {t('btn_transfer_logistics')}
+                    <Truck className="mr-3 h-5 w-5 shrink-0" />
+                    <span className="block">{t('btn_transfer_logistics')}</span>
                 </Button>
             )}
 

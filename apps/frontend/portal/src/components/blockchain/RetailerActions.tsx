@@ -28,10 +28,10 @@ export function RetailerActions({ status, onAccept, onReport, loading }: Retaile
                     <Button 
                         onClick={onAccept} 
                         disabled={loading}
-                        className="w-full h-16 bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 border-0 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
+                        className="w-full min-h-16 h-auto py-4 bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 border-0 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
                     >
-                        {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : <PackageCheck className="mr-3 h-5 w-5" />}
-                        {t('btn_accept_custody')}
+                        {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5 shrink-0" /> : <PackageCheck className="mr-3 h-5 w-5 shrink-0" />}
+                        <span className="block">{t('btn_accept_custody')}</span>
                     </Button>
                 ) : (
                     <div className="text-center p-8 bg-background/40 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center gap-3">

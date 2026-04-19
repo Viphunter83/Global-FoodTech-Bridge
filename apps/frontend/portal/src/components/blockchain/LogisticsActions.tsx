@@ -32,10 +32,10 @@ export function LogisticsActions({
                 <Button
                     onClick={onAccept}
                     disabled={loading}
-                    className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/20 border-0 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
+                    className="w-full min-h-16 h-auto py-4 bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/20 border-0 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
                 >
-                    {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : <PackageCheck className="mr-3 h-5 w-5" />}
-                    {t('btn_accept_custody')}
+                    {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5 shrink-0" /> : <PackageCheck className="mr-3 h-5 w-5 shrink-0" />}
+                    <span className="block">{t('btn_accept_custody')}</span>
                 </Button>
             )}
 
@@ -82,10 +82,10 @@ export function LogisticsActions({
                     onClick={onTransfer} 
                     variant="outline" 
                     disabled={loading}
-                    className="w-full h-16 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98]"
+                    className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
                 >
-                    <PackageCheck className="mr-3 h-5 w-5" />
-                    {t('btn_transfer_retail')}
+                    <PackageCheck className="mr-3 h-5 w-5 shrink-0" />
+                    <span className="block">{t('btn_transfer_retail')}</span>
                 </Button>
             )}
 

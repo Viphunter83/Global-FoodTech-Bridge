@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { notarizeBatch } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/navigation';
 
 export function NotarizeButton({ batchId }: { batchId: string }) {
     const { role } = useAuth();
