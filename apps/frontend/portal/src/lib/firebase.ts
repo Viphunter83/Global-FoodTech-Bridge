@@ -28,7 +28,7 @@ if (typeof window !== 'undefined') {
     requiredVars.forEach(v => {
         const val = (process.env as any)[v];
         if (!val) {
-            console.warn(`%c [GFTB-DIAGNOSTIC] ${v} is MISSING!`, "color: #dc2626; font-weight: bold;");
+            console.warn(`%c [GFTB-DIAGNOSTIC] ${v} is MISSING! Please add it in Vercel Project Settings -> Environment Variables.`, "color: #dc2626; font-weight: bold;");
         } else {
             console.log(`[GFTB-DIAGNOSTIC] ${v} is present.`);
         }
