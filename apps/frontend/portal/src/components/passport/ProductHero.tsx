@@ -51,7 +51,7 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
         <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-gray-900 via-gray-800 to-slate-900 p-10 md:p-14 text-white shadow-2xl border border-white/5 group">
             {/* Dynamic Ambient Background */}
             <div className={`absolute -right-20 -top-20 h-96 w-96 rounded-full blur-3xl filter transition-all duration-1000 ${status === 'Verified' ? 'bg-emerald-500/20 group-hover:scale-125' : 'bg-destructive/20 group-hover:scale-125'}`} />
-            <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl filter group-hover:scale-110 transition-transform duration-[3000ms]" />
+            <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl filter group-hover:scale-110 transition-transform duration-3000" />
 
             <div className="relative z-10 flex flex-col items-center text-center">
                 <motion.div

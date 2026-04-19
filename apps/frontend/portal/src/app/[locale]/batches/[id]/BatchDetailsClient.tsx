@@ -118,7 +118,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                             </div>
                         </div>
                         <div className="h-1 w-full bg-primary/5 rounded-full overflow-hidden mt-4">
-                            <div className={`h-full bg-primary transition-all duration-[10000ms] ease-linear ${isRefreshing ? 'w-0' : 'w-full'}`} />
+                            <div className={`h-full bg-primary transition-all duration-10000 ease-linear ${isRefreshing ? 'w-0' : 'w-full'}`} />
                         </div>
                     </div>
                 </div>
@@ -287,7 +287,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                 <h2 className="font-serif font-black italic text-xl tracking-tight text-foreground">{t('Tracking.location_tracking_title')}</h2>
                             </div>
                             <div className="relative overflow-hidden rounded-[2rem] aspect-square flex items-center justify-center bg-background/50 border border-primary/5 shadow-inner">
-                                <div className="absolute inset-0 bg-[url('/map-grid.png')] opacity-20 grayscale group-hover:scale-110 transition-transform duration-[3000ms]"></div>
+                                <div className="absolute inset-0 bg-[url('/map-grid.png')] opacity-20 grayscale group-hover:scale-110 transition-transform duration-3000"></div>
                                 <div className="relative z-10 text-center p-8 backdrop-blur-sm bg-background/20 rounded-3xl border border-white/10 shadow-xl">
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3 animate-pulse">{t('Tracking.map_loading')}</p>
                                     <div className="flex flex-col gap-1 items-center">

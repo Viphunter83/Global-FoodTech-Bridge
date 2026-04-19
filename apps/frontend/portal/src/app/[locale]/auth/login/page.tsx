@@ -176,7 +176,7 @@ export default function LoginPage() {
 
                             <TabsContent value="google" className="mt-0 text-center space-y-8">
                                 <div className="p-10 bg-primary/[0.03] border border-primary/10 rounded-[2.5rem] relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:rotate-12 transition-transform duration-[2000ms]">
+                                    <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:rotate-12 transition-transform duration-2000">
                                         <Globe size={100} />
                                     </div>
                                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 leading-relaxed italic relative z-10">

@@ -388,7 +388,7 @@ export default function CreateBatchPage() {
                             <div className="lg:col-span-2 space-y-10">
                                 {/* Compliance Protocol Card */}
                                 <Card className="rounded-[2.5rem] border border-primary/10 glass p-8 shadow-2xl shadow-primary/5 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:rotate-12 transition-transform duration-[3000ms]">
+                                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:rotate-12 transition-transform duration-3000">
                                         <FileCheck size={180} />
                                     </div>
                                     <h3 className="text-sm font-serif font-black italic text-foreground mb-8 flex items-center gap-4 relative z-10">

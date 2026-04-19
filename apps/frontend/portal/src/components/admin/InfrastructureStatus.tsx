@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { RailwayService, InfrastructureStatus as InfrastructureStatusType } from '@/lib/railway';
 import { Activity, Server, Database, Globe, RefreshCw, CheckCircle2, AlertCircle, Clock, Zap, Cpu, HardDrive } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -228,7 +229,7 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                 transition={{ delay: 0.5, duration: 1 }}
             >
                 <Card className="bg-slate-900 text-white border-0 rounded-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:rotate-12 group-hover:scale-125 transition-all duration-[3000ms]">
+                    <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:rotate-12 group-hover:scale-125 transition-all duration-3000">
                         <Activity size={300} />
                     </div>
                     <CardHeader className="p-12 pb-6 relative z-10">
