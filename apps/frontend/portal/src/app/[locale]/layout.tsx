@@ -36,9 +36,9 @@ export default async function RootLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ locale: string }>;
+    params: { locale: string };
 }) {
-    const { locale } = await params;
+    const locale = params.locale;
 
     // Validate that the incoming `locale` parameter is valid
     if (!locales.includes(locale as any)) {
@@ -50,7 +50,7 @@ export default async function RootLayout({
     const messages = await getMessages();
 
     return (
-        <html lang={locale} className={`${outfit.variable} ${cormorant.variable}`}>
+        <html lang={locale} className={`${outfit.variable} ${cormorant.variable}`} suppressHydrationWarning>
             <body className="font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary">
                 <NextIntlClientProvider messages={messages}>
                     <AuthProvider>
