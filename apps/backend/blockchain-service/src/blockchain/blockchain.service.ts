@@ -58,7 +58,7 @@ export class BlockchainService implements OnModuleInit {
             // Default contract connected to Manufacturer (Admin)
             this.contract = new ethers.Contract(contractAddress, REGISTRY_ABI, this.manufacturerWallet);
 
-            this.logger.log('Blockchain Service Initialized (Polygon Amoy)');
+            this.logger.log(`Blockchain Service Initialized on ${rpcUrl.includes('amoy') ? 'Polygon Amoy' : 'Polygon Mainnet'}`);
             this.logger.log(`- Manufacturer: ${this.manufacturerWallet.address}`);
             this.logger.log(`- Logistics: ${this.logisticsWallet.address}`);
             this.logger.log(`- Retailer: ${this.retailerWallet.address}`);
