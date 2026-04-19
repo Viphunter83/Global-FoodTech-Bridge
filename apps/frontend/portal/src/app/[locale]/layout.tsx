@@ -33,26 +33,21 @@ import { locales } from '@/navigation';
 
 export default async function LocaleLayout({
     children,
-    params,
+    params: { locale },
 }: {
     children: React.ReactNode;
     params: { locale: string };
 }) {
-    const locale = params.locale;
-
-    // Validate that the incoming `locale` parameter is valid
-    if (!locales.includes(locale as any)) {
-        notFound();
-    }
-
     // Providing all messages to the client
-    // side is the easiest way to get started
     const messages = await getMessages();
 
     return (
-        <html lang={locale} className={`${outfit.variable} ${cormorant.variable}`} suppressHydrationWarning>
-            <body className="font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary">
-                <NextIntlClientProvider messages={messages}>
+        <html lang={locale} suppressHydrationWarning>
+            <body 
+                className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-primary`}
+                suppressHydrationWarning
+            >
+                <NextIntlClientProvider messages={messages} locale={locale}>
                     <AuthProvider>
                         <DemoStateProvider>
                             <div className="relative flex min-h-screen flex-col">

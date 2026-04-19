@@ -15,6 +15,26 @@ const firebaseConfig = {
 // Check if critical config is present to prevent SSR crashes
 const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
 
+// Production Diagnostics (Client-side)
+if (typeof window !== 'undefined') {
+    const requiredVars = [
+        'NEXT_PUBLIC_FIREBASE_API_KEY',
+        'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+        'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+        'NEXT_PUBLIC_PASSPORT_SERVICE_URL'
+    ];
+    
+    console.log("%c [GFTB-DIAGNOSTIC] Checking Environment Variables...", "color: #16a34a; font-weight: bold;");
+    requiredVars.forEach(v => {
+        const val = (process.env as any)[v];
+        if (!val) {
+            console.warn(`%c [GFTB-DIAGNOSTIC] ${v} is MISSING!`, "color: #dc2626; font-weight: bold;");
+        } else {
+            console.log(`[GFTB-DIAGNOSTIC] ${v} is present.`);
+        }
+    });
+}
+
 if (!isConfigValid && typeof window !== 'undefined') {
     console.warn('⚠️ Firebase configuration is missing! Check NEXT_PUBLIC_FIREBASE_ env variables on Vercel.');
 }
