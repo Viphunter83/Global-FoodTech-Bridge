@@ -2,7 +2,11 @@
   "Menu": {
     "how_it_works": "How it Works",
     "create_batch": "Create Batch",
-    "admin": "Admin"
+    "admin": "Admin",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "language": "Language"
   },
   "Common": {
     "app_title_suffix": "Supply Chain Manager",

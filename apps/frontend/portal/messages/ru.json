@@ -2,7 +2,11 @@
   "Menu": {
     "how_it_works": "Как это работает",
     "create_batch": "Создать партию",
-    "admin": "Панель управления"
+    "admin": "Панель управления",
+    "dashboard": "Панель управления",
+    "logout": "Выйти",
+    "login": "Войти",
+    "language": "Язык"
   },
   "Common": {
     "app_title_suffix": "Supply Chain Manager",

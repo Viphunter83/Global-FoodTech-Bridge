@@ -2,7 +2,11 @@
   "Menu": {
     "how_it_works": "Cách thức hoạt động",
     "create_batch": "Tạo lô hàng",
-    "admin": "Quản trị"
+    "admin": "Quản trị",
+    "dashboard": "Bảng điều khiển",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "language": "Ngôn ngữ"
   },
   "Common": {
     "app_title_suffix": "Quản lý Chuỗi cung ứng",

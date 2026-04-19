@@ -40,11 +40,9 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
 *   **Start Command**: `npm run start:prod`
 *   **Environment Variables**:
     *   `PORT`: `3000`
-    *   `RPC_URL`: `https://rpc-amoy.polygon.technology`
-    *   `PRIVATE_KEY`: `[Your Funded Admin Private Key]`
-    *   `LOGISTICS_KEY`: `[Logistics Private Key]`
-    *   `RETAILER_KEY`: `[Retailer Private Key]`
-    *   `CONTRACT_ADDRESS`: `0xE326362613F44383504b1bFA5Dd92C0Fc7D38471`
+    *   `RPC_URL`: `https://polygon.drpc.org` (Mainnet)
+    *   `PRIVATE_KEY`: `[Your Safe Production Private Key]`
+    *   `CONTRACT_ADDRESS`: `0xF48D6846Ac41AE6764f0747E2A1Cb282467F59E5`
 
 ### 2. IoT Service
 *   **Root Directory**: `apps/backend/iot-service`
@@ -87,7 +85,7 @@ For each service, choose **"Deploy from GitHub Repo"**, select your repo, and co
     *   *In NestJS (Blockchain)*: Update `main.ts` to allow specific origins or `*` for testing.
     *   *In Go (IoT/Passport)*: Check CORS middleware settings.
 
-2.  **Gas Funds**: Ensure the `PRIVATE_KEY` wallet has MATIC on Polygon Amoy.
+2.  **Gas Funds**: Ensure the `PRIVATE_KEY` wallet has POL on Polygon Mainnet (min. 1-2 POL recommended for start).
 
 3.  **Database Connection**: Verify IoT and Passport services can reach the Postgres DB.
 

@@ -2,7 +2,11 @@
   "Menu": {
     "how_it_works": "كيف يعمل",
     "create_batch": "إنشاء دفعة",
-    "admin": "مسؤول"
+    "admin": "مسؤول",
+    "dashboard": "لوحة القيادة",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "language": "اللغة"
   },
   "Common": {
     "app_title_suffix": "مدير سلسلة التوريد",

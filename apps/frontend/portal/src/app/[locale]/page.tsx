@@ -64,53 +64,76 @@ export default function Home() {
                             
                             <motion.h1 
                                 variants={fadeInUp}
-                                className="text-5xl md:text-8xl font-serif font-bold tracking-tight text-foreground leading-[1.1]"
+                                className="text-5xl md:text-8xl font-serif font-bold tracking-tight text-foreground leading-[1.1] text-shadow"
                             >
                                 {t('Hero.title').split('.')[0]}<span className="text-secondary">.</span>
                             </motion.h1>
                             
                             <motion.p 
                                 variants={fadeInUp}
-                                className="text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+                                className="text-lg md:text-2xl text-muted-foreground/90 max-w-3xl mx-auto leading-relaxed text-shadow"
                             >
                                 {t('Hero.subtitle')}
                             </motion.p>
                         </motion.div>
 
                         {/* Interactive Verification Widget */}
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.8, duration: 0.8 }}
-                            className="w-full max-w-2xl p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 shadow-2xl"
-                        >
-                            <div className="glass rounded-[2.4rem] p-4 md:p-8 flex flex-col md:flex-row items-stretch gap-4">
-                                <form onSubmit={handleTrack} className="flex-1 flex flex-col sm:flex-row gap-3">
-                                    <div className="relative flex-1">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                            <Search className="h-5 w-5" />
+                        <div className="w-full flex flex-col items-center gap-6">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.8, duration: 0.8 }}
+                                className="w-full max-w-2xl p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 shadow-2xl"
+                            >
+                                <div className="glass rounded-[2.4rem] p-4 md:p-8 flex flex-col md:flex-row items-stretch gap-4">
+                                    <form onSubmit={handleTrack} className="flex-1 flex flex-col sm:flex-row gap-3">
+                                        <div className="relative flex-1">
+                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                                <Search className="h-5 w-5" />
+                                            </div>
+                                            <Input
+                                                placeholder={t('Hero.try_demo')}
+                                                className="w-full h-16 pl-12 pr-6 rounded-2xl bg-background/50 border-primary/10 focus:ring-secondary/50 focus:border-secondary text-lg transition-all"
+                                                value={batchId}
+                                                onChange={(e) => setBatchId(e.target.value)}
+                                            />
                                         </div>
-                                        <Input
-                                            placeholder={t('Hero.try_demo')}
-                                            className="w-full h-16 pl-12 pr-6 rounded-2xl bg-background/50 border-primary/10 focus:ring-secondary/50 focus:border-secondary text-lg transition-all"
-                                            value={batchId}
-                                            onChange={(e) => setBatchId(e.target.value)}
-                                        />
-                                    </div>
-                                    <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
-                                        {t('Hero.cta_track')}
-                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                    </Button>
-                                </form>
-                            </div>
-                        </motion.div>
+                                        <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
+                                            {t('Hero.cta_track')}
+                                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </form>
+                                </div>
+                            </motion.div>
+
+                            {/* Quick Examples */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 1.2 }}
+                                className="flex flex-wrap items-center gap-3 text-sm text-white/70 animate-in fade-in slide-in-from-top-4 duration-1000 delay-500 fill-mode-both"
+                            >
+                                <span>{t('Hero.try_demo')}</span>
+                                <div className="flex gap-2">
+                                    {['2cbade92-e88e-48a8-a682-94ae0a0205e8', 'cde03dc1-202b-43c7-a0cd-7cbcbbeeb884'].map((id) => (
+                                        <button
+                                            key={id}
+                                            onClick={() => setBatchId(id)}
+                                            className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-xs font-mono"
+                                        >
+                                            {id.slice(0, 8)}...
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </div>
 
                         <motion.div 
                             variants={fadeInUp}
                             initial="initial"
                             animate="animate"
-                            transition={{ delay: 1.2 }}
-                            className="flex items-center gap-8 text-sm font-medium text-muted-foreground/80 opacity-60"
+                            transition={{ delay: 1.4 }}
+                            className="flex items-center gap-8 text-sm font-medium text-muted-foreground/80"
                         >
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -125,6 +148,7 @@ export default function Home() {
                                 Immutable Ledger
                             </div>
                         </motion.div>
+
                     </div>
                 </div>
             </section>

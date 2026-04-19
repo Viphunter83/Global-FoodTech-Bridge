@@ -1,13 +1,21 @@
 'use client';
 
 import { Link } from '@/navigation';
-import { PackageSearch, LayoutDashboard, Menu, X, LogOut, User as UserIcon } from 'lucide-react';
+import { PackageSearch, LayoutDashboard, Menu, X, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { LanguageSwitcher } from './ui/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function Header() {
     const t = useTranslations();
@@ -31,19 +39,37 @@ export function Header() {
                     
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
-                        <Link href="/how-it-works" className="transition-all hover:text-primary text-foreground/70">
-                            {t('Menu.how_it_works')}
-                        </Link>
-                        {user && (
-                            <Link href="/batches/new" className="transition-all hover:text-primary text-foreground/70">
-                                {t('Menu.create_batch')}
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <Link href="/how-it-works" className="transition-all hover:text-primary text-foreground/70">
+                                {t('Menu.how_it_works')}
                             </Link>
+                        </motion.div>
+                        {user && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <Link href="/batches/new" className="transition-all hover:text-primary text-foreground/70">
+                                    {t('Menu.create_batch')}
+                                </Link>
+                            </motion.div>
                         )}
                         {role === 'ADMIN' && (
-                            <Link href="/admin/companies" className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary border border-primary/10 hover:bg-primary/10 transition-all">
-                                <LayoutDashboard className="h-3.5 w-3.5" />
-                                {t('Menu.admin')}
-                            </Link>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <Link href="/admin/dashboard" className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all text-xs">
+                                    <LayoutDashboard className="h-3.5 w-3.5" />
+                                    {t('Menu.admin')}
+                                </Link>
+                            </motion.div>
                         )}
                     </nav>
 
@@ -62,22 +88,46 @@ export function Header() {
                         <div className="h-4 w-[1px] bg-border mx-2" />
                         
                         {user ? (
-                            <div className="flex items-center gap-3">
-                                <div className="flex flex-col items-end mr-1">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">{role}</span>
-                                    <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => logout()} className="rounded-full hover:bg-destructive/10 hover:text-destructive">
-                                    <LogOut className="h-5 w-5" />
-                                </Button>
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-primary/10 hover:border-primary/30 transition-all">
+                                        <div className="bg-primary/5 w-full h-full flex items-center justify-center">
+                                            <UserIcon className="h-5 w-5 text-primary" />
+                                        </div>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 mt-2 glass border-primary/10">
+                                    <DropdownMenuLabel className="font-normal">
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-bold leading-none text-primary uppercase tracking-wider">{role}</p>
+                                            <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator className="bg-primary/5" />
+                                    <DropdownMenuItem asChild className="cursor-pointer focus:bg-primary/5">
+                                        <Link href="/dashboard" className="w-full flex items-center">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            <span>{t('Menu.dashboard')}</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-primary/5" />
+                                    <DropdownMenuItem 
+                                        onClick={() => logout()}
+                                        className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>{t('Menu.logout')}</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : (
-                            <Button asChild variant="default" className="premium-gradient text-white rounded-full px-6 font-bold">
-                                <Link href="/auth/login">Login</Link>
+                            <Button asChild variant="default" className="premium-gradient text-white rounded-full px-6 font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all">
+                                <Link href="/auth/login">{t('Menu.login')}</Link>
                             </Button>
                         )}
                     </div>
                 </div>
+
             </div>
 
             {/* Mobile Navigation Overlay */}
@@ -96,16 +146,16 @@ export function Header() {
                             
                             <div className="mt-8 pt-8 border-t border-primary/10 flex flex-col gap-6">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Language</span>
+                                    <span className="text-sm font-medium text-muted-foreground">{t('Menu.language')}</span>
                                     <LanguageSwitcher />
                                 </div>
                                 {user ? (
                                     <Button onClick={() => { logout(); setIsMenuOpen(false); }} variant="destructive" className="w-full h-14 rounded-2xl gap-2 font-bold">
-                                        <LogOut className="h-5 w-5" /> Logout
+                                        <LogOut className="h-5 w-5" /> {t('Menu.logout')}
                                     </Button>
                                 ) : (
                                     <Button asChild onClick={() => setIsMenuOpen(false)} className="w-full h-14 rounded-2xl font-bold premium-gradient">
-                                        <Link href="/auth/login">Login</Link>
+                                        <Link href="/auth/login">{t('Menu.login')}</Link>
                                     </Button>
                                 )}
                             </div>
