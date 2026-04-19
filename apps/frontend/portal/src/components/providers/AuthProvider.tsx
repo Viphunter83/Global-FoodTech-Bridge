@@ -81,7 +81,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         });
 
-        return () => unsubscribe();
+        // Fail-safe: Force loading to end after 6 seconds
+        const timeoutId = setTimeout(() => {
+            setLoading((prevLoading) => {
+                if (prevLoading) {
+                    console.warn('Auth initialization timed out after 6s. Proceeding to app...');
+                    return false;
+                }
+                return false;
+            });
+        }, 6000);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(timeoutId);
+        };
     }, []);
 
     const logout = async () => {

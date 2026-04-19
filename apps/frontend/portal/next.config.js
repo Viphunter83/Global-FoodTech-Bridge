@@ -18,9 +18,9 @@ const nextConfig = {
             return fullUrl;
         };
 
-        const PASSPORT_URL = ensureUrl(process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL, 'http://passport-service:8080/api/v1');
-        const IOT_URL = ensureUrl(process.env.NEXT_PUBLIC_IOT_SERVICE_URL, 'http://iot-service:8081/api/v1');
-        const BLOCKCHAIN_URL = ensureUrl(process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL, 'http://blockchain-service:3000/api/v1');
+        const PASSPORT_URL = ensureUrl(process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL, 'https://chic-playfulness-production-d0d6.up.railway.app');
+        const IOT_URL = ensureUrl(process.env.NEXT_PUBLIC_IOT_SERVICE_URL, 'https://celebrated-consideration-production.up.railway.app');
+        const BLOCKCHAIN_URL = ensureUrl(process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL, 'https://global-foodtech-bridge-production.up.railway.app');
 
         return [
             {

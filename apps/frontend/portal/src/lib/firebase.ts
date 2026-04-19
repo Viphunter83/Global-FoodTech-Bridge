@@ -15,6 +15,14 @@ const firebaseConfig = {
 // Check if critical config is present to prevent SSR crashes
 const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
 
+if (!isConfigValid && typeof window !== 'undefined') {
+    console.warn('⚠️ Firebase configuration is missing! Check NEXT_PUBLIC_FIREBASE_ env variables on Vercel.');
+}
+
+if (!process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL && typeof window !== 'undefined') {
+    console.warn('⚠️ NEXT_PUBLIC_PASSPORT_SERVICE_URL is missing! Backend integration may fail.');
+}
+
 const app = isConfigValid 
     ? initializeApp(firebaseConfig) 
     : initializeApp({ apiKey: "empty", projectId: "empty", appId: "empty" });
