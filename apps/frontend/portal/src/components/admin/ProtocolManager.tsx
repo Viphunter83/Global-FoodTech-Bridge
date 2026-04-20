@@ -16,7 +16,7 @@ import {
     Plus, Edit, Trash2, ScrollText, CheckCircle2, ChevronRight, X 
 } from 'lucide-react';
 import { 
-    listTemplates, createAdminTemplate, updateAdminTemplate, deleteAdminTemplate 
+    getTemplates, createAdminTemplate, updateAdminTemplate, deleteAdminTemplate 
 } from '@/lib/api';
 import { SupplyChainTemplate, Step } from '@/lib/types';
 import { useTranslations } from 'next-intl';
@@ -35,7 +35,7 @@ export function ProtocolManager() {
 
     const loadTemplates = async () => {
         setIsLoading(true);
-        const data = await listTemplates();
+        const data = await getTemplates();
         setTemplates(data);
         setIsLoading(false);
     };
