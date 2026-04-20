@@ -45,7 +45,7 @@ export function ProtocolManager() {
             name: '',
             description: '',
             is_active: true,
-            steps: [{ name: 'Production', icon: 'package', required_cert: '' }]
+            steps: [{ name: 'Production', icon: 'package', required_cert: '', description: '', step_order: 1 } as any]
         });
         setIsDialogOpen(true);
     };
@@ -77,8 +77,8 @@ export function ProtocolManager() {
 
     const addStep = () => {
         if (!editingTemplate) return;
-        const newSteps = [...(editingTemplate.steps || []), { name: '', icon: 'package', required_cert: '' }];
-        setEditingTemplate({ ...editingTemplate, steps: newSteps as Step[] });
+        const newSteps = [...(editingTemplate.steps || []), { name: '', icon: 'package', required_cert: '', description: '', step_order: (editingTemplate.steps?.length || 0) + 1 }];
+        setEditingTemplate({ ...editingTemplate, steps: newSteps as any });
     };
 
     const removeStep = (index: number) => {
