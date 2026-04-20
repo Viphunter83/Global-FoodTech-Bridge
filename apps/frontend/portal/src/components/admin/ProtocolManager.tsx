@@ -16,9 +16,9 @@ import {
     Plus, Edit, Trash2, ScrollText, CheckCircle2, ChevronRight, X 
 } from 'lucide-react';
 import { 
-    getTemplates, createAdminTemplate, updateAdminTemplate, deleteAdminTemplate 
+    getTemplates, createAdminTemplate, updateAdminTemplate, deleteAdminTemplate,
+    SupplyChainTemplate, TemplateStep as Step
 } from '@/lib/api';
-import { SupplyChainTemplate, Step } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 
