@@ -38,26 +38,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <nav className="mt-4 px-6 space-y-2 flex-grow relative z-10">
                     <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">Core Clusters</div>
                     
+                    <Link href="/admin/dashboard">
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <LayoutDashboard className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_dashboard')}</span>
+                            </span>
+                        </Button>
+                    </Link>
+
                     <Link href="/admin/companies">
-                        <Button variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
-                            <Users className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_companies')}</span>
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <Users className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_companies')}</span>
+                            </span>
                         </Button>
                     </Link>
                     
                     <Link href="/admin/monitoring">
-                        <Button variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
-                            <Activity className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_monitoring')}</span>
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <Activity className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_monitoring')}</span>
+                            </span>
                         </Button>
                     </Link>
 
                     <div className="pt-8 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">Ledger Actions</div>
                     
                     <Link href="/admin/protocols">
-                        <Button variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
-                            <Fingerprint className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_auth_protocols')}</span>
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <Fingerprint className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_auth_protocols')}</span>
+                            </span>
                         </Button>
                     </Link>
                     
@@ -69,9 +84,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <div className="p-8 relative z-10">
                     <Link href="/dashboard">
-                        <Button className="w-full h-14 bg-white/5 hover:bg-white/10 text-white rounded-[1.5rem] border border-white/5 justify-start px-6 group transition-all">
-                            <LayoutDashboard className="mr-4 h-5 w-5 text-primary/60 group-hover:text-primary transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_back_to_app')}</span>
+                        <Button asChild className="w-full h-14 bg-white/5 hover:bg-white/10 text-white rounded-[1.5rem] border border-white/5 justify-start px-6 group transition-all">
+                            <span>
+                                <LayoutDashboard className="mr-4 h-5 w-5 text-primary/60 group-hover:text-primary transition-all" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_back_to_app')}</span>
+                            </span>
                         </Button>
                     </Link>
                     

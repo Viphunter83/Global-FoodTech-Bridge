@@ -265,6 +265,7 @@
     "monitoring_active_services": "Live Service Nodes",
     "monitoring_railway_connected": "Cloud Controller Linked",
     "admin_operator_title": "Bridge Operations Authority",
+    "admin_dashboard": "Cluster Overview",
     "admin_companies": "Registered Entities",
     "admin_monitoring": "Cluster Pulse",
     "admin_auth_protocols": "Compliance Protocols",

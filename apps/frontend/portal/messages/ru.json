@@ -263,6 +263,7 @@
     "monitoring_active_services": "Активные узлы",
     "monitoring_railway_connected": "Контроллер облака подключен",
     "admin_operator_title": "Управление операциями Bridge",
+    "admin_dashboard": "Обзор кластера",
     "admin_companies": "Зарегистрированные лица",
     "admin_monitoring": "Пульс кластера",
     "admin_auth_protocols": "Протоколы соответствия",
