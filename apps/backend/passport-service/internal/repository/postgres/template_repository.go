@@ -19,26 +19,63 @@ func NewTemplateRepository(db *pgxpool.Pool) *TemplateRepository {
 }
 
 func (r *TemplateRepository) List(ctx context.Context) ([]domain.Template, error) {
-	query := `
+	queryTemplates := `
 		SELECT id, name, description, created_at, is_active
 		FROM supply_chain_templates
 		WHERE is_active = TRUE
 		ORDER BY name ASC
 	`
 
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, queryTemplates)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list templates: %w", err)
 	}
 	defer rows.Close()
 
 	var templates []domain.Template
+	var templateIDs []uuid.UUID
 	for rows.Next() {
 		var t domain.Template
 		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.CreatedAt, &t.IsActive); err != nil {
 			return nil, err
 		}
 		templates = append(templates, t)
+		templateIDs = append(templateIDs, t.ID)
+	}
+
+	if len(templates) == 0 {
+		return templates, nil
+	}
+
+	// Fetch all steps for these templates
+	querySteps := `
+		SELECT id, template_id, step_order, name, icon, description, required_cert
+		FROM template_steps
+		WHERE template_id = ANY($1)
+		ORDER BY template_id, step_order ASC
+	`
+
+	stepRows, err := r.db.Query(ctx, querySteps, templateIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch steps: %w", err)
+	}
+	defer stepRows.Close()
+
+	stepsMap := make(map[uuid.UUID][]domain.Step)
+	for stepRows.Next() {
+		var s domain.Step
+		if err := stepRows.Scan(&s.ID, &s.TemplateID, &s.StepOrder, &s.Name, &s.Icon, &s.Description, &s.RequiredCert); err != nil {
+			return nil, err
+		}
+		stepsMap[s.TemplateID] = append(stepsMap[s.TemplateID], s)
+	}
+
+	// Attach steps to templates
+	for i := range templates {
+		templates[i].Steps = stepsMap[templates[i].ID]
+		if templates[i].Steps == nil {
+			templates[i].Steps = []domain.Step{} // Avoid null in JSON
+		}
 	}
 
 	return templates, nil
