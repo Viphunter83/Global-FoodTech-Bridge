@@ -27,13 +27,22 @@ func main() {
 	defer dbpool.Close()
 
 	// Connect to Redis
-	redisAddr := os.Getenv("REDIS_URL")
-	if redisAddr == "" {
-		redisAddr = "redis:6379"
+	redisURL := os.Getenv("REDIS_URL")
+	var rdb *redis.Client
+	if redisURL != "" && (len(redisURL) > 8 && redisURL[:8] == "redis://") {
+		opts, err := redis.ParseURL(redisURL)
+		if err != nil {
+			log.Fatalf("Invalid REDIS_URL: %v\n", err)
+		}
+		rdb = redis.NewClient(opts)
+	} else {
+		if redisURL == "" {
+			redisURL = "redis:6379"
+		}
+		rdb = redis.NewClient(&redis.Options{
+			Addr: redisURL,
+		})
 	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
 	
 	// Test Redis connection
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
