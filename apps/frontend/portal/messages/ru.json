@@ -277,7 +277,8 @@
     "admin_protocol_steps": "Этапы цепочки",
     "admin_required_cert": "Обязательный сертификат",
     "admin_step_name": "Название этапа",
-    "admin_save_protocol": "Сохранить изменения"
+    "admin_save_protocol": "Сохранить изменения",
+    "confirm_delete": "Вы уверены, что хотите удалить этот протокол? Это повлияет на новые партии."
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",

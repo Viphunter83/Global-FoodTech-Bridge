@@ -267,7 +267,20 @@
     "admin_operator_title": "Bridge Operations Authority",
     "admin_companies": "Registered Entities",
     "admin_monitoring": "Cluster Pulse",
-    "admin_back_to_app": "Return to Terminal"
+    "admin_auth_protocols": "Compliance Protocols",
+    "admin_back_to_app": "Return to Terminal",
+    "admin_protocols_title": "Compliance Protocol Manager",
+    "admin_protocols_subtitle": "Design supply chain blueprints and authenticity requirements.",
+    "admin_new_protocol": "New Protocol",
+    "admin_edit_protocol": "Edit Protocol",
+    "admin_delete_protocol": "Delete Protocol",
+    "admin_protocol_name": "Protocol Name",
+    "admin_protocol_desc": "Process Description",
+    "admin_protocol_steps": "Chain Steps",
+    "admin_required_cert": "Required Certificate",
+    "admin_step_name": "Step Name",
+    "admin_save_protocol": "Save Changes",
+    "confirm_delete": "Are you sure you want to delete this protocol? This may affect new batches."
   },
   "HowItWorks": {
     "how_title": "How GFTB Bridge Works",
