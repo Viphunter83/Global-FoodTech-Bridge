@@ -33,3 +33,19 @@ func (s *TemplateService) GetTemplate(ctx context.Context, idStr string) (*domai
 
 	return s.repo.GetByID(ctx, id)
 }
+
+func (s *TemplateService) CreateTemplate(ctx context.Context, t domain.Template) (*domain.Template, error) {
+	return s.repo.Create(ctx, t)
+}
+
+func (s *TemplateService) UpdateTemplate(ctx context.Context, t domain.Template) (*domain.Template, error) {
+	return s.repo.Update(ctx, t)
+}
+
+func (s *TemplateService) DeleteTemplate(ctx context.Context, idStr string) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return errors.New("invalid template id")
+	}
+	return s.repo.Delete(ctx, id)
+}

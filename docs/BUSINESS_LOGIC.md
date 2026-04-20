@@ -64,9 +64,14 @@ To ensure the highest level of trust in a global supply chain, every entity on t
 ## 🔭 Points of Growth (Roadmap Specifications)
 
 ### 1. Supply Chain Templates (Universal Adaptability)
-*   **Logic**: Instead of a hardcoded "Produced -> Logistics -> Retail" flow, we introduce **Step Blueprints**.
-*   **Owner-level customization**: Manufacturers can define a "Mango Export Template" with an extra "Vapor Heat Treatment" step.
-*   **Validation**: Each step can require a specific IPFS certificate (e.g., Phytosanitary certificate for plants).
+*   **Logic**: Instead of a hardcoded "Produced -> Logistics -> Retail" flow, we use **Step Blueprints**.
+*   **Granular Requirements**: Each step identifies a specific proof needed. For example, a "Seafood Export" template requires a `LAB_ANALYSIS` step, while "Fresh Mango" requires a `VAPOR_HEAT_TREATMENT` step.
+*   **Validation**: The system prevents batch finalization unless all `required_cert` files for the chosen protocol are uploaded to IPFS.
+
+### 2. Product-Specific Compliance (Auto-Selection)
+*   **Logic**: Mapping templates to specific Product Categories (e.g., Baby Food, Frozen Meat).
+*   **Enforcement**: In production, the `Passport Service` will automatically assign the strictest matching template based on the `product_type` and `destination_country`.
+*   **Evidence Collection**: Supports diverse evidence types beyond PDFs, including IoT data snapshots and AI-verified photos.
 
 ### 2. Multilingual Data Layers (Local Context)
 *   **Logic**: Data records in the database will support a `translation_map` structure.
@@ -81,8 +86,9 @@ To ensure the highest level of trust in a global supply chain, every entity on t
     4. Safety: If an SLA Violation occurred, 10% is held until a human arbiter (Admin) reviews the "Platform Infrastructure Monitoring" logs.
 
 ### 4. Global Compliance Module (Automated Auditing)
-*   **Logic**: A rules engine that matches `DestinationCountry` with global import requirements.
-*   **Example**: If Destination is "United Arab Emirates", the system blocks `Accept Handover` until a verified `Halal Certificate` has been uploaded to IPFS.
+*   **Logic**: A rules engine that matches `DestinationCountry` and `ProductCategory` with global trade requirements.
+*   **Dynamic Requirements**: If Destination reflects a specific trade zone (e.g., GCC or EU), the system injects mandatory audit steps like `HALAL_CERT` or `E-MARK_COMPLIANCE` into the batch lifecycle.
+*   **AI Pre-Audit**: Integrating Vision AI to pre-verify that uploaded documents match the expected layout (e.g., confirming it's actually a Phytosanitary certificate).
 
 ---
 

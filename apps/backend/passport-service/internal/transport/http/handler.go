@@ -67,6 +67,14 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		// Templates
 		r.Get("/templates", h.listTemplates)
 		r.Get("/templates/{id}", h.getTemplate)
+
+		// Admin Templates
+		r.Group(func(r chi.Router) {
+			r.Use(h.RoleMiddleware("ADMIN"))
+			r.Post("/admin/templates", h.createTemplate)
+			r.Put("/admin/templates/{id}", h.updateTemplate)
+			r.Delete("/admin/templates/{id}", h.deleteTemplate)
+		})
 	})
 
 	return r
@@ -230,4 +238,67 @@ func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(template)
+}
+
+func (h *Handler) createTemplate(w http.ResponseWriter, r *http.Request) {
+	var t domain.Template
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := h.templateService.CreateTemplate(r.Context(), t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *Handler) updateTemplate(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing template id", http.StatusBadRequest)
+		return
+	}
+
+	var t domain.Template
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	templateUUID, err := uuid.Parse(id)
+	if err != nil {
+		http.Error(w, "invalid uuid", http.StatusBadRequest)
+		return
+	}
+	t.ID = templateUUID
+
+	res, err := h.templateService.UpdateTemplate(r.Context(), t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *Handler) deleteTemplate(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing template id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.templateService.DeleteTemplate(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

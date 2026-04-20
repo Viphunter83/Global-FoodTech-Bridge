@@ -216,3 +216,75 @@ func (r *TemplateRepository) SeedDefaults(ctx context.Context) error {
 
 	return nil
 }
+
+func (r *TemplateRepository) Create(ctx context.Context, t domain.Template) (*domain.Template, error) {
+	query := `
+		INSERT INTO supply_chain_templates (name, description, is_active)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at
+	`
+	err := r.db.QueryRow(ctx, query, t.Name, t.Description, t.IsActive).Scan(&t.ID, &t.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create template: %w", err)
+	}
+
+	for i, s := range t.Steps {
+		s.TemplateID = t.ID
+		s.StepOrder = i + 1
+		queryStep := `
+			INSERT INTO template_steps (template_id, step_order, name, icon, description, required_cert)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id
+		`
+		err = r.db.QueryRow(ctx, queryStep, s.TemplateID, s.StepOrder, s.Name, s.Icon, s.Description, s.RequiredCert).Scan(&s.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create step %d: %w", i+1, err)
+		}
+		t.Steps[i] = s
+	}
+
+	return &t, nil
+}
+
+func (r *TemplateRepository) Update(ctx context.Context, t domain.Template) (*domain.Template, error) {
+	query := `
+		UPDATE supply_chain_templates
+		SET name = $1, description = $2, is_active = $3
+		WHERE id = $4
+	`
+	_, err := r.db.Exec(ctx, query, t.Name, t.Description, t.IsActive, t.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update template: %w", err)
+	}
+
+	// Simplest approach: Delete steps and re-insert
+	_, err = r.db.Exec(ctx, "DELETE FROM template_steps WHERE template_id = $1", t.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to clear old steps: %w", err)
+	}
+
+	for i, s := range t.Steps {
+		s.TemplateID = t.ID
+		s.StepOrder = i + 1
+		queryStep := `
+			INSERT INTO template_steps (template_id, step_order, name, icon, description, required_cert)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id
+		`
+		err = r.db.QueryRow(ctx, queryStep, s.TemplateID, s.StepOrder, s.Name, s.Icon, s.Description, s.RequiredCert).Scan(&s.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update/re-insert step %d: %w", i+1, err)
+		}
+		t.Steps[i] = s
+	}
+
+	return &t, nil
+}
+
+func (r *TemplateRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx, "DELETE FROM supply_chain_templates WHERE id = $1", id)
+	if err != nil {
+		return fmt.Errorf("failed to delete template: %w", err)
+	}
+	return nil
+}
