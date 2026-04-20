@@ -51,8 +51,8 @@ export class ViolationStreamListener implements OnModuleInit, OnModuleDestroy {
                 );
 
                 if (entries) {
-                    for (const [stream, messages] of entries) {
-                        for (const [id, [_, payload]] of messages) {
+                    for (const [stream, messages] of (entries as any)) {
+                        for (const [id, [_, payload]] of (messages as any)) {
                             await this.processMessage(id, payload);
                             // Acknowledge
                             await this.redis.xack(streamKey, groupName, id);
