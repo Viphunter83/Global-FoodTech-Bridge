@@ -8,6 +8,13 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { 
+    Select, 
+    SelectContent, 
+    SelectItem, 
+    SelectTrigger, 
+    SelectValue 
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -52,6 +59,8 @@ export default function CreateBatchPage() {
     const [uploadedCerts, setUploadedCerts] = useState<Record<string, File>>({});
     const [productionDate, setProductionDate] = useState<Date>(new Date());
     const [expirationDate, setExpirationDate] = useState<Date>();
+    const [productType, setProductType] = useState<string>('PHO_BO_SOUP');
+    const [unitOfMeasure, setUnitOfMeasure] = useState<string>('kg');
 
     const loadTemplates = async () => {
         setIsTemplatesLoading(true);
@@ -171,8 +180,8 @@ export default function CreateBatchPage() {
     return (
         <div className="min-h-screen bg-background p-6 lg:p-12 relative overflow-hidden">
             {/* Premium Ambient Visuals */}
-            <div className="absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/5 blur-[100px]" />
-            <div className="absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-primary/5 blur-[100px]" />
+            <div className="absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/10 blur-[100px]" />
+            <div className="absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-primary/10 blur-[100px]" />
 
             <div className="mx-auto max-w-5xl relative z-10">
                 <div className="mb-16 flex flex-col items-center">
@@ -191,7 +200,7 @@ export default function CreateBatchPage() {
                         </h1>
                         <div className="flex items-center justify-center gap-4">
                             <div className="h-1 w-1 rounded-full bg-primary/40" />
-                            <p className="max-w-md text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 leading-relaxed italic">
+                            <p className="max-w-md text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 leading-relaxed italic">
                                 {t('create_batch_subtitle')}
                             </p>
                             <div className="h-1 w-1 rounded-full bg-primary/40" />
@@ -275,16 +284,17 @@ export default function CreateBatchPage() {
                                         </div>
                                         <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_product_type')}</Label>
-                                            <select
-                                                id="product_type"
-                                                name="product_type"
-                                                className="flex h-14 w-full rounded-2xl border border-primary/5 bg-muted/10 px-4 py-2 text-sm font-bold focus:outline-none focus:ring-0 focus:border-primary/20 focus:bg-background transition-all shadow-sm appearance-none cursor-pointer"
-                                                required
-                                            >
-                                                <option value="PHO_BO_SOUP">{t('product_pho_bo')}</option>
-                                                <option value="MANGO_SHAKE">{t('product_mango_shake')}</option>
-                                                <option value="DRIED_MANGO">{t('product_dried_mango')}</option>
-                                            </select>
+                                            <Select value={productType} onValueChange={setProductType}>
+                                                <SelectTrigger className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight">
+                                                    <SelectValue placeholder={t('form_product_type')} />
+                                                </SelectTrigger>
+                                                <SelectContent className="glass border-primary/10 rounded-2xl">
+                                                    <SelectItem value="PHO_BO_SOUP">{t('product_pho_bo')}</SelectItem>
+                                                    <SelectItem value="MANGO_SHAKE">{t('product_mango_shake')}</SelectItem>
+                                                    <SelectItem value="DRIED_MANGO">{t('product_dried_mango')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <input type="hidden" name="product_type" value={productType} />
                                         </div>
                                     </div>
 
@@ -298,18 +308,19 @@ export default function CreateBatchPage() {
                                                 <div className="h-4 w-1/2 bg-primary/5 rounded" />
                                             </div>
                                         ) : (
-                                            <select
-                                                id="template_id"
-                                                name="template_id"
-                                                value={selectedTemplateId}
-                                                onChange={(e) => setSelectedTemplateId(e.target.value)}
-                                                className="flex h-14 w-full rounded-2xl border border-primary/5 bg-muted/10 px-4 py-2 text-sm font-bold focus:outline-none focus:ring-0 focus:border-primary/20 focus:bg-background transition-all shadow-sm cursor-pointer"
-                                                required
-                                            >
-                                                {templates.map((tpl) => (
-                                                    <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
-                                                ))}
-                                            </select>
+                                            <>
+                                                <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                                                    <SelectTrigger className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight">
+                                                        <SelectValue placeholder={t('form_select_template')} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="glass border-primary/10 rounded-2xl">
+                                                        {templates.map((tpl) => (
+                                                            <SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <input type="hidden" name="template_id" value={selectedTemplateId} />
+                                            </>
                                         )}
                                     </div>
 
@@ -320,11 +331,17 @@ export default function CreateBatchPage() {
                                         </div>
                                         <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_unit_of_measure')}</Label>
-                                            <select id="unit_of_measure" name="unit_of_measure" className="flex h-14 w-full rounded-2xl border border-primary/5 bg-muted/10 px-4 py-2 text-sm font-bold">
-                                                <option value="kg">{t('unit_kg')}</option>
-                                                <option value="lbs">{t('unit_lbs')}</option>
-                                                <option value="units">{t('unit_units')}</option>
-                                            </select>
+                                            <Select value={unitOfMeasure} onValueChange={setUnitOfMeasure}>
+                                                <SelectTrigger className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight">
+                                                    <SelectValue placeholder={t('form_unit_of_measure')} />
+                                                </SelectTrigger>
+                                                <SelectContent className="glass border-primary/10 rounded-2xl">
+                                                    <SelectItem value="kg">{t('unit_kg')}</SelectItem>
+                                                    <SelectItem value="lbs">{t('unit_lbs')}</SelectItem>
+                                                    <SelectItem value="units">{t('unit_units')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <input type="hidden" name="unit_of_measure" value={unitOfMeasure} />
                                         </div>
                                     </div>
 
@@ -445,8 +462,11 @@ export default function CreateBatchPage() {
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="py-12 text-center rounded-[2rem] border border-dashed border-primary/10 glass">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 italic">{t('compliance_optional_docs')}</p>
+                                            <div className="py-16 text-center rounded-[2rem] border border-dashed border-primary/20 glass flex flex-col items-center gap-4">
+                                                <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center text-primary/30">
+                                                    <FileText size={24} />
+                                                </div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic max-w-[180px] mx-auto leading-relaxed">{t('compliance_optional_docs')}</p>
                                             </div>
                                         )}
                                     </div>

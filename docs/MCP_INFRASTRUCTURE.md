@@ -33,6 +33,28 @@ Provides tools for user management and Firestore/Storage administration.
 
 ---
 
+## 🛠 Administrative Capabilities
+The integrated MCP servers provide a "Command Center" for the platform:
+
+| Capability | Server | Example Action |
+| :--- | :--- | :--- |
+| **Log Monitoring** | Railway | Real-time debugging of IoT ingestion errors. |
+| **User Audits** | Firebase | Verifying factory technician accounts via email. |
+| **Secret Management** | Vercel/Railway | Syncing `INTERNAL_API_KEY` across all nodes. |
+| **Infrastructure** | Railway | Provisioning Redis instances or checking DB health. |
+
+---
+
+## ⚡ Quick Start for New Agents
+To verify your environment is ready for production edits, run:
+1. `mcp_railway_check-railway-status`
+2. `mcp_firebase-mcp-server_firebase_get_project`
+3. `mcp_vercel_list_projects`
+
+If any fail, refer to the **Maintenance** section below.
+
+---
+
 ## Configuration Template (`mcp_config.json`)
 
 To restore these connections in a new assistant session, ensure your `mcp_config.json` contains the following:

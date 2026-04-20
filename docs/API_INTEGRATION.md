@@ -50,13 +50,18 @@ curl -X POST https://iot.foodtech-bridge.org/api/v1/telemetry \
 
 ---
 
-## 3. SLA & Compliance Notarization
+## 3. SLA & Compliance Notarization (Asynchronous Funnel)
 
-Our system automatically validates incoming telemetry against the Batch Passport defined during manufacturing.
+Our system uses an **Event-Driven Architecture** to ensure sub-second response times for IoT gateways:
 
-- **Compliant Readings**: Stored in our telemetry database for audit trails.
-- **Violations**: Instantaneously published to the **Polygon Blockchain** as an immutable evidence record.
-- **Real-time Map**: Location data is visualized in the Global FoodTech Portal for consumer transparency.
+1.  **Ingestion**: Incoming telemetry is validated against the Batch Passport.
+2.  **Streaming**: If an SLA violation is detected (e.g., temperature breach), the event is published to a **Redis Stream** (`batch:violations`).
+3.  **Notarization**: A background worker processes the stream to create an immutable evidence record on the **Polygon Blockchain**.
+
+Manufacturers can monitor the status of their notarizations via:
+`GET /api/v1/blockchain/status/:batchId`
+
+---
 
 ## 4. Error Codes
 

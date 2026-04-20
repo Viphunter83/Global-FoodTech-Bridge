@@ -49,7 +49,10 @@ export function Header() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                <Link href="/batches/new" className="transition-all hover:text-primary text-foreground/70">
+                                <Link 
+                                    href="/batches/new" 
+                                    className="transition-all px-4 py-1.5 rounded-full border border-primary/20 hover:border-primary/50 text-primary font-bold text-xs bg-primary/5"
+                                >
                                     {t('Menu.create_batch')}
                                 </Link>
                             </motion.div>

@@ -14,13 +14,13 @@ This definitive guide ensures all components of the Global FoodTech Bridge are s
 
 ---
 
-## 🔑 Phase 1: Security Handshake (CRITICAL)
-
-The Frontend and Backends communicate via a shared secret. All services MUST have the same key.
-
-1.  **Generate a Secret**: `openssl rand -base64 32`
-2.  **Apply to Railway**: Set `INTERNAL_API_KEY` in settings for `blockchain-service`, `iot-service`, and `passport-service`.
-3.  **Apply to Vercel**: Set `INTERNAL_API_KEY` in Vercel Project Settings. 
+## 🛠 Phase 1: Infrastructure & Security Handshake
+1.  **Provision Redis**: In Railway, add a "Database" -> "Redis" instance.
+2.  **Generate a Secret**: `openssl rand -base64 32`
+3.  **Apply to Railway**: 
+    *   Set `INTERNAL_API_KEY` for all services.
+    *   Set `REDIS_URL` for `iot-service` and `blockchain-service` (Railway provides this automatically if linked, but ensure it starts with `redis://`).
+4.  **Apply to Vercel**: Set `INTERNAL_API_KEY` in Project Settings. 
     *   *Warning*: Do NOT use `NEXT_PUBLIC_` prefix for this specific variable.
 
 ---
@@ -66,9 +66,9 @@ Ensure these variables are set and a "Redeploy with Clean Cache" is performed:
 
 ## 🚀 Final Release Note
 
-Current Version: **v2.0-STABLE**
-- Migrated to Polygon Mainnet.
-- Hardened Environment Variable checks.
-- Resolved 404 Admin Routing.
-- Unified International Trade Corridor branding.
+Current Version: **v3.0-EVENT-DRIVEN**
+- Transitioned to Asynchronous Event Architecture (Redis Streams).
+- Hardened Production Infrastructure with Health Checks and Managed Redis.
+- Added Internal Network Security (CORS + API Keys).
+- Unified International Trade Corridor branding across all locales.
 
