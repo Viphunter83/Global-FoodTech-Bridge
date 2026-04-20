@@ -271,9 +271,9 @@ export default function CreateBatchPage() {
                             {/* Main Form Interface */}
                             <Card className="lg:col-span-3 rounded-[3rem] border border-primary/10 glass p-10 md:p-14 shadow-2xl shadow-primary/5">
                                 <form onSubmit={onSubmit} className="space-y-10">
-                                    <div className="grid gap-8 sm:grid-cols-2">
+                                    <div className="grid gap-8 sm:grid-cols-2 items-start">
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_manufacturer_id')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">{t('form_manufacturer_id')}</Label>
                                             <Input
                                                 id="manufacturer_id"
                                                 name="manufacturer_id"
@@ -283,7 +283,7 @@ export default function CreateBatchPage() {
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_product_type')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">{t('form_product_type')}</Label>
                                             <Select value={productType} onValueChange={setProductType}>
                                                 <SelectTrigger className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight">
                                                     <SelectValue placeholder={t('form_product_type')} />
@@ -324,13 +324,13 @@ export default function CreateBatchPage() {
                                         )}
                                     </div>
 
-                                    <div className="grid gap-8 sm:grid-cols-2">
+                                    <div className="grid gap-8 sm:grid-cols-2 items-start">
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_batch_size')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">{t('form_batch_size')}</Label>
                                             <Input id="batch_size" name="batch_size" type="number" placeholder="100" className="h-14 rounded-2xl bg-muted/10 border-primary/5 font-bold" required />
                                         </div>
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_unit_of_measure')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">{t('form_unit_of_measure')}</Label>
                                             <Select value={unitOfMeasure} onValueChange={setUnitOfMeasure}>
                                                 <SelectTrigger className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight">
                                                     <SelectValue placeholder={t('form_unit_of_measure')} />
