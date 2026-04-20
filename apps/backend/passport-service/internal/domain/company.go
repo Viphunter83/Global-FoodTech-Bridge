@@ -18,6 +18,8 @@ type Company struct {
 	ID                  uuid.UUID   `json:"id"`
 	Name                string      `json:"name"`
 	Type                CompanyType `json:"type"`
+	GLNNumber           *string     `json:"gln_number,omitempty"`
+	VATNumber           *string     `json:"vat_number,omitempty"`
 	WalletAddress       string      `json:"wallet_address"`
 	EncryptedPrivateKey string      `json:"-"` // Never expose via API
 	ProductionLocation  string      `json:"production_location,omitempty"`
@@ -29,5 +31,7 @@ type Company struct {
 type CreateCompanyRequest struct {
 	Name               string      `json:"name"`
 	Type               CompanyType `json:"type"`
+	GLNNumber          *string     `json:"gln_number,omitempty"`
+	VATNumber          *string     `json:"vat_number,omitempty"`
 	ProductionLocation string      `json:"production_location"`
 }

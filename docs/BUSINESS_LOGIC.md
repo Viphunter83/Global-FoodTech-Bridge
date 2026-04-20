@@ -13,6 +13,21 @@ This document defines the core operational logic of the platform, ensuring trans
 
 ---
 
+## 🆔 Identity & Trust Layer (GS1 & Legal)
+
+To ensure the highest level of trust in a global supply chain, every entity on the platform is bound by three layers of identification:
+
+1.  **Legal Identity (NAT/VAT)**: National tax identifiers used for government-level verification and customs clearance.
+2.  **Global Supply Chain Identity (GS1 GLN)**: The **Global Location Number** (13 digits) serves as a unique "digital address" for physical facilities. This allows cross-referencing with the GS1 Global Registry.
+3.  **Digital Cryptographic Identity (Blockchain Wallet)**: Every registered enterprise possesses a unique non-custodial wallet. All actions (batch creation, handovers) are cryptographically signed by this identity.
+
+### Registration Flow:
+*   **Initialization**: Admin or self-service portal creates a `Company` record with GLN and VAT details.
+*   **Wallet Binding**: The system generates a wallet and stores it alongside the legal IDs.
+*   **Role Authorization**: A smart contract transaction grants the `MANUFACTURER`, `LOGISTICS`, or `RETAILER` role to the wallet address only after legal verification is complete.
+
+---
+
 ## 🚀 Phase 1: Preparation & Production (Origin)
 ### Workflow:
 1. **Batch Creation**: Manufacturer initiates a batch in the `Passport Service`.

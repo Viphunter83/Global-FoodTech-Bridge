@@ -19,13 +19,15 @@ func NewCompanyRepository(db *pgxpool.Pool) *CompanyRepository {
 
 func (r *CompanyRepository) Create(ctx context.Context, company *domain.Company) error {
 	query := `
-		INSERT INTO companies (id, name, type, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO companies (id, name, type, gln_number, vat_number, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 	_, err := r.db.Exec(ctx, query,
 		company.ID,
 		company.Name,
 		company.Type,
+		company.GLNNumber,
+		company.VATNumber,
 		company.WalletAddress,
 		company.EncryptedPrivateKey,
 		company.ProductionLocation,
@@ -41,7 +43,7 @@ func (r *CompanyRepository) Create(ctx context.Context, company *domain.Company)
 
 func (r *CompanyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Company, error) {
 	query := `
-		SELECT id, name, type, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at
+		SELECT id, name, type, gln_number, vat_number, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at
 		FROM companies
 		WHERE id = $1
 	`
@@ -52,6 +54,8 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 		&c.ID,
 		&c.Name,
 		&c.Type,
+		&c.GLNNumber,
+		&c.VATNumber,
 		&c.WalletAddress,
 		&c.EncryptedPrivateKey,
 		&c.ProductionLocation,
@@ -67,7 +71,7 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 
 func (r *CompanyRepository) GetAll(ctx context.Context) ([]domain.Company, error) {
 	query := `
-		SELECT id, name, type, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at
+		SELECT id, name, type, gln_number, vat_number, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at
 		FROM companies
 		ORDER BY created_at DESC
 	`
@@ -84,6 +88,8 @@ func (r *CompanyRepository) GetAll(ctx context.Context) ([]domain.Company, error
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&c.GLNNumber,
+			&c.VATNumber,
 			&c.WalletAddress,
 			&c.EncryptedPrivateKey,
 			&c.ProductionLocation,

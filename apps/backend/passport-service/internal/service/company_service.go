@@ -44,6 +44,8 @@ func (s *CompanyService) CreateCompany(ctx context.Context, req domain.CreateCom
 		ID:                  uuid.New(),
 		Name:                req.Name,
 		Type:                req.Type,
+		GLNNumber:           req.GLNNumber,
+		VATNumber:           req.VATNumber,
 		WalletAddress:       addr,
 		EncryptedPrivateKey: encKey,
 		ProductionLocation:  req.ProductionLocation,
