@@ -14,7 +14,21 @@ import { HealthController } from './health.controller';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({ isGlobal: true }),
+        BullModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                const redisUrl = configService.get<string>('REDIS_URL') || 'redis://redis:6379';
+                const url = new URL(redisUrl);
+                return {
+                    connection: {
+                        host: url.hostname,
+                        port: parseInt(url.port) || 6379,
+                        password: url.password,
+                    },
+                };
+            },
+        }),
         BlockchainModule,
     ],
     controllers: [AppController, IpfsController, AdminController, HealthController],
