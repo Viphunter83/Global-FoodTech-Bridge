@@ -265,7 +265,19 @@
     "admin_operator_title": "Управление операциями Bridge",
     "admin_companies": "Зарегистрированные лица",
     "admin_monitoring": "Пульс кластера",
-    "admin_back_to_app": "Вернуться в терминал"
+    "admin_auth_protocols": "Протоколы соответствия",
+    "admin_back_to_app": "Вернуться в терминал",
+    "admin_protocols_title": "Менеджер протоколов соответствия",
+    "admin_protocols_subtitle": "Проектирование логистических цепочек и требований к аутентичности.",
+    "admin_new_protocol": "Создать протокол",
+    "admin_edit_protocol": "Настроить протокол",
+    "admin_delete_protocol": "Удалить протокол",
+    "admin_protocol_name": "Название протокола",
+    "admin_protocol_desc": "Описание процесса",
+    "admin_protocol_steps": "Этапы цепочки",
+    "admin_required_cert": "Обязательный сертификат",
+    "admin_step_name": "Название этапа",
+    "admin_save_protocol": "Сохранить изменения"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",

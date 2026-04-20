@@ -54,14 +54,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                     <div className="pt-8 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">Ledger Actions</div>
                     
+                    <Link href="/admin/protocols">
+                        <Button variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <Fingerprint className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_auth_protocols')}</span>
+                        </Button>
+                    </Link>
+                    
                     <Button variant="ghost" className="w-full h-14 justify-start text-white/20 cursor-not-allowed rounded-2xl px-4 opacity-50">
                         <Database className="mr-4 h-5 w-5" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Smart Contracts</span>
-                    </Button>
-                    
-                    <Button variant="ghost" className="w-full h-14 justify-start text-white/20 cursor-not-allowed rounded-2xl px-4 opacity-50">
-                        <Fingerprint className="mr-4 h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Auth Protocols</span>
                     </Button>
                 </nav>
 

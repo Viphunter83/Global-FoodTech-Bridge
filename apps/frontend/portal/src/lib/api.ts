@@ -503,3 +503,49 @@ export async function getTemplateDetails(id: string): Promise<SupplyChainTemplat
         return null;
     }
 }
+
+export async function createAdminTemplate(data: Partial<SupplyChainTemplate>): Promise<SupplyChainTemplate | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/templates`, {
+            method: 'POST',
+            headers: getHeaders(true),
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error:', e);
+        return null;
+    }
+}
+
+export async function updateAdminTemplate(id: string, data: Partial<SupplyChainTemplate>): Promise<SupplyChainTemplate | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/templates/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(true),
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error:', e);
+        return null;
+    }
+}
+
+export async function deleteAdminTemplate(id: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/templates/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders(),
+            cache: 'no-store'
+        });
+        return res.ok;
+    } catch (e) {
+        console.error('Admin API Error:', e);
+        return false;
+    }
+}
