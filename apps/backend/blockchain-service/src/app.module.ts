@@ -8,11 +8,17 @@ import { AdminController } from './admin/admin.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './auth/api-key.guard';
 
+import { BlockchainModule } from './blockchain/blockchain.module';
+
+import { HealthController } from './health.controller';
+
 @Module({
-    imports: [ConfigModule.forRoot()],
-    controllers: [AppController, IpfsController, AdminController],
+    imports: [
+        ConfigModule.forRoot(),
+        BlockchainModule,
+    ],
+    controllers: [AppController, IpfsController, AdminController, HealthController],
     providers: [
-        BlockchainService, 
         IpfsService,
         {
             provide: APP_GUARD,

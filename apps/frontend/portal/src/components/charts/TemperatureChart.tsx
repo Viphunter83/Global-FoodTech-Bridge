@@ -10,21 +10,29 @@ import {
     ReferenceLine,
     ReferenceArea,
     ResponsiveContainer,
+    Legend,
 } from 'recharts';
 import { format } from 'date-fns';
-import { Telemetry } from '@/lib/api';
 import { useState, useEffect } from 'react';
+
+interface TelemetryPoint {
+    timestamp: string;
+    temperature_celsius: number;
+    humidity?: number;
+    pressure?: number;
+}
 
 export function TemperatureChart({ 
     data, 
     minLimit = -22, 
     maxLimit = -18 
 }: { 
-    data: Telemetry[];
+    data: TelemetryPoint[];
     minLimit?: number;
     maxLimit?: number;
 }) {
     const [isMounted, setIsMounted] = useState(false);
+    const [view, setView] = useState<'temp' | 'humidity'>('temp');
 
     useEffect(() => {
         setIsMounted(true);
@@ -37,61 +45,94 @@ export function TemperatureChart({
     }));
 
     if (!isMounted) {
-        return <div className="h-80 w-full bg-gray-50 animate-pulse rounded-md" />;
+        return <div className="h-80 w-full bg-primary/5 animate-pulse rounded-[2rem]" />;
     }
 
-    // Dynamic scale logic
     const padding = Math.abs(maxLimit - minLimit) * 0.5 || 5;
-    const yDomain = [minLimit - padding, maxLimit + padding];
+    const tempDomain = [minLimit - padding, maxLimit + padding];
 
     return (
-        <div className="h-80 w-full min-h-[320px] min-w-[300px]">
-            <ResponsiveContainer width="99%" height="100%">
-                <LineChart data={formattedData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
-                    <XAxis
-                        dataKey="time"
-                        stroke="#9ca3af"
-                        fontSize={12}
-                        tickLine={false}
-                        minTickGap={30}
-                    />
-                    <YAxis
-                        stroke="#9ca3af"
-                        fontSize={12}
-                        tickLine={false}
-                        unit="°C"
-                        domain={yDomain}
-                    />
-                    <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        labelFormatter={(label, payload) => {
-                            if (payload && payload.length > 0 && payload[0]?.payload?.fullDate) {
-                                return payload[0].payload.fullDate;
-                            }
-                            return label;
-                        }}
-                    />
-                    {/* Safe Zone */}
-                    <ReferenceArea y1={minLimit} y2={maxLimit} fill="#dcfce7" fillOpacity={0.4} />
-                    {/* Danger Zones */}
-                    <ReferenceArea y1={yDomain[0]} y2={minLimit} fill="#fee2e2" fillOpacity={0.4} />
-                    <ReferenceArea y1={maxLimit} y2={yDomain[1]} fill="#fee2e2" fillOpacity={0.4} />
-                    
-                    <ReferenceLine y={maxLimit} stroke="#ef4444" strokeDasharray="3 3" label={{ value: `Max (${maxLimit}°C)`, fill: '#ef4444', fontSize: 10, position: 'insideTopRight' }} />
-                    <ReferenceLine y={minLimit} stroke="#ef4444" strokeDasharray="3 3" label={{ value: `Min (${minLimit}°C)`, fill: '#ef4444', fontSize: 10, position: 'insideBottomRight' }} />
-                    
-                    <Line
-                        type="monotone"
-                        dataKey="temperature_celsius"
-                        stroke="#2563eb"
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={{ r: 6 }}
-                        isAnimationActive={true}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
+        <div className="space-y-6">
+            <div className="flex gap-2 mb-4">
+                <button 
+                    onClick={() => setView('temp')}
+                    className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'temp' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-primary/5 text-primary/40 hover:bg-primary/10'}`}
+                >
+                    Temperature
+                </button>
+                <button 
+                    onClick={() => setView('humidity')}
+                    className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'humidity' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-primary/5 text-primary/40 hover:bg-primary/10'}`}
+                >
+                    Humidity
+                </button>
+            </div>
+
+            <div className="h-80 w-full">
+                <ResponsiveContainer width="99%" height="100%">
+                    <LineChart data={formattedData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,209,255,0.05)" />
+                        <XAxis
+                            dataKey="time"
+                            stroke="rgba(0,0,0,0.2)"
+                            fontSize={10}
+                            fontFamily="monospace"
+                            tickLine={false}
+                            minTickGap={30}
+                        />
+                        <YAxis
+                            stroke="rgba(0,0,0,0.2)"
+                            fontSize={10}
+                            fontFamily="monospace"
+                            tickLine={false}
+                            unit={view === 'temp' ? '°C' : '%'}
+                            domain={view === 'temp' ? tempDomain : [0, 100]}
+                        />
+                        <Tooltip
+                            contentStyle={{ 
+                                borderRadius: '24px', 
+                                border: '1px solid rgba(0,209,255,0.1)', 
+                                background: 'rgba(255,255,255,0.95)',
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)'
+                            }}
+                            labelStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px', color: '#00D1FF' }}
+                        />
+                        <Legend />
+                        
+                        {view === 'temp' && (
+                            <>
+                                <ReferenceArea y1={minLimit} y2={maxLimit} fill="#00D1FF" fillOpacity={0.05} />
+                                <ReferenceLine y={maxLimit} stroke="#FF4B4B" strokeDasharray="4 4" label={{ value: 'MAX', fill: '#FF4B4B', fontSize: 8, fontWeight: '900', position: 'insideTopRight' }} />
+                                <ReferenceLine y={minLimit} stroke="#FF4B4B" strokeDasharray="4 4" label={{ value: 'MIN', fill: '#FF4B4B', fontSize: 8, fontWeight: '900', position: 'insideBottomRight' }} />
+                                <Line
+                                    name="Temperature"
+                                    type="monotone"
+                                    dataKey="temperature_celsius"
+                                    stroke="#00D1FF"
+                                    strokeWidth={3}
+                                    dot={false}
+                                    activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }}
+                                    isAnimationActive={true}
+                                />
+                            </>
+                        )}
+
+                        {view === 'humidity' && (
+                            <Line
+                                name="Humidity"
+                                type="monotone"
+                                dataKey="humidity"
+                                stroke="#10B981"
+                                strokeWidth={3}
+                                dot={false}
+                                activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }}
+                                animationDuration={1500}
+                            />
+                        )}
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }

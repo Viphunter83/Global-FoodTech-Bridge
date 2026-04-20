@@ -10,6 +10,7 @@ import (
 	"github.com/global-foodtech-bridge/iot-service/internal/service"
 	transport "github.com/global-foodtech-bridge/iot-service/internal/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -25,9 +26,23 @@ func main() {
 	}
 	defer dbpool.Close()
 
+	// Connect to Redis
+	redisAddr := os.Getenv("REDIS_URL")
+	if redisAddr == "" {
+		redisAddr = "redis:6379"
+	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
+	
+	// Test Redis connection
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		log.Printf("Warning: Redis not reachable: %v. Events will fail.", err)
+	}
+
 	// Init Dependencies
 	repo := postgres.NewTelemetryRepository(dbpool)
-	svc := service.NewTelemetryService(repo)
+	svc := service.NewTelemetryService(repo, rdb)
 	handler := transport.NewHandler(svc)
 
 	// Init Router

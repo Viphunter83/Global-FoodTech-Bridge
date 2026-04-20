@@ -18,8 +18,8 @@ func NewTelemetryRepository(db *pgxpool.Pool) *TelemetryRepository {
 
 func (r *TelemetryRepository) SaveReading(ctx context.Context, reading *domain.Reading) error {
 	query := `
-		INSERT INTO telemetry_readings (id, batch_id, timestamp, temperature_celsius, location_lat, location_lon, device_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO telemetry_readings (id, batch_id, timestamp, temperature_celsius, location_lat, location_lon, device_id, humidity, pressure)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
 	_, err := r.db.Exec(ctx, query,
@@ -30,6 +30,8 @@ func (r *TelemetryRepository) SaveReading(ctx context.Context, reading *domain.R
 		reading.LocationLat,
 		reading.LocationLon,
 		reading.DeviceID,
+		reading.Humidity,
+		reading.Pressure,
 	)
 
 	if err != nil {
@@ -41,7 +43,7 @@ func (r *TelemetryRepository) SaveReading(ctx context.Context, reading *domain.R
 
 func (r *TelemetryRepository) GetByBatchID(ctx context.Context, batchID string) ([]*domain.Reading, error) {
 	query := `
-		SELECT id, batch_id, timestamp, temperature_celsius, location_lat, location_lon, device_id
+		SELECT id, batch_id, timestamp, temperature_celsius, location_lat, location_lon, device_id, humidity, pressure
 		FROM telemetry_readings
 		WHERE batch_id = $1
 		ORDER BY timestamp DESC
@@ -56,7 +58,7 @@ func (r *TelemetryRepository) GetByBatchID(ctx context.Context, batchID string) 
 	var readings []*domain.Reading
 	for rows.Next() {
 		var r domain.Reading
-		if err := rows.Scan(&r.ID, &r.BatchID, &r.Timestamp, &r.TemperatureCelsius, &r.LocationLat, &r.LocationLon, &r.DeviceID); err != nil {
+		if err := rows.Scan(&r.ID, &r.BatchID, &r.Timestamp, &r.TemperatureCelsius, &r.LocationLat, &r.LocationLon, &r.DeviceID, &r.Humidity, &r.Pressure); err != nil {
 			return nil, fmt.Errorf("failed to scan reading: %w", err)
 		}
 		readings = append(readings, &r)

@@ -23,6 +23,11 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Protected Routes (Logistics or Manufacturer)

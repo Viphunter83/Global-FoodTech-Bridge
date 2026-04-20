@@ -21,6 +21,7 @@ Global FoodTech Bridge — это универсальная экосистем�
 - **[Бизнес-логика (Blueprint)](./BUSINESS_LOGIC_BLUEPRINT.md)**: Полное описание миссии и процессов.
 - **[Руководство по развертыванию](./DEPLOYMENT.md)**: Инструкция для Railway и Vercel.
 - **[Smart Contract V2 (Roadmap)](./docs/SMART_CONTRACT_V2.md)**: Описание следующего поколения инфраструктуры доверия.
+- **[MCP Infrastructure Guide](./docs/MCP_INFRASTRUCTURE.md)**: Настройка и управление проектом через ИИ-агентов.
 
 ## 🛡 Безопасность
 - Все секреты хранятся в переменных окружения (Railway/Vercel).

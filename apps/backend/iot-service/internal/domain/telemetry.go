@@ -15,6 +15,8 @@ type Reading struct {
 	LocationLat        *float64  `json:"location_lat,omitempty"`
 	LocationLon        *float64  `json:"location_lon,omitempty"`
 	DeviceID           string    `json:"device_id"`
+	Humidity           *float64  `json:"humidity,omitempty"`
+	Pressure           *float64  `json:"pressure,omitempty"`
 }
 
 type IngestTelemetryRequest struct {
@@ -23,6 +25,8 @@ type IngestTelemetryRequest struct {
 	LocationLat        *float64 `json:"lat,omitempty"`
 	LocationLon        *float64 `json:"lon,omitempty"`
 	DeviceID           string   `json:"device_id"`
+	Humidity           *float64 `json:"humidity,omitempty"`
+	Pressure           *float64 `json:"pressure,omitempty"`
 }
 
 type Alert struct {

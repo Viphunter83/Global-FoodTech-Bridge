@@ -6,6 +6,10 @@ const TemperatureChart = dynamic(
     () => import('@/components/charts/TemperatureChart').then((mod) => mod.TemperatureChart),
     { ssr: false, loading: () => <div className="h-80 w-full bg-primary/5 animate-pulse rounded-3xl" /> }
 );
+const LiveMap = dynamic(
+    () => import('@/components/maps/LiveMap'),
+    { ssr: false, loading: () => <div className="h-80 w-full bg-primary/5 animate-pulse rounded-3xl" /> }
+);
 import { Link } from '@/navigation';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle, RefreshCw, Search, Box, Fingerprint } from 'lucide-react';
 import { DashboardQR } from '@/components/ui/DashboardQR';
@@ -298,14 +302,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                 <h2 className="font-serif font-black italic text-xl tracking-tight text-foreground">{t('Tracking.location_tracking_title')}</h2>
                             </div>
                             <div className="relative overflow-hidden rounded-[2rem] aspect-square flex items-center justify-center bg-background/50 border border-primary/5 shadow-inner">
-                                <div className="absolute inset-0 bg-[url('/map-grid.png')] opacity-20 grayscale group-hover:scale-110 transition-transform duration-3000"></div>
-                                <div className="relative z-10 text-center p-8 backdrop-blur-sm bg-background/20 rounded-3xl border border-white/10 shadow-xl">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3 animate-pulse">{t('Tracking.map_loading')}</p>
-                                    <div className="flex flex-col gap-1 items-center">
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">{t('Tracking.map_last_known')}</span>
-                                        <p className="text-[11px] font-mono font-bold text-foreground">55.75° N, 37.61° E</p>
-                                    </div>
-                                </div>
+                                <LiveMap telemetry={telemetry} height="100%" />
                             </div>
                         </div>
 

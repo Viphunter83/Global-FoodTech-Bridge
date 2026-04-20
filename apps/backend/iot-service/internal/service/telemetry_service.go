@@ -9,19 +9,20 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"bytes"
 
 	"github.com/global-foodtech-bridge/iot-service/internal/domain"
 	"github.com/global-foodtech-bridge/iot-service/internal/repository/postgres"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type TelemetryService struct {
-	repo *postgres.TelemetryRepository
+	repo  *postgres.TelemetryRepository
+	rdb   *redis.Client
 }
 
-func NewTelemetryService(repo *postgres.TelemetryRepository) *TelemetryService {
-	return &TelemetryService{repo: repo}
+func NewTelemetryService(repo *postgres.TelemetryRepository, rdb *redis.Client) *TelemetryService {
+	return &TelemetryService{repo: repo, rdb: rdb}
 }
 
 func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTelemetryRequest) error {
@@ -47,6 +48,8 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 		LocationLat:        req.LocationLat,
 		LocationLon:        req.LocationLon,
 		DeviceID:           req.DeviceID,
+		Humidity:           req.Humidity,
+		Pressure:           req.Pressure,
 	}
 
 	// Fetch Batch Limits from Passport Service
@@ -67,6 +70,12 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 		} else if req.TemperatureCelsius > limits.MaxTemp {
 			violationType = "TEMP_HIGH"
 			msg = fmt.Sprintf("Temperature %.2f°C is above maximum %.2f°C", req.TemperatureCelsius, limits.MaxTemp)
+		} else if req.Humidity != nil && *req.Humidity < limits.MinHumidity {
+			violationType = "HUMIDITY_LOW"
+			msg = fmt.Sprintf("Humidity %.2f%% is below minimum %.2f%%", *req.Humidity, limits.MinHumidity)
+		} else if req.Humidity != nil && *req.Humidity > limits.MaxHumidity {
+			violationType = "HUMIDITY_HIGH"
+			msg = fmt.Sprintf("Humidity %.2f%% is above maximum %.2f%%", *req.Humidity, limits.MaxHumidity)
 		}
 
 		if violationType != "" {
@@ -85,10 +94,9 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 				log.Printf("Failed to save alert: %v", err)
 			}
 
-			// 2.1 Sync with Blockchain (Reliability Hardening)
-			evidence := fmt.Sprintf("%s | ReadingID: %s | Time: %s", msg, reading.ID.String(), reading.Timestamp.Format(time.RFC3339))
-			if err := s.reportViolationToBlockchain(req.BatchID, evidence); err != nil {
-				log.Printf("Failed to notarize violation on-chain: %v", err)
+			// 2.1 Sync with Blockchain (Event Driven via Redis)
+			if err := s.publishViolationEvent(req.BatchID, msg, reading.ID.String()); err != nil {
+				log.Printf("Failed to publish violation event to Redis: %v", err)
 			}
 		}
 	} else {
@@ -103,8 +111,10 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 }
 
 type passportBatchResponse struct {
-	MinTemp float64 `json:"min_temp"`
-	MaxTemp float64 `json:"max_temp"`
+	MinTemp     float64 `json:"min_temp"`
+	MaxTemp     float64 `json:"max_temp"`
+	MinHumidity float64 `json:"min_humidity"`
+	MaxHumidity float64 `json:"max_humidity"`
 }
 
 func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchResponse, error) {
@@ -131,49 +141,34 @@ func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchRespons
 	return &data, nil
 }
 
-func (s *TelemetryService) reportViolationToBlockchain(batchID string, msg string) error {
-	blockchainURL := os.Getenv("BLOCKCHAIN_SERVICE_URL")
-	if blockchainURL == "" {
-		blockchainURL = "http://blockchain-service:3000/api/v1"
+func (s *TelemetryService) publishViolationEvent(batchID string, message string, readingID string) error {
+	event := map[string]interface{}{
+		"batch_id":   batchID,
+		"message":    message,
+		"reading_id": readingID,
+		"timestamp":  time.Now().Format(time.RFC3339),
+		"type":       "VIOLATION",
+	}
+	
+	payload, _ := json.Marshal(event)
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Push to Redis Stream for persistence and consumer group support
+	err := s.rdb.XAdd(ctx, &redis.XAddArgs{
+		Stream: "batch:violations",
+		Values: map[string]interface{}{
+			"payload": string(payload),
+		},
+	}).Err()
+
+	if err != nil {
+		return fmt.Errorf("failed to xadd to redis: %w", err)
 	}
 
-	apiKey := os.Getenv("INTERNAL_API_KEY")
-
-	payload := map[string]string{
-		"batchId": batchID,
-		"details": msg,
-	}
-	body, _ := json.Marshal(payload)
-
-	var lastErr error
-	for attempt := 1; attempt <= 3; attempt++ {
-		req, err := http.NewRequest("POST", fmt.Sprintf("%s/blockchain/violation", blockchainURL), bytes.NewBuffer(body))
-		if err != nil {
-			return err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		if apiKey != "" {
-			req.Header.Set("x-api-key", apiKey)
-		}
-
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Do(req)
-		if err == nil {
-			defer resp.Body.Close()
-			if resp.StatusCode < 400 {
-				log.Printf("Successfully notarized violation for batch %s (Attempt %d)", batchID, attempt)
-				return nil
-			}
-			lastErr = fmt.Errorf("blockchain service error: %d", resp.StatusCode)
-		} else {
-			lastErr = err
-		}
-
-		log.Printf("Attempt %d failed to notarize violation: %v. Retrying in 2s...", attempt, lastErr)
-		time.Sleep(2 * time.Second)
-	}
-
-	return fmt.Errorf("failed to notarize violation after 3 attempts: %v", lastErr)
+	log.Printf("Violation event published to Redis Stream for batch %s", batchID)
+	return nil
 }
 
 func (s *TelemetryService) GetAlerts(ctx context.Context, batchID string) ([]*domain.Alert, error) {
