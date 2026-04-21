@@ -1,0 +1,3 @@
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS gln_number TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS vat_number TEXT;
+ALTER TABLE product_batches ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;

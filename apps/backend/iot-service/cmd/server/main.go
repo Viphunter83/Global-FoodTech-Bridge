@@ -70,14 +70,14 @@ func main() {
 	// Init Dependencies
 	repo := postgres.NewTelemetryRepository(dbpool)
 	svc := service.NewTelemetryService(repo, rdb)
-	handler := transport.NewHandler(svc)
-
-	// Init Router
-	router := handler.InitRoutes()
+	
+	// Create handler and routes
+	iotHandler := transport.NewHandler(svc)
+	router := iotHandler.InitRoutes()
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081" // Defaulting to 8081 to avoid conflict with passport-service if run locally without docker
+		port = "8081"
 	}
 
 	log.Printf("IoT Service starting on port %s", port)

@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
 const BATCH_ID = process.argv[2];
-const INTERNAL_API_KEY = "ftb_internal_6b7a8c9d0e1f2a3b4c5d6e7f8g9h0i1j"; // the one mapped in passport service
-const IOT_SERVICE_URL = "http://localhost:8081/api/v1"; // Using local or railway url? Let's use the gateway/proxy or local if available. Actually, since Railway is running the backend, we should use the Railway URL directly if local is unavailable. Oh wait, my verify_secrets.sh failed because Railway wasn't installed, but I saw the variables in previous steps: "https://celebrated-consideration-production.up.railway.app/api/v1".
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY; 
+const TARGET_URL = process.env.IOT_SERVICE_URL || "https://celebrated-consideration-production.up.railway.app/api/v1";
 
-const TARGET_URL = "https://celebrated-consideration-production.up.railway.app/api/v1";
+if (!INTERNAL_API_KEY) {
+    console.error("ERROR: INTERNAL_API_KEY environment variable is not set.");
+    process.exit(1);
+}
 
 if (!BATCH_ID) {
     console.error("Please provide a BATCH_ID");
