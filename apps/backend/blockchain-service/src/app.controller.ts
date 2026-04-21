@@ -32,8 +32,10 @@ export class AppController {
 
     @Post('transfer/initiate')
     async initiateTransfer(@Body() body: { batchId: string; toAddress: string }) {
-        const target = body.toAddress || "0xRetailerAddressDefault";
-        const txHash = await this.blockchainService.initiateTransfer(body.batchId, target);
+        if (!body.toAddress || !body.toAddress.startsWith('0x')) {
+            throw new Error('Valid toAddress (0x...) is required for transfer initiation');
+        }
+        const txHash = await this.blockchainService.initiateTransfer(body.batchId, body.toAddress);
         return { status: 'success', txHash };
     }
 

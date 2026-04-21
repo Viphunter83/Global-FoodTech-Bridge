@@ -7,7 +7,6 @@ const REGISTRY_ABI = [
     "function initiateTransfer(uint256 tokenId, address to) public",
     "function acceptTransfer(uint256 tokenId) public",
     "function reportViolation(string memory batchUUID, string memory details) public",
-    "function reportViolation(string memory batchUUID, string memory details) public",
     "function getBatchData(string memory batchUUID) public view returns (address currentOwner, string memory uri, string memory violation, bool isViolated, uint256 timestamp, address pendingOwner)",
     "function grantRole(bytes32 role, address account) public",
     "event BatchCreated(uint256 indexed tokenId, string batchUUID, address indexed producer, uint256 timestamp)",

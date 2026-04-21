@@ -140,7 +140,7 @@ const getHeaders = (isPost = false) => {
     // Server-side needs the key directly. Client-side proxy will inject it.
     // NEVER expose the key on the client!
     if (isServer) {
-        headers['x-api-key'] = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '';
+        headers['x-api-key'] = process.env.INTERNAL_API_KEY || '';
     }
     return headers;
 };

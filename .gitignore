@@ -15,6 +15,11 @@ build
 dist
 bin
 
+# Compiled Go binaries (should be built in CI/CD, not stored in Git)
+apps/backend/passport-service/server
+apps/backend/iot-service/server
+apps/backend/*/server
+
 # Misc
 .DS_Store
 *.pem

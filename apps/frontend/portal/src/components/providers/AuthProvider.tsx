@@ -57,13 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setRole(data.role as UserRole);
                         setCompanyId(data.companyId || null);
                     } else {
-                        // 2. Fallback: Check email (for initial admin setup)
-                        if (firebaseUser.email?.includes('admin') || firebaseUser.email === 'olegvakin@gmail.com') {
-                            setRole('ADMIN');
-                        } else {
-                            const storedRole = localStorage.getItem(`role_${firebaseUser.uid}`);
-                            setRole((storedRole as UserRole) || 'PENDING'); 
-                        }
+                        // No Firestore profile found — user needs to be provisioned by admin
+                        // Security: roles are ONLY assigned through Firestore documents, never via email patterns
+                        console.warn(`[GFTB-AUTH] No profile found for user ${firebaseUser.uid}. Role set to PENDING.`);
+                        setRole('PENDING');
                     }
                 } catch (error) {
                     console.error("Error fetching user role:", error);

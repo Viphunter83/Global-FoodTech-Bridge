@@ -53,16 +53,17 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		})
 		
 		// Public Routes
-		// Public Routes
 		r.Get("/batches/{id}", h.getBatch)
 		r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
 		r.Get("/partners/{id}", h.getPartner)
 
-		// Admin Routes
-		r.Post("/admin/companies", h.createCompany)
-		r.Post("/admin/companies", h.createCompany)
-		r.Get("/admin/companies", h.listCompanies)
-		r.Post("/admin/companies/{id}/approve", h.approveCompany)
+		// Admin Routes (protected by ADMIN role)
+		r.Group(func(r chi.Router) {
+			r.Use(h.RoleMiddleware("ADMIN"))
+			r.Post("/admin/companies", h.createCompany)
+			r.Get("/admin/companies", h.listCompanies)
+			r.Post("/admin/companies/{id}/approve", h.approveCompany)
+		})
 
 		// Templates
 		r.Get("/templates", h.listTemplates)
