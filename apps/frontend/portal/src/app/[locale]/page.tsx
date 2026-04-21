@@ -39,7 +39,7 @@ export default function Home() {
     const handleTrack = (e: React.FormEvent) => {
         e.preventDefault();
         if (batchId.trim()) {
-            router.push(`/batches/${batchId.trim()}`);
+            router.push(`/verify/${batchId.trim()}`);
         }
     };
 
@@ -394,9 +394,9 @@ export default function Home() {
                             <span>{t('Marketing.blockchain_badge')}</span>
                         </div>
                         <div className="flex gap-8">
-                            <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                            <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
-                            <Link href="#" className="hover:text-primary transition-colors">GDPR / ESG</Link>
+                            <Link href="/legal/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                            <Link href="/legal/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                            <Link href="/legal/compliance" className="hover:text-primary transition-colors">GDPR / ESG</Link>
                         </div>
                         <div className="flex items-center gap-2">
                              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />

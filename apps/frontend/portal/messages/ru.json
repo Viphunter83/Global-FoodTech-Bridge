@@ -270,6 +270,8 @@
     "admin_back_to_app": "Вернуться в терминал",
     "admin_protocols_title": "Менеджер протоколов соответствия",
     "admin_protocols_subtitle": "Проектирование логистических цепочек и требований к аутентичности.",
+    "admin_sensors_title": "Контроллер парка IoT",
+    "admin_sensors_subtitle": "Управление жизненным циклом оборудования и мониторинг батарей.",
     "admin_new_protocol": "Создать протокол",
     "admin_edit_protocol": "Настроить протокол",
     "admin_delete_protocol": "Удалить протокол",
@@ -279,6 +281,10 @@
     "admin_required_cert": "Обязательный сертификат",
     "admin_step_name": "Название этапа",
     "admin_save_protocol": "Сохранить изменения",
+    "admin_sensor_serial": "SKU / Серийный номер",
+    "admin_sensor_status": "Текущее состояние",
+    "admin_sensor_battery": "Заряд",
+    "admin_sensor_assignment": "Привязка к партнеру",
     "confirm_delete": "Вы уверены, что хотите удалить этот протокол? Это повлияет на новые партии."
   },
   "HowItWorks": {

@@ -24,24 +24,35 @@ export default function VerifyPage() {
     const [telemetry, setTelemetry] = useState<Telemetry[]>([]);
     const [bcHistory, setBcHistory] = useState<BlockchainEvent[]>([]);
 
-    useEffect(() => {
+    const fetchData = async (silent = false) => {
         if (!batchId) return;
-
-        const fetchData = async () => {
+        if (!silent) setLoading(true);
+        
+        try {
             const [batchData, bcData, telemData, historyData] = await Promise.all([
                 import('@/lib/api').then(mod => mod.getBatchDetails(batchId)),
                 import('@/lib/api').then(mod => mod.getBlockchainStatus(batchId)),
                 import('@/lib/api').then(mod => mod.getTelemetry(batchId)),
                 import('@/lib/api').then(mod => mod.getBlockchainHistory(batchId))
             ]);
+            
             setBatch(batchData);
             setStatus(bcData);
             setTelemetry(telemData);
             setBcHistory(historyData);
-            setLoading(false);
-        };
+        } catch (error) {
+            console.error("Verification data fetch failed:", error);
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchData();
+        
+        // Polling for live telemetry (every 15s)
+        const interval = setInterval(() => fetchData(true), 15000);
+        return () => clearInterval(interval);
     }, [batchId]);
 
     if (loading) {
@@ -52,7 +63,7 @@ export default function VerifyPage() {
         );
     }
 
-    if (!status || !status.verified || !batch) { // Check for batch too
+    if (!status || !status.verified || !batch) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
                 <ShieldCheck className="h-20 w-20 text-gray-300 mb-4" />
@@ -61,6 +72,12 @@ export default function VerifyPage() {
             </div>
         );
     }
+
+    // Dynamic metrics derivation
+    const displayMetrics = batch.trust_metrics || [
+        { label: 'Carbon', value: '0.4 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
+        { label: 'Authenticity', value: 'Blockchain Verified', icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
+    ];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
@@ -79,7 +96,7 @@ export default function VerifyPage() {
                     <div className="flex justify-center gap-2 text-sm font-mono opacity-75">
                         <span>ID: {batch.id.substring(0, 8)}...</span>
                         <span>•</span>
-                        <span>Polygon Network</span>
+                        <span>Polygon Mainnet</span>
                     </div>
                 </div>
             </div>
@@ -87,60 +104,60 @@ export default function VerifyPage() {
             <div className="max-w-md mx-auto px-4 -mt-8 space-y-6">
 
                 {/* 1. PRODUCT CARD */}
-                <Card className="shadow-lg border-0">
+                <Card className="shadow-lg border-0 overflow-hidden">
+                    <div className="h-1 w-full bg-gradient-to-r from-green-400 to-emerald-600" />
                     <CardContent className="p-6 space-y-4">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm text-gray-500 uppercase font-bold tracking-wider">Product</p>
+                                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Digital Passport</p>
                                 <h2 className="text-xl font-bold text-gray-900">{batch.product_type?.replace(/_/g, ' ') || 'Food Product'}</h2>
-                                <p className="text-gray-600 text-sm">Batch #{batch.id.substring(0, 6)}</p>
+                                <p className="text-gray-500 text-xs font-mono">#{batch.id.substring(0, 8)}</p>
                             </div>
-                            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
-                                PREMIUM
+                            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-[10px] font-black italic tracking-tighter">
+                                PREMIUM GRADE
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
-                                    <Leaf className="h-5 w-5" />
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                            {displayMetrics.slice(0, 2).map((metric: any, i: number) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className={`${metric.color || 'bg-gray-100 text-gray-600'} p-2 rounded-xl`}>
+                                        {metric.icon || <ShieldCheck className="h-5 w-5" />}
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold">{metric.label}</p>
+                                        <p className="font-bold text-sm text-gray-800">{metric.value}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-500 font-bold">Carbon</p>
-                                    <p className="font-semibold text-sm">0.4 kg</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
-                                    <ShieldCheck className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-500 font-bold">Halal</p>
-                                    <p className="font-semibold text-sm">Certified</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 2. BLOCKCHAIN VERIFIED JOURNEY */}
-                <BlockchainHistory history={bcHistory} />
+                {/* 2. BLOCKCHAIN JOURNEY */}
+                <div className="space-y-3">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Immutable Timeline</h3>
+                    <BlockchainHistory history={bcHistory} />
+                </div>
 
                 {/* 3. TEMPERATURE PROOF */}
-                <Card className="shadow-md border-0">
+                <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
                     <CardContent className="p-6">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center justify-between">
                             <span className="flex items-center">
                                 <Thermometer className="h-5 w-5 mr-2 text-blue-600" />
                                 Cold Chain Proof
                             </span>
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">IoT Data</span>
+                            <span className="flex items-center gap-1.5 text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-bold">
+                                <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                LIVE IOT
+                            </span>
                         </h3>
                         <div className="h-40 w-full">
                             <TelemetryChart data={telemetry} />
                         </div>
-                        <p className="text-xs text-gray-500 mt-4 text-center">
-                            Recorded every 15 mins by Tive™ IoT Sensor
+                        <p className="text-[10px] text-gray-400 mt-4 text-center font-medium italic">
+                            Verified by Tive™ IoT Sensors & Polygon Blockchain
                         </p>
                     </CardContent>
                 </Card>
@@ -155,8 +172,15 @@ export default function VerifyPage() {
                     violation={status.violation || undefined}
                 />
 
-                <div className="text-center pb-8 pt-4">
-                    <p className="text-xs text-gray-400">Powered by Global FoodTech Bridge Blockchain</p>
+                <div className="text-center pb-12 pt-4 space-y-2">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                        Powered by Global FoodTech Bridge
+                    </p>
+                    <div className="flex justify-center gap-4 opacity-30 grayscale grayscale-100 scale-75">
+                         <ShieldCheck className="h-6 w-6" />
+                         <Leaf className="h-6 w-6" />
+                         <CheckCircle className="h-6 w-6" />
+                    </div>
                 </div>
 
             </div>

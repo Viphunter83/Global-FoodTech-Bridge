@@ -10,37 +10,53 @@ interface DashboardMapProps {
     locationName?: string;
 }
 
-export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR" }: DashboardMapProps) {
+export function DashboardMap({ lat = 25.276987, lon = 55.296249, locationName = "Dubai, UAE" }: DashboardMapProps) {
     const t = useTranslations('Tracking');
+    
+    // Abstract normalization for the "High-Tech" grid
+    // Mapping lat/lon to percentage for visual representation
+    // Dubai is roughly 25N, 55E. We'll use a relative offset logic.
+    const xPos = 50 + (lon - 55) * 5; // Simple linear offset for the demo grid
+    const yPos = 50 - (lat - 25) * 5; 
+    
+    // Zoom logic - scale the background elements
+    const zoomLevel = 1.2;
 
     return (
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-[inset_0_20px_40px_-10px_rgba(0,0,0,0.5)] group">
-            {/* High-Tech Grid & Scan Lines */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:8px_8px]"></div>
-            
+            {/* Zoomable Background Layer */}
             <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 2 }}
-                className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" 
-            />
+                className="absolute inset-0"
+                animate={{ scale: zoomLevel }}
+                transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            >
+                {/* High-Tech Grid & Scan Lines */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:8px_8px]"></div>
+                
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 2 }}
+                    className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" 
+                />
 
-            {/* Abstract Global Connection Paths */}
-            <svg viewBox="0 0 800 400" className="absolute inset-0 w-full h-full text-primary/20 pointer-events-none group-hover:text-primary/40 transition-colors duration-1000">
-                <motion.path 
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 3, delay: 0.5 }}
-                    d="M100,200 Q400,50 700,200" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="5,10" 
-                />
-                <motion.path 
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 4, delay: 1 }}
-                    d="M150,250 Q400,350 650,250" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2,5" 
-                />
-            </svg>
+                {/* Abstract Global Connection Paths */}
+                <svg viewBox="0 0 800 400" className="absolute inset-0 w-full h-full text-primary/20 pointer-events-none group-hover:text-primary/40 transition-colors duration-1000">
+                    <motion.path 
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ duration: 3, delay: 0.5 }}
+                        d="M100,200 Q400,50 700,200" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="5,10" 
+                    />
+                    <motion.path 
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ duration: 4, delay: 1 }}
+                        d="M150,250 Q400,350 650,250" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2,5" 
+                    />
+                </svg>
+            </motion.div>
 
             <div className="absolute top-8 left-8 flex items-center gap-4 z-20">
                 <div className="flex h-10 px-4 items-center gap-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/5 shadow-2xl">
@@ -59,8 +75,18 @@ export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR"
                 </div>
             </div>
 
-            {/* Pulsing Beacon */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            {/* Pulsing Dynamic Beacon */}
+            <motion.div 
+                className="absolute"
+                style={{ 
+                    left: `${Math.max(10, Math.min(90, xPos))}%`, 
+                    top: `${Math.max(10, Math.min(90, yPos))}%`,
+                    transform: 'translate(-50%, -50%)'
+                }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 100, damping: 15 }}
+            >
                 <div className="h-40 w-40 bg-primary/10 rounded-full animate-ping absolute -inset-16 opacity-20"></div>
                 <div className="h-24 w-24 bg-primary/5 rounded-full animate-pulse absolute -inset-8"></div>
                 
@@ -85,7 +111,7 @@ export function DashboardMap({ lat = 48.8, lon = 2.3, locationName = "Paris, FR"
                         </div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Vignette Overlay */}
             <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />

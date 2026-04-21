@@ -1,5 +1,4 @@
-'use client';
-
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '../providers/AuthProvider';
 import { useDemoState } from '../providers/DemoStateProvider';
@@ -7,6 +6,7 @@ import { useBlockchainOperations } from '@/hooks/useBlockchainOperations';
 import { Button } from './button';
 import { CheckCircle, Package, RefreshCcw } from 'lucide-react';
 import { MANUFACTURER_ADDR, LOGISTICS_ADDR, RETAILER_ADDR } from '@/lib/constants';
+import { PairSensorModal } from '../iot/PairSensorModal';
 
 // Sub-components
 import { ViolationState } from '../blockchain/ViolationState';
@@ -25,6 +25,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
     const { role } = useAuth();
     const t = useTranslations('Tracking');
     const { getBatchState, updateBatchState, resetBatchState } = useDemoState();
+    const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
     
     // Scoped operations hook
     const ops = useBlockchainOperations(batchId);
@@ -105,7 +106,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         owner={status.owner}
                         manufacturerAddr={MANUFACTURER_ADDR}
                         onNotarize={ops.notarize}
-                        onPairSensor={() => updateBatchState(batchId, { sensorPaired: true })}
+                        onPairSensor={() => setIsPairingModalOpen(true)}
                         onTransfer={() => ops.initiateTransfer(LOGISTICS_ADDR)}
                         loading={ops.loading}
                     />
@@ -143,6 +144,15 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                     </div>
                 )}
             </div>
+
+            <PairSensorModal 
+                isOpen={isPairingModalOpen}
+                onClose={() => setIsPairingModalOpen(false)}
+                batchId={batchId}
+                onPair={(sid) => {
+                    updateBatchState(batchId, { sensorPaired: true, sensor_id: sid });
+                }}
+            />
 
             <DebugFooter />
         </div>

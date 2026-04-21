@@ -1,7 +1,7 @@
 'use client';
 
 import { Link } from '@/navigation';
-import { Home, Users, Shield, Activity, Fingerprint, LayoutDashboard, Database, Settings } from 'lucide-react';
+import { Home, Users, Shield, Activity, Fingerprint, LayoutDashboard, Database, Settings, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import { useTranslations } from 'next-intl';
@@ -72,6 +72,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <span>
                                 <Fingerprint className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_auth_protocols')}</span>
+                            </span>
+                        </Button>
+                    </Link>
+
+                    <Link href="/admin/sensors">
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <Cpu className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_sensors_title')}</span>
                             </span>
                         </Button>
                     </Link>

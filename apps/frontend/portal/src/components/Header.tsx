@@ -43,20 +43,6 @@ export function Header() {
                                 {t('Menu.how_it_works')}
                             </Link>
                         </motion.div>
-                        {user && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                            >
-                                <Link 
-                                    href="/batches/new" 
-                                    className="transition-all px-4 py-1.5 rounded-full border border-primary/20 hover:border-primary/50 text-primary font-bold text-xs bg-primary/5"
-                                >
-                                    {t('Menu.create_batch')}
-                                </Link>
-                            </motion.div>
-                        )}
                         {role === 'ADMIN' && (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -139,8 +125,7 @@ export function Header() {
                     >
                         <nav className="flex flex-col p-8 gap-6 text-xl font-bold">
                             <Link href="/how-it-works" onClick={() => setIsMenuOpen(false)}>{t('Menu.how_it_works')}</Link>
-                            {user && <Link href="/batches/new" onClick={() => setIsMenuOpen(false)}>{t('Menu.create_batch')}</Link>}
-                            {role === 'ADMIN' && <Link href="/admin/companies" onClick={() => setIsMenuOpen(false)}>{t('Menu.admin')}</Link>}
+                            {role === 'ADMIN' && <Link href="/admin/dashboard" onClick={() => setIsMenuOpen(false)}>{t('Menu.admin')}</Link>}
                             
                             <div className="mt-8 pt-8 border-t border-primary/10 flex flex-col gap-6">
                                 <div className="flex items-center justify-between">

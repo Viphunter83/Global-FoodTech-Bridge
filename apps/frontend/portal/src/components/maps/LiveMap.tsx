@@ -1,6 +1,7 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet';
+import { useTranslations } from 'next-intl';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
@@ -29,6 +30,8 @@ function RecenterMap({ position }: { position: [number, number] }) {
 }
 
 export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
+    const t = useTranslations('Tracking');
+
     if (!telemetry || telemetry.length === 0) {
         return (
             <div 
@@ -40,14 +43,19 @@ export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
         );
     }
 
-    // Filter points with valid coordinates
+    // Filter points with valid coordinates and sort by time
     const path = telemetry
         .filter(t => t.location_lat !== null && t.location_lon !== null)
-        .map(t => [t.location_lat, t.location_lon] as [number, number]);
+        .map(t => ({
+            pos: [t.location_lat, t.location_lon] as [number, number],
+            temp: t.temperature_celsius,
+            time: new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            humidity: t.humidity,
+        }));
 
-    const latest = path[0]; // Assuming sorted by timestamp desc
+    const latest = path[0]?.pos; // Assuming sorted by timestamp desc
 
-    if (path.length === 0) {
+    if (path.length === 0 || !latest) {
         return (
             <div 
                 style={{ height }} 
@@ -59,7 +67,7 @@ export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
     }
 
     return (
-        <div style={{ height }} className="w-full rounded-[2rem] overflow-hidden border border-primary/10 shadow-inner">
+        <div style={{ height }} className="w-full rounded-[2rem] overflow-hidden border border-primary/10 shadow-inner group">
             <MapContainer 
                 center={latest} 
                 zoom={5} 
@@ -71,13 +79,45 @@ export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 />
                 <Polyline 
-                    positions={path} 
-                    pathOptions={{ color: '#00D1FF', weight: 3, opacity: 0.6, dashArray: '10, 10' }} 
+                    positions={path.map(p => p.pos)} 
+                    pathOptions={{ color: 'hsl(var(--primary))', weight: 4, opacity: 0.4, dashArray: '8, 12' }} 
                 />
+                
+                {/* Historical Points with Tooltips */}
+                {path.slice(1).map((point, idx) => (
+                    <CircleMarker 
+                        key={idx} 
+                        center={point.pos} 
+                        radius={4}
+                        pathOptions={{ color: 'hsl(var(--primary))', fillOpacity: 0.2, weight: 1 }}
+                    >
+                        <Tooltip direction="top" offset={[0, -5]} opacity={1} className="custom-tooltip">
+                            <div className="p-3 bg-black/80 backdrop-blur-md rounded-xl border border-primary/20 text-white shadow-2xl min-w-[120px]">
+                                <div className="flex items-center justify-between gap-4 mb-2">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('tooltip_verified')}</span>
+                                    <span className="text-[9px] font-mono opacity-40">{point.time}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex items-center justify-between text-xs font-bold">
+                                        <span className="opacity-60">{t('tooltip_temp')}:</span>
+                                        <span className={point.temp > -18 ? 'text-destructive' : 'text-emerald-400'}>{point.temp}°C</span>
+                                    </div>
+                                    {point.humidity && (
+                                        <div className="flex items-center justify-between text-xs font-bold">
+                                            <span className="opacity-60">{t('tooltip_humidity')}:</span>
+                                            <span>{point.humidity}%</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </Tooltip>
+                    </CircleMarker>
+                ))}
+
                 <Marker position={latest}>
                     <Popup className="custom-popup">
-                        <div className="p-2 font-serif italic font-black">
-                            Last Reported Location
+                        <div className="p-3 font-serif italic font-black text-foreground">
+                            {t('live_iot_indicator')}
                         </div>
                     </Popup>
                 </Marker>

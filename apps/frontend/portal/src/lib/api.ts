@@ -23,6 +23,7 @@ export interface BatchDetails {
     template_id?: string | null;
     partner_id?: string | null;
     partner_redirect_url?: string | null;
+    sensor_id?: string;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
@@ -64,6 +65,7 @@ export interface BlockchainStatus {
     pendingOwner?: string | null;
     owner?: string;
     sensorPaired?: boolean;
+    sensor_id?: string;
     shippingStatus?: string;
     shippingStatusLabel?: string;
 }
