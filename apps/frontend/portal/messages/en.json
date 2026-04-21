@@ -305,5 +305,14 @@
     "status_blockchain_desc": "Indicates whether the current data has been immutably hashed and stored on the Polygon Mainnet.",
     "telemetry_title": "IoT Telemetry",
     "telemetry_desc": "Real-time readings from attached sensory devices tracking temperature, humidity, and precise GPS coordinates."
+  },
+  "Notifications": {
+    "center_title": "Notification Center",
+    "empty_state": "All Systems Nominal",
+    "clear_all": "Clear All",
+    "view_dashboard": "View Performance Dashboard",
+    "infra_alert": "Infrastructure Alert",
+    "infra_service_changed": "Service {name} state changed to {status}.",
+    "violation_detected": "Violation Detected"
   }
 }

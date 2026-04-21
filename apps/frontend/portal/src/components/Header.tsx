@@ -6,8 +6,11 @@ import { Button } from './ui/button';
 import { LanguageSwitcher } from './ui/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useNotifications } from '@/components/providers/NotificationProvider';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Badge as UIBadge } from './ui/badge';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,7 +25,17 @@ import { GFTBLogo } from './GFTBLogo';
 export function Header() {
     const t = useTranslations();
     const { user, role, logout } = useAuth();
+    const { notifications, unreadCount, markAsRead, clearNotifications } = useNotifications();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+            case 'warning': return <Info className="h-4 w-4 text-amber-500" />;
+            case 'success': return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+            default: return <Info className="h-4 w-4 text-blue-500" />;
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full glass border-b border-primary/10 transition-all duration-300">
@@ -70,6 +83,63 @@ export function Header() {
                     <div className="hidden sm:flex items-center gap-4">
                         <LanguageSwitcher />
                         <div className="h-4 w-[1px] bg-border mx-2" />
+                        
+                        {user && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center border border-primary/10 hover:bg-primary/5 transition-all">
+                                        <Bell className="h-5 w-5 text-foreground/70" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-white shadow-lg animate-pulse ring-2 ring-background">
+                                                {unreadCount}
+                                            </span>
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-80 mt-2 glass border-primary/10 p-0 overflow-hidden shadow-2xl">
+                                    <DropdownMenuLabel className="p-4 border-b border-primary/5 flex items-center justify-between">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{t('Notifications.center_title')}</span>
+                                        {notifications.length > 0 && (
+                                            <button onClick={clearNotifications} className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-destructive transition-colors">{t('Notifications.clear_all')}</button>
+                                        )}
+                                    </DropdownMenuLabel>
+                                    <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                                        {notifications.length === 0 ? (
+                                            <div className="p-10 text-center opacity-30 flex flex-col items-center">
+                                                <Bell className="h-10 w-10 mb-3 text-muted-foreground/40" />
+                                                <p className="text-[9px] font-black uppercase tracking-[0.2em]">{t('Notifications.empty_state')}</p>
+                                            </div>
+                                        ) : (
+                                            notifications.map((note) => (
+                                                <DropdownMenuItem 
+                                                    key={note.id} 
+                                                    className={`p-4 flex gap-4 cursor-pointer focus:bg-primary/5 border-b border-primary/5 last:border-0 ${!note.isRead ? 'bg-primary/[0.02]' : 'opacity-60'}`}
+                                                    onClick={() => {
+                                                        markAsRead(note.id);
+                                                        if (note.link) window.location.href = note.link;
+                                                    }}
+                                                >
+                                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${note.type === 'error' ? 'bg-destructive/10' : 'bg-primary/10'}`}>
+                                                        {getIcon(note.type)}
+                                                    </div>
+                                                    <div className="flex flex-col gap-1 overflow-hidden">
+                                                        <p className="text-[10px] font-black uppercase tracking-tight text-foreground truncate">{note.title}</p>
+                                                        <p className="text-[9px] font-medium leading-relaxed text-muted-foreground line-clamp-2">{note.message}</p>
+                                                        <p className="text-[8px] font-black uppercase text-muted-foreground/30 mt-1">{new Date(note.timestamp).toLocaleTimeString()}</p>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            ))
+                                        )}
+                                    </div>
+                                    <DropdownMenuSeparator className="bg-primary/5 m-0" />
+                                    <DropdownMenuItem asChild className="p-3 focus:bg-primary/5">
+                                        <Link href="/dashboard" className="w-full text-center text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 hover:text-primary">
+                                            {t('Notifications.view_dashboard')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                         
                         {user ? (
                             <DropdownMenu>

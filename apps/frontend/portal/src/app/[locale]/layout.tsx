@@ -1,11 +1,14 @@
 import { ReactNode } from "react";
 import { Outfit, Cormorant_Garamond } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { DemoStateProvider } from "@/components/providers/DemoStateProvider";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 import { Header } from "@/components/Header";
+import { AlertSentinel } from "@/components/AlertSentinel";
+import { Toaster } from "@/components/ui/sonner";
 
 const outfit = Outfit({ 
     subsets: ["latin", "latin-ext"],
@@ -42,13 +45,17 @@ export default async function LocaleLayout({
                 <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
                     <ClientHydrationLog />
                     <AuthProvider>
-                        <DemoStateProvider>
-                            <div className="relative flex min-h-screen flex-col">
-                                <Header />
-                                <div className="flex-1">{children}</div>
-                            </div>
-                        </DemoStateProvider>
+                        <NotificationProvider>
+                            <AlertSentinel />
+                            <DemoStateProvider>
+                                <div className="relative flex min-h-screen flex-col">
+                                    <Header />
+                                    <div className="flex-1">{children}</div>
+                                </div>
+                            </DemoStateProvider>
+                        </NotificationProvider>
                     </AuthProvider>
+                    <Toaster position="bottom-right" richColors closeButton />
                 </NextIntlClientProvider>
             </body>
         </html>

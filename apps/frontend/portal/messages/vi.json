@@ -287,5 +287,14 @@
     "status_blockchain_desc": "Cho biết dữ liệu hiện tại đã được băm bất biến và lưu trữ trên Polygon Mainnet hay chưa.",
     "telemetry_title": "Đo từ xa IoT",
     "telemetry_desc": "Các kết quả đo thời gian thực từ các thiết bị cảm biến được đính kèm theo dõi nhiệt độ, độ ẩm và tọa độ GPS chính xác."
+  },
+  "Notifications": {
+    "center_title": "Trung tâm thông báo",
+    "empty_state": "Hệ thống bình thường",
+    "clear_all": "Xóa tất cả",
+    "view_dashboard": "Bảng điều khiển hiệu suất",
+    "infra_alert": "Cảnh báo cơ sở hạ tầng",
+    "infra_service_changed": "Trạng thái dịch vụ {name} đã thay đổi thành {status}.",
+    "violation_detected": "Đã phát hiện vi phạm"
   }
 }
