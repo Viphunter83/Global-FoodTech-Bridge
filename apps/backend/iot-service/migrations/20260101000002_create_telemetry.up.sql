@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS telemetry_readings (
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_telemetry_batch_id ON telemetry_readings(batch_id);
-CREATE INDEX idx_telemetry_device_id ON telemetry_readings(device_id);
+CREATE INDEX IF NOT EXISTS idx_telemetry_batch_id ON telemetry_readings(batch_id);
+CREATE INDEX IF NOT EXISTS idx_telemetry_device_id ON telemetry_readings(device_id);

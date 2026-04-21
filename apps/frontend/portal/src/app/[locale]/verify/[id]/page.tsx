@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { getBlockchainStatus, getTelemetry, getBlockchainHistory, BlockchainStatus, Telemetry, BlockchainEvent } from '@/lib/api';
 import { Loader2, CheckCircle, ShieldCheck, MapPin, Thermometer, Leaf, Calendar, History } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
 import { BlockchainProof } from '@/components/blockchain/BlockchainProof';
 import { BlockchainHistory } from '@/components/blockchain/BlockchainHistory';
+
+import { SustainabilitySection } from '@/components/ui/SustainabilitySection';
+import { ShoppingCart } from 'lucide-react';
 
 const TelemetryChart = dynamic<{ data: Telemetry[] }>(
     () => import('@/components/ui/TelemetryChart'),
@@ -75,9 +79,11 @@ export default function VerifyPage() {
 
     // Dynamic metrics derivation
     const displayMetrics = batch.trust_metrics || [
-        { label: 'Carbon', value: '0.4 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
-        { label: 'Authenticity', value: 'Blockchain Verified', icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
+        { label: 'Carbon', value: '1.2 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
+        { label: 'Authenticity', value: 'Blockchain Secured', icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
     ];
+
+    const marketingStory = batch.marketing_story?.en || batch.marketing_story || "";
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
@@ -134,11 +140,36 @@ export default function VerifyPage() {
                     </CardContent>
                 </Card>
 
+                {/* 1.5 SUSTAINABILITY & QUALITY */}
+                <SustainabilitySection 
+                    marketingStory={marketingStory} 
+                    certificates={batch.certificates}
+                    productType={batch.product_type}
+                />
+
+                {/* 1.6 PURCHASE CTA */}
+                {batch.partner_redirect_url && (
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <button 
+                            onClick={() => window.open(batch.partner_redirect_url, '_blank')}
+                            className="w-full bg-black text-white h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                        >
+                            <ShoppingCart size={20} />
+                            Order Now in US Store
+                        </button>
+                    </motion.div>
+                )}
+
                 {/* 2. BLOCKCHAIN JOURNEY */}
                 <div className="space-y-3">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Immutable Timeline</h3>
                     <BlockchainHistory history={bcHistory} />
                 </div>
+
 
                 {/* 3. TEMPERATURE PROOF */}
                 <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">

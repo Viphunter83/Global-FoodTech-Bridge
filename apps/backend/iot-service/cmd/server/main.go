@@ -11,6 +11,14 @@ import (
 	transport "github.com/global-foodtech-bridge/iot-service/internal/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"fmt"
+	"strings"
+
+	// Migration dependencies
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -25,6 +33,16 @@ func main() {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
 	defer dbpool.Close()
+
+	// Verify connection
+	if err := dbpool.Ping(context.Background()); err != nil {
+		log.Fatalf("Unable to connect to database (Ping failed): %v\n", err)
+	}
+
+	// Run Migrations
+	if err := runMigrations(dbURL); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
 
 	// Connect to Redis
 	redisURL := os.Getenv("REDIS_URL")
@@ -66,4 +84,48 @@ func main() {
 	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
+}
+
+func runMigrations(dbURL string) error {
+	log.Println("Running database migrations...")
+
+	// Use a separate migrations table for iot-service
+	migrationURL := dbURL
+	if strings.Contains(migrationURL, "?") {
+		migrationURL += "&x-migrations-table=iot_schema_migrations"
+	} else {
+		migrationURL += "?x-migrations-table=iot_schema_migrations"
+	}
+
+	m, err := migrate.New(
+		"file://migrations",
+		migrationURL,
+	)
+	if err != nil {
+		return fmt.Errorf("could not create migrate instance: %w", err)
+	}
+	defer m.Close()
+
+	if err := m.Up(); err != nil {
+		if err == migrate.ErrNoChange {
+			log.Println("No new migrations to apply.")
+			return nil
+		}
+		
+		// Auto-healing for dirty migrations
+		if strings.Contains(err.Error(), "Dirty database") {
+			log.Printf("Detected dirty database state: %v. Attempting to force-fix to last stable version...", err)
+			// Force to the version before the failing one
+			if forceErr := m.Force(20260421042018); forceErr != nil {
+				return fmt.Errorf("could not force version after dirty state: %w", forceErr)
+			}
+			log.Println("Force-fix successful. Re-attempting migration...")
+			return m.Up()
+		}
+		
+		return fmt.Errorf("could not apply migrations: %w", err)
+	}
+
+	log.Println("Migrations applied successfully!")
+	return nil
 }

@@ -9,6 +9,7 @@ RUN go mod download
 COPY . .
 
 # Build the binary
+RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -o iot-service cmd/server/main.go
 
 # Stage 2: Runner

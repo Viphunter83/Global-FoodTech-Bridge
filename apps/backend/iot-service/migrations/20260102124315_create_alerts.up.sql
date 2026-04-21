@@ -1,4 +1,4 @@
-CREATE TABLE alerts (
+CREATE TABLE IF NOT EXISTS alerts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     batch_id UUID NOT NULL,
     type VARCHAR(50) NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE alerts (
     device_id VARCHAR(50)
 );
 
-CREATE INDEX idx_alerts_batch_id ON alerts(batch_id);
+CREATE INDEX IF NOT EXISTS idx_alerts_batch_id ON alerts(batch_id);

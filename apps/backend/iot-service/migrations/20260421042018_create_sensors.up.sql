@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sensors (
 );
 
 -- Index for quick lookup during telemetry ingestion
-CREATE INDEX idx_sensors_serial_number ON sensors(serial_number);
+CREATE INDEX IF NOT EXISTS idx_sensors_serial_number ON sensors(serial_number);
 
 -- Optional: Link telemetry_readings to sensors for data integrity
 -- This assumes device_id in telemetry_readings is the serial_number
