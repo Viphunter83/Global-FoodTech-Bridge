@@ -274,7 +274,13 @@
   "EmptyState": {
     "title": "Chào mừng đến với Cầu nối",
     "subtitle": "Trung tâm điều hành của bạn đã sẵn sàng. Khởi tạo hộ chiếu kỹ thuật số đầu tiên để bắt đầu theo dõi.",
-    "create_btn": "Tạo hộ chiếu đầu tiên"
+    "create_btn": "Tạo hộ chiếu đầu tiên",
+    "step1_title": "Danh tính kỹ thuật số",
+    "step1_desc": "Đăng ký siêu dữ liệu sản phẩm và chi tiết nhà sản xuất trong sổ cái bất biến.",
+    "step2_title": "Đo từ xa IoT",
+    "step2_desc": "Gắn cảm biến thông minh để theo dõi nhiệt độ và vị trí trong thời gian thực.",
+    "step3_title": "Chuyển giao tin cậy",
+    "step3_desc": "Chuyển quyền sở hữu một cách an toàn trong toàn bộ chuỗi cung ứng cho đến khi đến tay người tiêu dùng."
   },
   "Docs": {
     "status_blockchain_title": "Trạng thái Blockchain",

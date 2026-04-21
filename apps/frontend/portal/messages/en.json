@@ -292,7 +292,13 @@
   "EmptyState": {
     "title": "Welcome to the Bridge",
     "subtitle": "Your operations control center is ready. Initialize your first digital passport to begin tracking.",
-    "create_btn": "Create First Passport"
+    "create_btn": "Create First Passport",
+    "step1_title": "Digital Identity",
+    "step1_desc": "Register product metadata and manufacturer details in the immutable ledger.",
+    "step2_title": "IoT Telemetry",
+    "step2_desc": "Attach a smart sensor to monitor temperature and location in real-time.",
+    "step3_title": "Trust Handover",
+    "step3_desc": "Securely transfer ownership across the supply chain until it reaches the consumer."
   },
   "Docs": {
     "status_blockchain_title": "Blockchain Status",

@@ -42,18 +42,18 @@ export function EmptyStateGuide() {
                     <div className="w-full grid md:grid-cols-3 gap-6 text-left mt-8">
                         <div className="p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-primary/5 space-y-3">
                             <span className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-black font-mono text-xs mb-4">1</span>
-                            <h4 className="font-bold text-foreground">Digital Identity</h4>
-                            <p className="text-xs text-muted-foreground">Register product metadata and manufacturer details in the immutable ledger.</p>
+                            <h4 className="font-bold text-foreground">{t('EmptyState.step1_title')}</h4>
+                            <p className="text-xs text-muted-foreground">{t('EmptyState.step1_desc')}</p>
                         </div>
                         <div className="p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-primary/5 space-y-3">
                              <span className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 font-black font-mono text-xs mb-4">2</span>
-                            <h4 className="font-bold text-foreground">IoT Telemetry</h4>
-                            <p className="text-xs text-muted-foreground">Attach a smart sensor to monitor temperature and location in real-time.</p>
+                            <h4 className="font-bold text-foreground">{t('EmptyState.step2_title')}</h4>
+                            <p className="text-xs text-muted-foreground">{t('EmptyState.step2_desc')}</p>
                         </div>
                         <div className="p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-primary/5 space-y-3">
                             <span className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 font-black font-mono text-xs mb-4">3</span>
-                            <h4 className="font-bold text-foreground">Trust Handover</h4>
-                            <p className="text-xs text-muted-foreground">Securely transfer ownership across the supply chain until it reaches the consumer.</p>
+                            <h4 className="font-bold text-foreground">{t('EmptyState.step3_title')}</h4>
+                            <p className="text-xs text-muted-foreground">{t('EmptyState.step3_desc')}</p>
                         </div>
                     </div>
 
