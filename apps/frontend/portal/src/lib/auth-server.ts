@@ -20,11 +20,19 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
 
     try {
         const decodedToken = await adminAuth.verifyIdToken(token);
-        // Custom claims would be checked here for roles
+        
+        // Custom roles: check 'role' claim or 'admin' flag
+        let role: AuthenticatedUser['role'] = 'manufacturer';
+        if (decodedToken.role) {
+            role = decodedToken.role as any;
+        } else if (decodedToken.admin === true || decodedToken.admin === "true") {
+            role = 'admin';
+        }
+
         return {
             uid: decodedToken.uid,
             email: decodedToken.email,
-            role: decodedToken.role as any || 'manufacturer', // Fallback for demo purposes
+            role,
         };
     } catch (error) {
         console.error('Server-side auth verification failed:', error);

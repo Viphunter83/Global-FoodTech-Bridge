@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth-server';
+import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
 
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
     const targetPath = request.nextUrl.pathname.replace('/api/passport', '');
@@ -22,6 +22,7 @@ export const GET = withAuth(async (request: NextRequest) => {
         const response = await fetch(`${PASSPORT_SERVICE_URL}${targetPath}?${searchParams}`, {
             headers: {
                 'x-api-key': apiKey || '',
+                'X-User-Role': user.role?.toUpperCase() || '',
             },
         });
 
@@ -33,7 +34,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 });
 
-async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH') {
+async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', user: AuthenticatedUser) {
     const targetPath = request.nextUrl.pathname.replace('/api/passport', '');
     const PASSPORT_SERVICE_URL = process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL;
     
@@ -51,6 +52,7 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH') {
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
+            'X-User-Role': user.role?.toUpperCase() || '',
         };
 
         let body: any;
@@ -80,11 +82,11 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH') {
     }
 }
 
-export const POST = withAuth(async (request: NextRequest) => {
-    return handleMutation(request, 'POST');
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+    return handleMutation(request, 'POST', user);
 });
 
-export const PATCH = withAuth(async (request: NextRequest) => {
-    return handleMutation(request, 'PATCH');
+export const PATCH = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+    return handleMutation(request, 'PATCH', user);
 });
 

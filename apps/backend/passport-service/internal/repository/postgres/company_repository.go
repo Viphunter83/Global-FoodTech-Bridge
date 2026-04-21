@@ -17,6 +17,19 @@ func NewCompanyRepository(db *pgxpool.Pool) *CompanyRepository {
 	return &CompanyRepository{db: db}
 }
 
+func (r *CompanyRepository) UpdateStatus(ctx context.Context, id uuid.UUID, isActive bool) error {
+	query := `
+		UPDATE companies
+		SET is_active = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+	_, err := r.db.Exec(ctx, query, isActive, id)
+	if err != nil {
+		return fmt.Errorf("failed to update company status: %w", err)
+	}
+	return nil
+}
+
 func (r *CompanyRepository) Create(ctx context.Context, company *domain.Company) error {
 	query := `
 		INSERT INTO companies (id, name, type, gln_number, vat_number, wallet_address, encrypted_private_key, production_location, is_active, created_at, updated_at)

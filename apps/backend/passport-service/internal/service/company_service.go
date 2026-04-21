@@ -107,5 +107,10 @@ func (s *CompanyService) ApproveCompany(ctx context.Context, id uuid.UUID) error
 		return fmt.Errorf("blockchain service returned error: %s", resp.Status)
 	}
 
+	// 3. Update DB status
+	if err := s.repo.UpdateStatus(ctx, id, true); err != nil {
+		return fmt.Errorf("failed to update company status in DB: %w", err)
+	}
+
 	return nil
 }

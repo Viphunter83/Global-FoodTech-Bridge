@@ -9,6 +9,7 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/domain"
 	"github.com/global-foodtech-bridge/passport-service/internal/service"
 	"github.com/google/uuid"
+	"os"
 )
 
 type Handler struct {
@@ -41,6 +42,8 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(h.AuthMiddleware)
+
 		// API Routes
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -62,7 +65,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 			r.Use(h.RoleMiddleware("ADMIN"))
 			r.Post("/admin/companies", h.createCompany)
 			r.Get("/admin/companies", h.listCompanies)
-			r.Post("/admin/companies/{id}/approve", h.approveCompany)
+			r.Patch("/admin/companies/{id}/approve", h.approveCompany)
 		})
 
 		// Templates
@@ -79,6 +82,19 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	})
 
 	return r
+}
+
+func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiKey := r.Header.Get("x-api-key")
+		expectedKey := os.Getenv("INTERNAL_API_KEY")
+
+		if expectedKey != "" && apiKey != expectedKey {
+			http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (h *Handler) RoleMiddleware(requiredRole string) func(next http.Handler) http.Handler {
