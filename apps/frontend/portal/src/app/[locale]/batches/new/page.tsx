@@ -105,8 +105,10 @@ export default function CreateBatchPage() {
 
     async function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (role !== 'MANUFACTURER') {
-            setError('Only MANUFACTURER role can create batches.');
+        if (role !== 'MANUFACTURER' && role !== 'ADMIN') {
+            console.warn(`[GFTB-BATCH] Access denied: Role is ${role}. ONLY MANUFACTURER or ADMIN can create batches.`);
+            setError(t('error_insufficient_permissions') || 'Only MANUFACTURER role can create batches.');
+            setIsLoading(false);
             return;
         }
 

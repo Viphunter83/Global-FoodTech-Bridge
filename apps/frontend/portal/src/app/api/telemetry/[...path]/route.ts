@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
 
-export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
     const targetPath = request.nextUrl.pathname.replace('/api/telemetry', '');
@@ -14,7 +14,6 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
-        const userRole = user.role?.toUpperCase() || '';
 
         // Standardize URL to include /api/v1 if not present
         let baseUrl = IOT_SERVICE_URL.replace(/\/$/, '');
@@ -23,12 +22,11 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
         }
 
         const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
-        console.log(`[GFTB-PROXY] GET ${finalUrl} [Role: ${userRole}]`);
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [Key: ${apiKey ? 'Present' : 'Missing'}]`);
 
         const response = await fetch(finalUrl, {
             headers: {
-                'x-api-key': apiKey || '',
-                'X-User-Role': userRole,
+                'X-Internal-API-Key': apiKey || '',
             },
         });
 
@@ -38,5 +36,5 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
         console.error('IoT Proxy Error:', error);
         return NextResponse.json({ error: 'Failed to connect to IoT service' }, { status: 502 });
     }
-});
+}
 

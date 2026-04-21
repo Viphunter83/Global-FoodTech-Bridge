@@ -133,7 +133,8 @@
     "form_raw_material": "Raw Material Origin",
     "form_sensor_id": "IoT Sensor ID",
     "form_sensor_placeholder": "Scan TIVE / Emerson ID...",
-    "btn_create_pair": "Create & Pair Protocol"
+    "btn_create_pair": "Create & Pair Protocol",
+    "error_insufficient_permissions": "Access Denied: Only MANUFACTURER or ADMIN roles can initialize digital passports for this facility."
   },
   "IPFS": {
     "section_title": "Digital Product Passport (IPFS)",

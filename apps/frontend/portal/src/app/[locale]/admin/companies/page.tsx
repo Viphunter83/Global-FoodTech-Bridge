@@ -61,15 +61,26 @@ export default function AdminCompaniesPage() {
         const formData = new FormData(e.currentTarget);
         const token = await auth.currentUser?.getIdToken();
 
-        await createCompany({
+        const newCompany = await createCompany({
             name: formData.get('name') as string,
             type: formData.get('type') as 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER',
             production_location: formData.get('production_location') as string || '',
         }, token);
 
-        setIsCreating(false);
-        setOpen(false);
-        loadCompanies();
+        if (newCompany) {
+            console.log(`[GFTB-ADMIN] Registered company: ${newCompany.name}. Auto-switching context.`);
+            setCompanyId(newCompany.id);
+            setRole(newCompany.type as UserRole);
+            
+            // Optional: Provide a slight delay or just redirect
+            setIsCreating(false);
+            setOpen(false);
+            router.push('/batches/new');
+        } else {
+            setIsCreating(false);
+            setOpen(false);
+            loadCompanies();
+        }
     };
 
 

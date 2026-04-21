@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
 
-export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
     const targetPath = request.nextUrl.pathname.replace('/api/passport', '');
@@ -14,12 +14,7 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
-        const userRole = user.role?.toUpperCase() || '';
         
-        if (!apiKey) {
-            console.error('[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY is missing in environment.');
-        }
-
         // Standardize URL to include /api/v1 if not present
         let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {
@@ -27,12 +22,11 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
         }
         
         const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
-        console.log(`[GFTB-PROXY] GET ${finalUrl} [Role: ${userRole}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [Key: ${apiKey ? 'Present' : 'Missing'}]`);
 
         const response = await fetch(finalUrl, {
             headers: {
                 'x-api-key': apiKey || '',
-                'X-User-Role': userRole,
             },
         });
 
@@ -42,7 +36,7 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
         console.error('Passport Proxy Error:', error);
         return NextResponse.json({ error: 'Failed to connect to passport service' }, { status: 502 });
     }
-});
+}
 
 async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', user: AuthenticatedUser) {
     const targetPath = request.nextUrl.pathname.replace('/api/passport', '');

@@ -43,42 +43,39 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(h.AuthMiddleware)
-
-		// API Routes
+		// Public Routes (Moving these OUT of the AuthMiddleware group below)
+		r.Get("/batches/{id}", h.getBatch)
+		r.Get("/partners/{id}", h.getPartner)
+		r.Get("/templates", h.listTemplates)
+		r.Get("/templates/{id}", h.getTemplate)
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("ok"))
 		})
-        // ... rest of routes
-		r.Group(func(r chi.Router) {
-			r.Use(h.RoleMiddleware("MANUFACTURER"))
-			r.Post("/batches", h.createBatch)
-		})
-		
-		// Public Routes
-		r.Get("/batches/{id}", h.getBatch)
-		r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
-		r.Get("/partners/{id}", h.getPartner)
 
-		// Admin Routes (protected by ADMIN role)
+		// Protected Routes
 		r.Group(func(r chi.Router) {
-			r.Use(h.RoleMiddleware("ADMIN"))
-			r.Post("/admin/companies", h.createCompany)
-			r.Get("/admin/companies", h.listCompanies)
-			r.Patch("/admin/companies/{id}/approve", h.approveCompany)
-		})
+			r.Use(h.AuthMiddleware)
 
-		// Templates
-		r.Get("/templates", h.listTemplates)
-		r.Get("/templates/{id}", h.getTemplate)
+			r.Group(func(r chi.Router) {
+				r.Use(h.RoleMiddleware("MANUFACTURER", "ADMIN"))
+				r.Post("/batches", h.createBatch)
+			})
+			
+			r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
 
-		// Admin Templates
-		r.Group(func(r chi.Router) {
-			r.Use(h.RoleMiddleware("ADMIN"))
-			r.Post("/admin/templates", h.createTemplate)
-			r.Put("/admin/templates/{id}", h.updateTemplate)
-			r.Delete("/admin/templates/{id}", h.deleteTemplate)
+			// Admin Routes (protected by ADMIN role)
+			r.Group(func(r chi.Router) {
+				r.Use(h.RoleMiddleware("ADMIN"))
+				r.Post("/admin/companies", h.createCompany)
+				r.Get("/admin/companies", h.listCompanies)
+				r.Patch("/admin/companies/{id}/approve", h.approveCompany)
+				
+				// Admin Templates
+				r.Post("/admin/templates", h.createTemplate)
+				r.Put("/admin/templates/{id}", h.updateTemplate)
+				r.Delete("/admin/templates/{id}", h.deleteTemplate)
+			})
 		})
 	})
 
@@ -108,11 +105,21 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (h *Handler) RoleMiddleware(requiredRole string) func(next http.Handler) http.Handler {
+func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			role := r.Header.Get("X-User-Role")
-			if role != requiredRole {
+			
+			allowed := false
+			for _, allowedRole := range allowedRoles {
+				if role == allowedRole {
+					allowed = true
+					break
+				}
+			}
+
+			if !allowed {
+				log.Printf("[ROLE] Access denied: Required one of %v, but got %s", allowedRoles, role)
 				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
 				return
 			}

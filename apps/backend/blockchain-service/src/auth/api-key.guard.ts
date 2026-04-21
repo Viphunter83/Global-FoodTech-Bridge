@@ -15,6 +15,10 @@ export class ApiKeyGuard implements CanActivate {
         throw new UnauthorizedException('Service Security Configuration Missing');
     }
 
+    if (request.method === 'GET') {
+      return true;
+    }
+
     if (apiKey === secretKey) {
       return true;
     }

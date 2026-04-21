@@ -133,7 +133,8 @@
     "form_raw_material": "Происхождение сырья",
     "form_sensor_id": "ID датчика IoT",
     "form_sensor_placeholder": "Сканируйте ID TIVE / Emerson...",
-    "btn_create_pair": "Создать и привязать протокол"
+    "btn_create_pair": "Создать и привязать протокол",
+    "error_insufficient_permissions": "Доступ запрещен: Только пользователи с ролью «Производитель» или «Администратор» могут инициализировать цифровые паспорта."
   },
   "IPFS": {
     "section_title": "Цифровой паспорт продукта (IPFS)",
