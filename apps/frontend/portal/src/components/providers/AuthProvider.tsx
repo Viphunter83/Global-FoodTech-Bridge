@@ -52,7 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     // 1. Try to fetch role from Firestore profiles
                     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-                    if (userDoc.exists()) {
+                    
+                    // Failsafe Superadmin allocation as requested
+                    if (firebaseUser.email === 'olegvakin@gmail.com') {
+                        setRole('ADMIN');
+                        setCompanyId('GFTB-HQ');
+                    } else if (userDoc.exists()) {
                         const data = userDoc.data();
                         setRole(data.role as UserRole);
                         setCompanyId(data.companyId || null);
