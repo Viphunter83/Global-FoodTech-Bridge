@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { RailwayService, InfrastructureStatus as InfrastructureStatusType } from '@/lib/railway';
-import { Activity, Server, Database, Globe, RefreshCw, CheckCircle2, AlertCircle, Clock, Zap, Cpu, HardDrive } from 'lucide-react';
+import { Activity, Server, Database, Globe, RefreshCw, CheckCircle2, AlertCircle, Clock, Zap, Cpu, HardDrive, ExternalLink, Radio } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -152,9 +152,17 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                                                         <Server size={18} className="text-blue-400" />
                                                     )}
                                                 </div>
-                                                <Badge className={`rounded-lg border-0 font-black text-[8px] uppercase tracking-widest px-3 py-1 ${getStatusColor(service.status)}`}>
-                                                    {service.status}
-                                                </Badge>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <Badge className={`rounded-lg border-0 font-black text-[8px] uppercase tracking-widest px-3 py-1 ${getStatusColor(service.status)}`}>
+                                                        {service.status}
+                                                    </Badge>
+                                                    {service.isReachable !== undefined && (
+                                                        <div className="flex items-center gap-1.5 mt-1">
+                                                            <div className={`h-1.5 w-1.5 rounded-full ${service.isReachable ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]'} animate-pulse`} />
+                                                            <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/60">{service.isReachable ? 'ENDPOINT LIVE' : 'DNS TIMEOUT'}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                             <CardTitle className="text-sm font-serif font-black italic text-foreground truncate tracking-tight">
                                                 {service.name}
@@ -191,6 +199,9 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                                                     <p className="text-xs font-mono font-black text-foreground/80">
                                                         {service.cpuUsage ? `${service.cpuUsage.toFixed(1)}%` : '--'}
                                                     </p>
+                                                    {service.cpuUsage && (
+                                                        <Progress value={service.cpuUsage} className="h-0.5 mt-2 bg-primary/5" />
+                                                    )}
                                                 </div>
                                                 <div className="p-3 bg-primary/[0.02] rounded-xl border border-primary/5 shadow-inner">
                                                     <div className="flex items-center gap-2 mb-1 opacity-40">
@@ -198,22 +209,40 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                                                         <p className="text-[8px] font-black uppercase tracking-widest">{t('monitoring_memory_usage')}</p>
                                                     </div>
                                                     <p className="text-xs font-mono font-black text-foreground/80">
-                                                        {service.memoryUsage ? `${service.memoryUsage} MB` : '--'}
+                                                        {service.memoryUsage ? `${service.memoryUsage.toFixed(0)} MB` : '--'}
                                                     </p>
+                                                    {service.memoryUsage && (
+                                                        <Progress value={(service.memoryUsage / 1024) * 100} className="h-0.5 mt-2 bg-primary/5" />
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {service.url && (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {service.url ? (
+                                                    <a 
+                                                        href={service.url} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary/[0.03] hover:bg-primary hover:text-white rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all duration-300 border border-primary/5 h-10"
+                                                    >
+                                                        <Zap size={10} />
+                                                        {t('monitoring_endpoint_link')}
+                                                    </a>
+                                                ) : (
+                                                    <div className="w-full py-2.5 bg-primary/[0.01] rounded-xl text-[8px] font-black uppercase tracking-[0.2em] border border-primary/5 text-muted-foreground/30 flex items-center justify-center h-10">
+                                                        NO URL
+                                                    </div>
+                                                )}
                                                 <a 
-                                                    href={service.url} 
-                                                    target="_blank" 
+                                                    href={`https://railway.app/project/${project.project.toLowerCase().replace(/ /g, '-')}`}
+                                                    target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary/[0.03] hover:bg-primary hover:text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border border-primary/5"
+                                                    className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all duration-300 h-10"
                                                 >
-                                                    <Zap size={12} />
-                                                    {t('monitoring_endpoint_link')}
+                                                    <ExternalLink size={10} />
+                                                    LOGS
                                                 </a>
-                                            )}
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </motion.div>
