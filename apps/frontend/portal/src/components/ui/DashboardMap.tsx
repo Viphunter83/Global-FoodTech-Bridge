@@ -3,6 +3,7 @@
 import { MapPin, Globe, Satellite } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { useDemoState } from '../providers/DemoStateProvider';
 
 interface DashboardMapProps {
     lat?: number;
@@ -12,18 +13,35 @@ interface DashboardMapProps {
 
 export function DashboardMap({ lat = 25.276987, lon = 55.296249, locationName = "Dubai, UAE" }: DashboardMapProps) {
     const t = useTranslations('Tracking');
+    const { getBatchState } = useDemoState();
     
     // Abstract normalization for the "High-Tech" grid
-    // Mapping lat/lon to percentage for visual representation
-    // Dubai is roughly 25N, 55E. We'll use a relative offset logic.
-    const xPos = 50 + (lon - 55) * 5; // Simple linear offset for the demo grid
-    const yPos = 50 - (lat - 25) * 5; 
+    // Improved projection for wider coverage area
+    const normalizeCoord = (val: number, min: number, max: number) => {
+        return Math.max(10, Math.min(90, ((val - min) / (max - min)) * 100));
+    };
+
+    const xPos = normalizeCoord(lon, 40, 110); // Covering Middle East to SE Asia
+    const yPos = normalizeCoord(lat, 50, 5);  // Covering Northern to Equatorial regions
+    
+    const status = getBatchState('demo-batch-1'); // Default for landing page demo
+    const hasViolation = status?.violation !== undefined && status?.violation !== null;
     
     // Zoom logic - scale the background elements
     const zoomLevel = 1.2;
 
     return (
-        <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-[inset_0_20px_40px_-10px_rgba(0,0,0,0.5)] group">
+        <div className={`relative w-full aspect-video md:aspect-[21/9] ${hasViolation ? 'bg-destructive/10' : 'bg-slate-900'} rounded-[2.5rem] overflow-hidden border ${hasViolation ? 'border-destructive/30' : 'border-white/5'} shadow-[inset_0_20px_40px_-10px_rgba(0,0,0,0.5)] group transition-colors duration-1000`}>
+            
+            {/* Emergency Pulse Overlay */}
+            {hasViolation && (
+                <motion.div 
+                    className="absolute inset-0 bg-destructive/20 z-10 pointer-events-none"
+                    animate={{ opacity: [0, 0.4, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+            )}
+
             {/* Zoomable Background Layer */}
             <motion.div 
                 className="absolute inset-0"
@@ -38,7 +56,7 @@ export function DashboardMap({ lat = 25.276987, lon = 55.296249, locationName = 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 2 }}
-                    className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" 
+                    className={`absolute inset-0 bg-gradient-to-t ${hasViolation ? 'from-destructive/10' : 'from-primary/10'} via-transparent to-transparent`} 
                 />
 
                 {/* Abstract Global Connection Paths */}

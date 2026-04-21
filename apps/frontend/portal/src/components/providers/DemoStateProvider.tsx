@@ -63,6 +63,15 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
     }, [stateMap]);
 
     const updateBatchState = useCallback((batchId: string, updates: Partial<BlockchainStatus>) => {
+        // Hardware Guard Simulation:
+        // In a production environment, this would involve a cryptographic check 
+        // against the global sensor registry to prevent double-pairing or reuse.
+        if (updates.sensor_id === 'GFTB-RESERVED-001') {
+            console.error('CRITICAL GUARD: Sensor GFTB-RESERVED-001 is already assigned to a high-priority government cluster.');
+            alert('SECURITY ALERT: This sensor unit is currently active in another cluster and cannot be re-paired.');
+            return;
+        }
+
         setStateMap(prev => {
             const current = prev[batchId] || {};
             const newStateEntry = { ...current, ...updates } as BlockchainStatus;

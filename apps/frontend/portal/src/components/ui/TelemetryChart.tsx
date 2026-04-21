@@ -44,7 +44,12 @@ export default function TelemetryChart({ data }: TelemetryChartProps) {
 
     // Format data for chart
     const chartData = data.map(d => ({
-        time: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        // Global logistics standard: UTC Logging
+        time: new Date(d.timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            timeZone: 'UTC' 
+        }) + ' (UTC)',
         temp: d.temperature_celsius
     }));
 
