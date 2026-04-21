@@ -50,3 +50,7 @@ scratch/
 # Railway
 .railway
 .env.railway
+
+# Firebase Secrets (CRITICAL)
+*firebase-service-account.json
+*-adminsdk-*.json

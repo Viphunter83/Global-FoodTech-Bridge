@@ -14,6 +14,8 @@ const TelemetryChart = dynamic(
     { ssr: false, loading: () => <div className="h-[300px] w-full bg-primary/5 animate-pulse rounded-2xl" /> }
 );
 import { BlockchainControls } from "@/components/ui/BlockchainControls";
+import { EmptyStateGuide } from "@/components/ui/EmptyStateGuide";
+import { InUIDocTooltip } from "@/components/ui/InUIDocTooltip";
 import { Plus, Search, MapPin, Thermometer, Box, Truck, AlertTriangle, Trash2, Package, LayoutDashboard, RefreshCcw } from 'lucide-react';
 import {
     Dialog,
@@ -127,7 +129,11 @@ export default function DashboardPage() {
                     <span className="font-medium text-sm">Your account is currently PENDING administrative verification. Features are restricted until a role is assigned via Firebase Auth.</span>
                 </div>
             )}
-            <main className="grid flex-1 gap-4 p-4 md:grid-cols-[320px_1fr] md:gap-8 md:p-8">
+            
+            {batches.length === 0 && !loadingStatus ? (
+                <EmptyStateGuide />
+            ) : (
+                <main className="grid flex-1 gap-4 p-4 md:grid-cols-[320px_1fr] md:gap-8 md:p-8">
                 {/* Left Sidebar: Batch List */}
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between px-2">
@@ -195,6 +201,7 @@ export default function DashboardPage() {
                         <StatusMetric 
                             icon={<LayoutDashboard className="h-5 w-5 text-primary" />}
                             title={t('Dashboard.status_blockchain')}
+                            docTooltip={<InUIDocTooltip titleKey="status_blockchain_title" descriptionKey="status_blockchain_desc" />}
                             value={loadingStatus ? '...' : (blockchainStatus?.violation ? t('Compliance.violation_title') : (blockchainStatus?.verified ? t('Dashboard.status_connection_secured') : t('Dashboard.status_connection_pending')))}
                             subText={blockchainStatus?.txHash ? `Tx: ${blockchainStatus.txHash.substring(0, 12)}...` : 'Unverified Ledger'}
                             isAlert={!!blockchainStatus?.violation}
@@ -267,7 +274,10 @@ export default function DashboardPage() {
                             </CardContent>
                             <div className="p-10 bg-background/40 backdrop-blur-3xl border-t border-primary/5">
                                 <div className="mb-6 flex items-center justify-between">
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">{t('Tracking.iot_monitoring')}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">{t('Tracking.iot_monitoring')}</h4>
+                                        <InUIDocTooltip titleKey="telemetry_title" descriptionKey="telemetry_desc" />
+                                    </div>
                                     <span className="text-[10px] font-bold text-primary/60">GFTB-Live-Data-Stream</span>
                                 </div>
                                 <TelemetryChart data={telemetryData} />
@@ -312,17 +322,21 @@ export default function DashboardPage() {
                             </CardContent>
                         </Card>
                     </div>
-                </div>
-            </main>
+                    </div>
+                </main>
+            )}
         </div>
     );
 }
 
-function StatusMetric({ icon, title, value, subText, isAlert }: { icon: React.ReactNode, title: string, value: string, subText: string, isAlert?: boolean }) {
+function StatusMetric({ icon, title, value, subText, isAlert, docTooltip }: { icon: React.ReactNode, title: string, value: string, subText: string, isAlert?: boolean, docTooltip?: React.ReactNode }) {
     return (
         <Card className={`rounded-[2.5rem] glass transition-all hover:scale-[1.02] border-primary/5 shadow-xl hover:shadow-primary/5 ${isAlert ? 'border-destructive/30' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between pb-4 px-8 pt-8">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{title}</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                    {title}
+                    {docTooltip}
+                </CardTitle>
                 <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center">{icon}</div>
             </CardHeader>
             <CardContent className="px-8 pb-8">

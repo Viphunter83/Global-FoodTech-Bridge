@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
-import { CheckCircle, ShieldCheck, AlertTriangle, FileText, Activity, MapPin, Truck, ChevronRight } from 'lucide-react';
+import { CheckCircle, ShieldCheck, AlertTriangle, FileText, Activity, MapPin, Truck, ChevronRight, ShoppingCart } from 'lucide-react';
 import { BatchDetails, BlockchainStatus } from '@/lib/api';
 import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
 
@@ -226,12 +226,23 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                 {/* Footer Action - Floating Premium Bar */}
                 <div className="fixed bottom-6 left-6 right-6 z-50">
                     <div className="max-w-2xl mx-auto glass dark:bg-slate-900/90 border-primary/10 p-4 rounded-[2rem] shadow-2xl shadow-primary/20 backdrop-blur-2xl">
-                        <button
-                            onClick={() => alert("Global FoodTech Security Protocol: Issue reporting system is being migrated to automated smart contracts. Please use the dashboard for active disputes.")}
-                            className="w-full bg-primary text-white rounded-[1.5rem] h-14 font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                            {t('Common.report_issue')}
-                        </button>
+                        {isVerified ? (
+                            <button
+                                onClick={() => window.open(batch.partner_redirect_url || "https://globalfoodtech.com/shop", '_blank')}
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] h-14 flex items-center justify-center gap-3 font-black uppercase tracking-widest text-sm shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            >
+                                <ShoppingCart className="h-5 w-5" />
+                                Purchase Verified Quality
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => alert("Global FoodTech Security Protocol: Issue reporting system is being migrated to automated smart contracts. Please use the dashboard for active disputes.")}
+                                className="w-full bg-primary text-white rounded-[1.5rem] h-14 flex items-center justify-center gap-2 font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            >
+                                <AlertTriangle className="h-4 w-4" />
+                                {t('Common.report_issue')}
+                            </button>
+                        )}
                         <div className="mt-3 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             <ShieldCheck className="h-3 w-3" />
                             Global FoodTech Bridge Protocol ID: {batch.id.substring(0, 16)}...

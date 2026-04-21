@@ -270,5 +270,16 @@
     "try_live_demo": "Trạm Xác minh Trực tiếp",
     "prev_step": "Quay lại Bước trước",
     "next_step": "Nâng cấp Giao thức"
+  },
+  "EmptyState": {
+    "title": "Chào mừng đến với Cầu nối",
+    "subtitle": "Trung tâm điều hành của bạn đã sẵn sàng. Khởi tạo hộ chiếu kỹ thuật số đầu tiên để bắt đầu theo dõi.",
+    "create_btn": "Tạo hộ chiếu đầu tiên"
+  },
+  "Docs": {
+    "status_blockchain_title": "Trạng thái Blockchain",
+    "status_blockchain_desc": "Cho biết dữ liệu hiện tại đã được băm bất biến và lưu trữ trên Polygon Mainnet hay chưa.",
+    "telemetry_title": "Đo từ xa IoT",
+    "telemetry_desc": "Các kết quả đo thời gian thực từ các thiết bị cảm biến được đính kèm theo dõi nhiệt độ, độ ẩm và tọa độ GPS chính xác."
   }
 }

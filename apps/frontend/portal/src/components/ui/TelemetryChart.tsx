@@ -1,6 +1,6 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ReferenceLine } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Telemetry } from '@/lib/api';
 import { useTranslations } from 'next-intl';
@@ -78,6 +78,13 @@ export default function TelemetryChart({ data }: TelemetryChartProps) {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--primary) / 0.05)" />
+                        <ReferenceLine 
+                            y={-18} 
+                            label={{ position: 'insideTopLeft', value: 'CRITICAL THRESHOLD (-18°C)', fill: 'rgb(239 68 68)', fontSize: 9, fontWeight: 'black', offset: 10 }}
+                            stroke="rgb(239 68 68)" 
+                            strokeDasharray="4 4" 
+                            strokeWidth={2}
+                        />
                         <XAxis
                             dataKey="time"
                             stroke="hsl(var(--muted-foreground) / 0.4)"
@@ -122,13 +129,26 @@ export default function TelemetryChart({ data }: TelemetryChartProps) {
                             }}
                         />
                         <Area
-                            type="monotone"
+                            type="stepAfter"
                             dataKey="temp"
                             stroke="hsl(var(--primary))"
                             strokeWidth={3}
                             fillOpacity={1}
                             fill="url(#colorTemp)"
                             animationDuration={2000}
+                            activeDot={{ r: 6, fill: "hsl(var(--primary))", strokeWidth: 0 }}
+                            dot={(props: any) => {
+                                const { cx, cy, value } = props;
+                                if (value > -18) {
+                                    return (
+                                        <g key={`dot-${cx}-${cy}`}>
+                                            <circle cx={cx} cy={cy} r={6} fill="rgb(239 68 68)" className="animate-pulse" />
+                                            <circle cx={cx} cy={cy} r={2} fill="white" />
+                                        </g>
+                                    );
+                                }
+                                return <g key={`dot-${cx}-${cy}`}></g>;
+                            }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>

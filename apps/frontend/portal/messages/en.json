@@ -288,5 +288,16 @@
     "title": "Page Not Found",
     "description": "We couldn't find the page you're looking for. It might have been moved or deleted.",
     "back_home": "Back to Home"
+  },
+  "EmptyState": {
+    "title": "Welcome to the Bridge",
+    "subtitle": "Your operations control center is ready. Initialize your first digital passport to begin tracking.",
+    "create_btn": "Create First Passport"
+  },
+  "Docs": {
+    "status_blockchain_title": "Blockchain Status",
+    "status_blockchain_desc": "Indicates whether the current data has been immutably hashed and stored on the Polygon Mainnet.",
+    "telemetry_title": "IoT Telemetry",
+    "telemetry_desc": "Real-time readings from attached sensory devices tracking temperature, humidity, and precise GPS coordinates."
   }
 }
