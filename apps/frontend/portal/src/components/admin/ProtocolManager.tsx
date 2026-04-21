@@ -19,6 +19,7 @@ import {
     getTemplates, createAdminTemplate, updateAdminTemplate, deleteAdminTemplate,
     SupplyChainTemplate, TemplateStep as Step
 } from '@/lib/api';
+import { auth } from '@/lib/firebase';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,9 +36,15 @@ export function ProtocolManager() {
 
     const loadTemplates = async () => {
         setIsLoading(true);
-        const data = await getTemplates();
-        setTemplates(data);
-        setIsLoading(false);
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            const data = await getTemplates(token);
+            setTemplates(data);
+        } catch (error) {
+            console.error('Failed to load templates:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleOpenCreate = () => {
@@ -58,20 +65,30 @@ export function ProtocolManager() {
     const handleSave = async () => {
         if (!editingTemplate?.name) return;
 
-        if (editingTemplate.id) {
-            await updateAdminTemplate(editingTemplate.id, editingTemplate);
-        } else {
-            await createAdminTemplate(editingTemplate);
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            if (editingTemplate.id) {
+                await updateAdminTemplate(editingTemplate.id, editingTemplate, token);
+            } else {
+                await createAdminTemplate(editingTemplate, token);
+            }
+            
+            setIsDialogOpen(false);
+            loadTemplates();
+        } catch (error) {
+            console.error('Failed to save template:', error);
         }
-        
-        setIsDialogOpen(false);
-        loadTemplates();
     };
 
     const handleDelete = async (id: string) => {
         if (confirm(t('confirm_delete'))) {
-            await deleteAdminTemplate(id);
-            loadTemplates();
+            try {
+                const token = await auth.currentUser?.getIdToken();
+                await deleteAdminTemplate(id, token);
+                loadTemplates();
+            } catch (error) {
+                console.error('Failed to delete template:', error);
+            }
         }
     };
 

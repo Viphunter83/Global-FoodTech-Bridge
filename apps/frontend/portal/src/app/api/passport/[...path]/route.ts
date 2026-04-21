@@ -13,9 +13,15 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 
     try {
+        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        
+        if (!apiKey) {
+            console.error('[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY is missing in environment.');
+        }
+
         const response = await fetch(`${PASSPORT_SERVICE_URL}${targetPath}?${searchParams}`, {
             headers: {
-                'x-api-key': process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '',
+                'x-api-key': apiKey || '',
             },
         });
 
@@ -36,9 +42,15 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH') {
     }
 
     try {
+        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        
+        if (!apiKey) {
+            console.error(`[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY missing for ${method} request.`);
+        }
+
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
-            'x-api-key': process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '',
+            'x-api-key': apiKey || '',
         };
 
         let body: any;

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createCompany, getCompanies, approveCompany, Company } from '@/lib/api';
+import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,21 +44,28 @@ export default function AdminCompaniesPage() {
 
     const loadCompanies = async () => {
         setIsLoading(true);
-        const data = await getCompanies();
-        setCompanies(data);
-        setIsLoading(false);
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            const data = await getCompanies(token);
+            setCompanies(data);
+        } catch (error) {
+            console.error('Failed to load companies:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsCreating(true);
         const formData = new FormData(e.currentTarget);
+        const token = await auth.currentUser?.getIdToken();
 
         await createCompany({
             name: formData.get('name') as string,
-            type: formData.get('type') as string,
+            type: formData.get('type') as 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER',
             production_location: formData.get('production_location') as string || '',
-        });
+        }, token);
 
         setIsCreating(false);
         setOpen(false);
@@ -68,7 +76,8 @@ export default function AdminCompaniesPage() {
 
     const handleApprove = async (company: Company) => {
         setApprovingId(company.id);
-        const success = await approveCompany(company.id);
+        const token = await auth.currentUser?.getIdToken();
+        const success = await approveCompany(company.id, token);
         if (success) {
             setCompanies(companies.map(c => c.id === company.id ? { ...c, is_active: true } : c));
         }

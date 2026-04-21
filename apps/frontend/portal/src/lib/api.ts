@@ -134,16 +134,19 @@ const BLOCKCHAIN_URL = isServer
     ? (process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://localhost:3000/api/v1')
     : '/api/blockchain';
 
-// Helper for headers (only needed on server-side calls)
-const getHeaders = (isPost = false) => {
+// Helper for headers
+const getHeaders = (isPost = false, token?: string) => {
     const headers: Record<string, string> = {};
     if (isPost) headers['Content-Type'] = 'application/json';
     
     // Server-side needs the key directly. Client-side proxy will inject it.
-    // NEVER expose the key on the client!
+    // BUT the proxy itself requires a Bearer token to verify the user role.
     if (isServer) {
         headers['x-api-key'] = process.env.INTERNAL_API_KEY || '';
+    } else if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
+    
     return headers;
 };
 
@@ -161,7 +164,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             try {
                 const template = await getTemplateDetails(data.template_id);
                 if (template && template.steps) {
-                    history = template.steps.map((step, index) => {
+                    history = template.steps.map((step: any, index: number) => {
                         const isCompliant = !step.required_cert || 
                                            data.certificates?.some((c: any) => c.type === step.required_cert);
                         
@@ -169,7 +172,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                             stage: step.name,
                             location: index === 0 ? (data.origin_country || "Origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Destination") : "In Transit"),
                             timestamp: index === 0 ? "Started" : (index < 3 ? "Completed" : "Estimated"), 
-                            status: index < 3 ? "completed" : (index === 3 ? "current" : "future") as any,
+                            status: (index < 3 ? "completed" : (index === 3 ? "current" : "future")) as 'completed' | 'current' | 'future',
                             icon: (step.icon || 'package') as any,
                             is_compliant: isCompliant,
                             required_cert: step.required_cert
@@ -181,7 +184,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
             }
         }
 
-        if (history.length === 0) {
+        if (!history || history.length === 0) {
             // Default generic history if no template is assigned
             history = [
                 { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: data.created_at, status: "completed", icon: "package" },
@@ -433,27 +436,10 @@ export async function reportViolation(batchId: string, details: string): Promise
 
 // --- ADMIN API ---
 
-export async function createCompany(data: { name: string; type: string; production_location: string }): Promise<Company | null> {
-    try {
-        const res = await fetch(`${PASSPORT_URL}/admin/companies`, {
-            method: 'POST',
-            headers: getHeaders(true),
-            body: JSON.stringify(data),
-            cache: 'no-store'
-        });
-
-        if (!res.ok) return null;
-        return await res.json();
-    } catch (e) {
-        console.error('Admin API Error:', e);
-        return null;
-    }
-}
-
-export async function getCompanies(): Promise<Company[]> {
+export async function getCompanies(token?: string): Promise<Company[]> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/companies`, { 
-            headers: getHeaders(),
+            headers: getHeaders(false, token),
             cache: 'no-store' 
         });
         if (!res.ok) return [];
@@ -464,24 +450,38 @@ export async function getCompanies(): Promise<Company[]> {
     }
 }
 
-export async function approveCompany(id: string): Promise<boolean> {
+export async function createCompany(company: Partial<Company>, token?: string): Promise<Company | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/companies`, {
+            method: 'POST',
+            headers: getHeaders(true, token),
+            body: JSON.stringify(company),
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.error('Create Company Error:', e);
+        return null;
+    }
+}
+
+export async function approveCompany(id: string, token?: string): Promise<boolean> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/companies/${id}/approve`, {
-            method: 'POST',
-            headers: getHeaders(),
-            cache: 'no-store'
+            method: 'PATCH',
+            headers: getHeaders(true, token),
         });
         return res.ok;
     } catch (e) {
-        console.error('Failed to approve company', e);
+        console.error('Approve Company Error:', e);
         return false;
     }
 }
 
-export async function getTemplates(): Promise<SupplyChainTemplate[]> {
+export async function getTemplates(token?: string): Promise<SupplyChainTemplate[]> {
     try {
         const res = await fetch(`${PASSPORT_URL}/templates`, { 
-            headers: getHeaders(),
+            headers: getHeaders(false, token),
             cache: 'no-store' 
         });
         if (!res.ok) return [];
@@ -492,10 +492,10 @@ export async function getTemplates(): Promise<SupplyChainTemplate[]> {
     }
 }
 
-export async function getTemplateDetails(id: string): Promise<SupplyChainTemplate | null> {
+export async function getTemplateDetails(id: string, token?: string): Promise<SupplyChainTemplate | null> {
     try {
         const res = await fetch(`${PASSPORT_URL}/templates/${id}`, { 
-            headers: getHeaders(),
+            headers: getHeaders(false, token),
             cache: 'no-store' 
         });
         if (!res.ok) return null;
@@ -506,11 +506,11 @@ export async function getTemplateDetails(id: string): Promise<SupplyChainTemplat
     }
 }
 
-export async function createAdminTemplate(data: Partial<SupplyChainTemplate>): Promise<SupplyChainTemplate | null> {
+export async function createAdminTemplate(data: Partial<SupplyChainTemplate>, token?: string): Promise<SupplyChainTemplate | null> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/templates`, {
             method: 'POST',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify(data),
             cache: 'no-store'
         });
@@ -522,11 +522,11 @@ export async function createAdminTemplate(data: Partial<SupplyChainTemplate>): P
     }
 }
 
-export async function updateAdminTemplate(id: string, data: Partial<SupplyChainTemplate>): Promise<SupplyChainTemplate | null> {
+export async function updateAdminTemplate(id: string, data: Partial<SupplyChainTemplate>, token?: string): Promise<SupplyChainTemplate | null> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/templates/${id}`, {
             method: 'PUT',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify(data),
             cache: 'no-store'
         });
@@ -538,11 +538,11 @@ export async function updateAdminTemplate(id: string, data: Partial<SupplyChainT
     }
 }
 
-export async function deleteAdminTemplate(id: string): Promise<boolean> {
+export async function deleteAdminTemplate(id: string, token?: string): Promise<boolean> {
     try {
         const res = await fetch(`${PASSPORT_URL}/admin/templates/${id}`, {
             method: 'DELETE',
-            headers: getHeaders(),
+            headers: getHeaders(false, token),
             cache: 'no-store'
         });
         return res.ok;
