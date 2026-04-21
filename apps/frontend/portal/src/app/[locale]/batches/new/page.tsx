@@ -142,6 +142,15 @@ export default function CreateBatchPage() {
             if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
             uploadPayload.append('productionLocation', formData.get('production_location') as string || '');
             uploadPayload.append('originLocation', formData.get('origin_location') as string || '');
+            
+            const marketingStory = formData.get('marketing_story') as string;
+            if (marketingStory) {
+                uploadPayload.append('marketingStory', marketingStory);
+            }
+            const redirectUrl = formData.get('partner_redirect_url') as string;
+            if (redirectUrl) {
+                uploadPayload.append('partnerRedirectUrl', redirectUrl);
+            }
 
             const certMapping: Record<string, string> = {};
             Object.entries(uploadedCerts).forEach(([type, file]) => {
@@ -165,6 +174,10 @@ export default function CreateBatchPage() {
                 destination_country: formData.get('destination_country') as string || 'Unknown',
                 template_id: selectedTemplateId,
                 token_uri: tokenUri,
+                marketing_story: {
+                    en: formData.get('marketing_story') as string || ''
+                },
+                partner_redirect_url: formData.get('partner_redirect_url') as string || '',
             };
 
             const registration = await createBatch(batchData, token, role || 'MANUFACTURER');
@@ -353,6 +366,16 @@ export default function CreateBatchPage() {
                                         <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">{t('form_ingredients')}</Label>
                                             <Textarea id="ingredients" name="ingredients" className="min-h-[120px] rounded-[1.5rem] bg-muted/10 border-primary/5 p-6 font-medium italic focus:bg-background transition-all resize-none shadow-inner" />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Marketing Story (English)</Label>
+                                            <Textarea id="marketing_story" name="marketing_story" placeholder="Directly from the sun-drenched orchards of the Mekong Delta..." className="min-h-[120px] rounded-[1.5rem] bg-muted/10 border-primary/5 p-6 font-medium italic focus:bg-background transition-all resize-none shadow-inner" />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Product Redirect Link / Online Store</Label>
+                                            <Input id="partner_redirect_url" name="partner_redirect_url" placeholder="https://mangovietnam.demo/order-us" className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight" />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-6">

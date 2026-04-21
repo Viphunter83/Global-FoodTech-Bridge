@@ -21,9 +21,10 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		INSERT INTO product_batches (
 			manufacturer_id, product_type, batch_size, unit_of_measure, 
 			origin_country, destination_country, usf_status, 
-			blockchain_hash, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id
+			blockchain_hash, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+			marketing_story, partner_redirect_url
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 		RETURNING id
 	`
 
@@ -43,6 +44,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		batch.Certificates,
 		batch.TemplateID,
 		batch.PartnerID,
+		batch.MarketingStory,
+		batch.PartnerRedirectURL,
 	).Scan(&id)
 
 	if err != nil {
@@ -57,7 +60,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		SELECT 
 			id, manufacturer_id, product_type, batch_size, unit_of_measure,
 			origin_country, destination_country, usf_status, blockchain_hash, 
-			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id
+			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+			marketing_story, partner_redirect_url
 		FROM product_batches
 		WHERE id = $1
 	`
@@ -80,6 +84,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		&batch.Certificates,
 		&batch.TemplateID,
 		&batch.PartnerID,
+		&batch.MarketingStory,
+		&batch.PartnerRedirectURL,
 	)
 
 	if err != nil {

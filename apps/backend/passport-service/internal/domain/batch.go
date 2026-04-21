@@ -38,8 +38,10 @@ type Batch struct {
 	MaxHumidity        *float64           `json:"max_humidity,omitempty"`
 	TokenURI           *string            `json:"token_uri,omitempty"`
 	Certificates       []BatchCertificate `json:"certificates"`
-	TemplateID         *uuid.UUID         `json:"template_id,omitempty"`
-	PartnerID          *uuid.UUID         `json:"partner_id,omitempty"`
+	TemplateID         *uuid.UUID             `json:"template_id,omitempty"`
+	PartnerID          *uuid.UUID             `json:"partner_id,omitempty"`
+	MarketingStory     map[string]interface{} `json:"marketing_story,omitempty"`
+	PartnerRedirectURL *string                `json:"partner_redirect_url,omitempty"`
 }
 
 type CreateBatchRequest struct {
@@ -55,8 +57,10 @@ type CreateBatchRequest struct {
 	MaxHumidity        float64            `json:"max_humidity,omitempty"`
 	TokenURI           string             `json:"token_uri,omitempty"`
 	Certificates       []BatchCertificate `json:"certificates"`
-	TemplateID         string             `json:"template_id,omitempty"`
-	PartnerID          string             `json:"partner_id,omitempty"`
+	TemplateID         string                 `json:"template_id,omitempty"`
+	PartnerID          string                 `json:"partner_id,omitempty"`
+	MarketingStory     map[string]interface{} `json:"marketing_story,omitempty"`
+	PartnerRedirectURL string                 `json:"partner_redirect_url,omitempty"`
 }
 
 type UpdateBlockchainRequest struct {
