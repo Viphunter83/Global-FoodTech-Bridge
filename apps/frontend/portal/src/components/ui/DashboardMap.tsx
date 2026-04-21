@@ -15,14 +15,13 @@ export function DashboardMap({ lat = 25.276987, lon = 55.296249, locationName = 
     const t = useTranslations('Tracking');
     const { getBatchState } = useDemoState();
     
-    // Abstract normalization for the "High-Tech" grid
-    // Improved projection for wider coverage area
     const normalizeCoord = (val: number, min: number, max: number) => {
         return Math.max(10, Math.min(90, ((val - min) / (max - min)) * 100));
     };
 
-    const xPos = normalizeCoord(lon, 40, 110); // Covering Middle East to SE Asia
-    const yPos = normalizeCoord(lat, 50, 5);  // Covering Northern to Equatorial regions
+    // Full World Map Projection Limits
+    const xPos = normalizeCoord(lon, -180, 180); 
+    const yPos = normalizeCoord(lat, 90, -90);  
     
     const status = getBatchState('demo-batch-1'); // Default for landing page demo
     const hasViolation = status?.violation !== undefined && status?.violation !== null;

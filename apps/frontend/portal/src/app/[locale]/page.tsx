@@ -24,7 +24,7 @@ import {
     Store,
     ClipboardCheck
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from '@/navigation';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
@@ -33,8 +33,21 @@ import { TrustBadge } from '@/components/marketing/TrustBadge';
 
 export default function Home() {
     const [batchId, setBatchId] = useState('');
+    const [recentBatches, setRecentBatches] = useState<string[]>([]);
     const router = useRouter();
     const t = useTranslations();
+
+    useEffect(() => {
+        const stored = localStorage.getItem('recent_batches');
+        if (stored) {
+            try {
+                const ids = JSON.parse(stored);
+                if (Array.isArray(ids) && ids.length > 0) {
+                    setRecentBatches(ids.slice(0, 2));
+                }
+            } catch(e) {}
+        }
+    }, []);
 
     const handleTrack = (e: React.FormEvent) => {
         e.preventDefault();
@@ -332,20 +345,22 @@ export default function Home() {
                             </div>
                         </motion.div>
 
-                        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-                            <span className="font-bold uppercase tracking-widest text-[10px]">{t('Hero.try_demo')}</span>
-                            <div className="flex gap-2">
-                                {['2cbade92-e88e-48a8-a682-94ae0a0205e8', 'cde03dc1-202b-43c7-a0cd-7cbcbbeeb884'].map((id) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => setBatchId(id)}
-                                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs font-mono"
-                                    >
-                                        {id.slice(0, 8)}...
-                                    </button>
-                                )) }
+                        {recentBatches.length > 0 && (
+                            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+                                <span className="font-bold uppercase tracking-widest text-[10px]">{t('Hero.try_demo')}</span>
+                                <div className="flex gap-2">
+                                    {recentBatches.map((id) => (
+                                        <button
+                                            key={id}
+                                            onClick={() => setBatchId(id)}
+                                            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs font-mono"
+                                        >
+                                            {id.slice(0, 8)}...
+                                        </button>
+                                    )) }
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </section>
@@ -382,7 +397,7 @@ export default function Home() {
                             </Link>
                         </Button>
                         <Button size="lg" variant="outline" asChild className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
-                            <a href="https://docs.gftb.bridge" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/Viphunter83/Global-FoodTech-Bridge/tree/main/docs" target="_blank" rel="noopener noreferrer">
                                 {t('Marketing.view_docs')}
                             </a>
                         </Button>

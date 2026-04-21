@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getBatchDetails, getBlockchainStatus, getTelemetry, getAlerts, BatchDetails, BlockchainStatus, Telemetry, Alert } from '@/lib/api';
 import { Button } from "@/components/ui/button"
@@ -34,17 +35,13 @@ import {
 } from "@/components/ui/select"
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MOCK_BATCHES = [
-    { id: '902f1e4c-3861-458d-8e76-7054b86c0cf1', product_type: 'Pho_Bo_Soup', status: 'In Transit', location: 'Dubai, UAE', temperature: -20.5, last_updated: '2024-10-15T10:30:00Z' },
-    { id: 'batch-002', product_type: 'Wagyu_Beef', status: 'Delivered', location: 'Riyadh, KSA', temperature: -18.2, last_updated: '2024-10-14T09:15:00Z' },
-    { id: 'batch-003', product_type: 'Organic_Chicken', status: 'Processing', location: 'Hanoi, VN', temperature: -4.0, last_updated: '2024-10-16T08:00:00Z' },
-];
-
 export default function DashboardPage() {
     const t = useTranslations();
+    const locale = useLocale();
+    const router = useRouter();
     const { role } = useAuth();
-    const [batches, setBatches] = useState(MOCK_BATCHES);
-    const [selectedId, setSelectedId] = useState<string>(MOCK_BATCHES[0].id);
+    const [batches, setBatches] = useState<any[]>([]);
+    const [selectedId, setSelectedId] = useState<string>('');
     const [blockchainStatus, setBlockchainStatus] = useState<BlockchainStatus | null>(null);
     const [telemetryData, setTelemetryData] = useState<Telemetry[]>([]);
     const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -56,13 +53,13 @@ export default function DashboardPage() {
         ? telemetryData[telemetryData.length - 1].temperature_celsius
         : (selectedBatch?.temperature || null);
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [newBatchData, setNewBatchData] = useState({
-        sku: 'Pho Bo Soup Premium',
-        productionDate: new Date().toISOString().split('T')[0],
-        rawMaterial: '',
-        sensorId: ''
-    });
+    // Map Coordinates Logic
+    const currentLat = telemetryData.length > 0 && telemetryData[telemetryData.length - 1].location_lat
+        ? telemetryData[telemetryData.length - 1].location_lat
+        : undefined;
+    const currentLon = telemetryData.length > 0 && telemetryData[telemetryData.length - 1].location_lon
+        ? telemetryData[telemetryData.length - 1].location_lon
+        : undefined;
 
     useEffect(() => {
         const stored = localStorage.getItem('recent_batches');
@@ -70,19 +67,21 @@ export default function DashboardPage() {
             try {
                 const ids = JSON.parse(stored);
                 if (Array.isArray(ids) && ids.length > 0) {
-                    const realBatches = ids.map((id: string) => ({
-                        id,
-                        product_type: 'Pho_Bo_Soup', 
-                        status: 'Created',
-                        location: 'Factory Line 1',
-                        temperature: -20.0,
-                        last_updated: new Date().toISOString()
-                    }));
-                    setBatches(prev => {
-                        const unique = realBatches.filter(b => !prev.find(p => p.id === b.id));
-                        return [...unique, ...prev];
+                    Promise.all(ids.map(id => getBatchDetails(id))).then(results => {
+                        const valid = results.filter(b => b !== null) as BatchDetails[];
+                        const realBatches = valid.map(b => ({
+                            id: b.id,
+                            product_type: b.product_type || 'Unknown Product',
+                            status: 'Tracked',
+                            location: b.origin_country || 'Unknown Location',
+                            temperature: b.min_temp || -18.0,
+                            last_updated: b.created_at || new Date().toISOString()
+                        }));
+                        setBatches(realBatches);
+                        if (realBatches.length > 0) {
+                            setSelectedId(realBatches[0].id);
+                        }
                     });
-                    setSelectedId(ids[0]);
                 }
             } catch (e) {
                 console.error('Failed to load recent batches', e);
@@ -107,18 +106,7 @@ export default function DashboardPage() {
     }, [selectedId]);
 
     const handleCreateBatch = () => {
-        const newId = crypto.randomUUID();
-        const newBatch = {
-            id: newId,
-            product_type: newBatchData.sku,
-            status: 'Processing',
-            location: 'Factory (Lyon)',
-            temperature: -4.0,
-            last_updated: new Date().toISOString()
-        };
-        setBatches([newBatch, ...batches]);
-        setSelectedId(newId);
-        setIsDialogOpen(false);
+        router.push(`/${locale}/batches/new`);
     };
 
     const deleteBatch = (id: string) => {
@@ -133,83 +121,25 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-background selection:bg-primary/10">
+            {role === 'PENDING' && (
+                <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-700 dark:text-amber-500 p-3 flex items-center justify-center gap-3 shadow-inner">
+                    <AlertTriangle className="h-5 w-5 shrink-0" />
+                    <span className="font-medium text-sm">Your account is currently PENDING administrative verification. Features are restricted until a role is assigned via Firebase Auth.</span>
+                </div>
+            )}
             <main className="grid flex-1 gap-4 p-4 md:grid-cols-[320px_1fr] md:gap-8 md:p-8">
                 {/* Left Sidebar: Batch List */}
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between px-2">
                         <h2 className="text-2xl font-serif font-black tracking-tight">{t('Dashboard.active_batches')}</h2>
                         {role === 'MANUFACTURER' && (
-                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20 transition-all active:scale-95">
-                                        <Plus className="h-4 w-4 mr-1" /> {t('Dashboard.new')}
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px] rounded-[2rem] glass border-primary/10">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-3xl font-serif font-black italic">{t('Dashboard.new')}</DialogTitle>
-                                        <DialogDescription className="font-medium text-muted-foreground/80">
-                                            Initialize environmental monitoring & protocol pairing.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="grid gap-6 py-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="sku" className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('Batch.product_type')}</Label>
-                                            <Select
-                                                defaultValue={newBatchData.sku}
-                                                onValueChange={(val) => setNewBatchData({ ...newBatchData, sku: val })}
-                                            >
-                                                <SelectTrigger className="rounded-2xl h-14 bg-background/50 border-primary/10 focus:ring-primary/20">
-                                                    <SelectValue placeholder="Select SKU" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-2xl border-primary/10 shadow-2xl">
-                                                    <SelectItem value="Pho Bo Soup Premium">Pho Bo Soup Premium</SelectItem>
-                                                    <SelectItem value="Ramen Tonkotsu">Ramen Tonkotsu</SelectItem>
-                                                    <SelectItem value="Udon Noodle Kit">Udon Noodle Kit</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="bs-raw" className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('Batch.form_raw_material')}</Label>
-                                            <Input
-                                                id="bs-raw"
-                                                placeholder="e.g. Beef Batch #991"
-                                                className="rounded-2xl h-14 bg-background/50 border-primary/10"
-                                                value={newBatchData.rawMaterial}
-                                                onChange={(e) => setNewBatchData({ ...newBatchData, rawMaterial: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="bs-date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('Batch.production_date')}</Label>
-                                            <Input
-                                                id="bs-date"
-                                                type="date"
-                                                className="rounded-2xl h-14 bg-background/50 border-primary/10"
-                                                value={newBatchData.productionDate}
-                                                onChange={(e) => setNewBatchData({ ...newBatchData, productionDate: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2 border-t border-primary/10 pt-6">
-                                            <Label htmlFor="sensor" className="text-[10px] font-black uppercase tracking-widest text-secondary flex items-center gap-2">
-                                                <RefreshCcw className="h-3 w-3 animate-spin-slow" />
-                                                {t('Batch.form_sensor_id')}
-                                            </Label>
-                                            <Input
-                                                id="sensor"
-                                                placeholder={t('Batch.form_sensor_placeholder')}
-                                                className="rounded-2xl h-14 bg-secondary/5 border-secondary/20 focus:border-secondary focus:ring-secondary/20"
-                                                value={newBatchData.sensorId}
-                                                onChange={(e) => setNewBatchData({ ...newBatchData, sensorId: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button onClick={handleCreateBatch} className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/95 text-white font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-[0.98]">
-                                            {t('Batch.btn_create_pair')}
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <Button 
+                                onClick={handleCreateBatch}
+                                size="sm" 
+                                className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20 transition-all active:scale-95"
+                            >
+                                <Plus className="h-4 w-4 mr-1" /> {t('Dashboard.new')}
+                            </Button>
                         )}
                     </div>
 
@@ -329,7 +259,11 @@ export default function DashboardPage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0 h-[450px]">
-                                <DashboardMap locationName={selectedBatch?.location} />
+                                <DashboardMap 
+                                    locationName={selectedBatch?.location} 
+                                    lat={currentLat} 
+                                    lon={currentLon} 
+                                />
                             </CardContent>
                             <div className="p-10 bg-background/40 backdrop-blur-3xl border-t border-primary/5">
                                 <div className="mb-6 flex items-center justify-between">
@@ -360,7 +294,7 @@ export default function DashboardPage() {
                                             <Button
                                                 variant="outline"
                                                 className="w-full h-20 rounded-[2rem] border-primary/20 bg-background/50 text-foreground hover:bg-primary/5 font-black uppercase tracking-widest text-xs shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                                onClick={() => window.open(`/${t.raw('locale')}/verify/${selectedId}`, '_blank')}
+                                                onClick={() => window.open(`/${locale}/verify/${selectedId}`, '_blank')}
                                             >
                                                 <Search className="mr-3 h-6 w-6 text-primary/40" />
                                                 View Digital Twin

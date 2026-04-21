@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { CheckCircle, ShieldCheck, AlertTriangle, FileText, Activity, MapPin, Truck, ChevronRight } from 'lucide-react';
 import { BatchDetails, BlockchainStatus } from '@/lib/api';
+import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
 
 interface VerifyClientProps {
     batch: BatchDetails;
@@ -210,6 +211,17 @@ export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
                         </div>
                     )}
                 </div>
+
+                {/* B2B Merchant Sales Funnel */}
+                {isVerified && (
+                    <div className="px-6 mb-10">
+                        <MerchantFunnelCTA 
+                            merchantName={batch.manufacturer_name || "Global Alliance Partner"}
+                            redirectUrl={batch.partner_redirect_url || "https://globalfoodtech.com/shop"}
+                            productType={batch.product_type.replace(/_/g, ' ')}
+                        />
+                    </div>
+                )}
 
                 {/* Footer Action - Floating Premium Bar */}
                 <div className="fixed bottom-6 left-6 right-6 z-50">
