@@ -87,17 +87,20 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		apiKey := r.Header.Get("x-api-key")
 		expectedKey := os.Getenv("INTERNAL_API_KEY")
 
+		if expectedKey == "" {
+			log.Print("[AUTH] WARNING: INTERNAL_API_KEY not set in environment. Backend is vulnerable.")
+		}
+
 		if expectedKey != "" && apiKey != expectedKey {
 			keyLen := len(apiKey)
-			maskedKey := ""
+			maskedKey := "EMPTY"
 			if keyLen > 4 {
 				maskedKey = apiKey[:4] + "****"
 			} else if keyLen > 0 {
 				maskedKey = "****"
-			} else {
-				maskedKey = "(empty)"
 			}
-			log.Printf("[AUTH] Unauthorized: Key mismatch via %s. Recv: %s (len: %d)", r.RemoteAddr, maskedKey, keyLen)
+			
+			log.Printf("[AUTH] Denied access to %s %s from %s. Invalid key: %s", r.Method, r.URL.Path, r.RemoteAddr, maskedKey)
 			http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
 			return
 		}
@@ -110,6 +113,12 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			role := r.Header.Get("X-User-Role")
 			
+			if role == "" {
+				log.Printf("[ROLE] Access denied to %s %s: No X-User-Role header provided", r.Method, r.URL.Path)
+				http.Error(w, "Forbidden: Role header required", http.StatusForbidden)
+				return
+			}
+			
 			allowed := false
 			for _, allowedRole := range allowedRoles {
 				if role == allowedRole {
@@ -119,7 +128,7 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 			}
 
 			if !allowed {
-				log.Printf("[ROLE] Access denied: Required one of %v, but got %s", allowedRoles, role)
+				log.Printf("[ROLE] Access denied to %s %s: Required one of %v, but got %s", r.Method, r.URL.Path, allowedRoles, role)
 				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
 				return
 			}

@@ -19,7 +19,8 @@ import { Label } from '@/components/ui/label';
 import { DEMO_MANUFACTURER_ID } from '@/lib/constants';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useTranslations } from 'next-intl';
-import { getTemplates, SupplyChainTemplate } from '@/lib/api';
+import { getTemplates, SupplyChainTemplate, uploadToIpfs, createBatch } from '@/lib/api';
+import { auth } from '@/lib/firebase';
 import { 
     AlertTriangle, 
     Layers, 
@@ -122,6 +123,13 @@ export default function CreateBatchPage() {
         const batch_size = Number(formData.get('batch_size'));
 
         try {
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) {
+                throw new Error("Session expired. Please re-login.");
+            }
+
+            console.log(`[GFTB-BATCH] Initiating upload to IPFS with token presence: ${!!token}`);
+
             const uploadPayload = new FormData();
             uploadPayload.append('manufacturer_id', manufacturer_id);
             uploadPayload.append('product_type', product_type);
@@ -129,11 +137,11 @@ export default function CreateBatchPage() {
             uploadPayload.append('unit_of_measure', formData.get('unit_of_measure') as string);
             uploadPayload.append('origin_country', formData.get('origin_country') as string || 'Unknown');
             uploadPayload.append('destination_country', formData.get('destination_country') as string || 'Unknown');
-            uploadPayload.append('ingredients', formData.get('ingredients') || '');
+            uploadPayload.append('ingredients', formData.get('ingredients') as string || '');
             if (productionDate) uploadPayload.append('productionDate', productionDate.toISOString());
             if (expirationDate) uploadPayload.append('expirationDate', expirationDate.toISOString());
-            uploadPayload.append('productionLocation', formData.get('production_location') || '');
-            uploadPayload.append('originLocation', formData.get('origin_location') || '');
+            uploadPayload.append('productionLocation', formData.get('production_location') as string || '');
+            uploadPayload.append('originLocation', formData.get('origin_location') as string || '');
 
             const certMapping: Record<string, string> = {};
             Object.entries(uploadedCerts).forEach(([type, file]) => {
@@ -142,15 +150,12 @@ export default function CreateBatchPage() {
             });
             uploadPayload.append('cert_mapping', JSON.stringify(certMapping));
 
-            const uploadRes = await fetch('/api/blockchain/ipfs/upload', {
-                method: 'POST',
-                body: uploadPayload,
-            });
-
-            if (!uploadRes.ok) throw new Error(`IPFS Upload Failed`);
-            const uploadJson = await uploadRes.json();
+            // 1. Upload to IPFS via blockchain-service (proxied)
+            const uploadJson = await uploadToIpfs(uploadPayload, token);
             const tokenUri = uploadJson.ipfsHash;
+            console.log(`[GFTB-BATCH] IPFS Metadata Created: ${tokenUri}`);
 
+            // 2. Register Batch in Passport Service (proxied)
             const batchData = {
                 manufacturer_id,
                 product_type,
@@ -162,17 +167,13 @@ export default function CreateBatchPage() {
                 token_uri: tokenUri,
             };
 
-            const response = await fetch('/api/passport/batches', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-User-Role': role || 'MANUFACTURER' },
-                body: JSON.stringify(batchData),
-            });
-
-            if (!response.ok) throw new Error('Failed to create batch');
-            const json = await response.json();
-            setCreatedBatchId(json.batch_id);
-            saveToHistory(json.batch_id);
+            const registration = await createBatch(batchData, token, role || 'MANUFACTURER');
+            console.log(`[GFTB-BATCH] Batch successfully registered: ${registration.batch_id}`);
+            
+            setCreatedBatchId(registration.batch_id);
+            saveToHistory(registration.batch_id);
         } catch (err: any) {
+            console.error("[GFTB-BATCH] Submission failed:", err);
             setError(err.message || 'Failed to create batch');
         } finally {
             setIsLoading(false);

@@ -26,6 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { BlockchainProof } from '@/components/blockchain/BlockchainProof';
 import { MerchantDetailsCard } from '@/components/marketing/MerchantDetailsCard';
+import { auth } from '@/lib/firebase';
 
 
 interface BatchDetailsClientProps {
@@ -51,7 +52,18 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
     const fetchLatestTelemetry = useCallback(async () => {
         try {
             setIsRefreshing(true);
-            const res = await fetch(`/api/telemetry/${batch.id}`);
+            const token = await auth.currentUser?.getIdToken();
+            
+            const res = await fetch(`/api/telemetry/${batch.id}`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (res.status === 401) {
+                console.warn('[GFTB-TELEMETRY] session expired, stopping polling');
+                // Optional: trigger a re-login modal or toast
+                return;
+            }
+
             if (res.ok) {
                 const data = await res.json();
                 setTelemetry(data);

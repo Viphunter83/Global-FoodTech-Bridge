@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
+import { withAuth, AuthenticatedUser, verifySession } from '@/lib/auth-server';
 
 export async function GET(request: NextRequest) {
     const url = new URL(request.url);
@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const user = await verifySession(request);
+        const userRole = user?.role?.toUpperCase() || '';
 
         // Standardize URL to include /api/v1 if not present
         let baseUrl = BLOCKCHAIN_SERVICE_URL.replace(/\/$/, '');
@@ -22,13 +24,16 @@ export async function GET(request: NextRequest) {
         }
 
         const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
-        console.log(`[GFTB-PROXY] GET ${finalUrl} [Key: ${apiKey ? 'Present' : 'Missing'}]`);
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
 
-        const response = await fetch(finalUrl, {
-            headers: {
-                'x-api-key': apiKey || '',
-            },
-        });
+        const headers: Record<string, string> = {
+            'x-api-key': apiKey || '',
+        };
+        if (userRole) {
+            headers['X-User-Role'] = userRole;
+        }
+
+        const response = await fetch(finalUrl, { headers });
 
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });

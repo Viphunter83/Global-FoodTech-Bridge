@@ -135,9 +135,9 @@ const BLOCKCHAIN_URL = isServer
     : '/api/blockchain';
 
 // Helper for headers
-const getHeaders = (isPost = false, token?: string) => {
+const getHeaders = (isPost = false, token?: string, isJson = true) => {
     const headers: Record<string, string> = {};
-    if (isPost) headers['Content-Type'] = 'application/json';
+    if (isPost && isJson) headers['Content-Type'] = 'application/json';
     
     // Server-side needs the key directly. Client-side proxy will inject it.
     // BUT the proxy itself requires a Bearer token to verify the user role.
@@ -310,6 +310,34 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
             owner: MANUFACTURER_ADDR
         };
     }
+}
+
+export async function uploadToIpfs(formData: FormData, token?: string): Promise<{ ipfsHash: string; success: boolean }> {
+    const res = await fetch(`${BLOCKCHAIN_URL}/ipfs/upload`, {
+        method: 'POST',
+        headers: getHeaders(true, token, false), // false = don't set application/json
+        body: formData,
+    });
+
+    if (!res.ok) throw new Error(`IPFS Upload Failed: ${res.statusText}`);
+    return await res.json();
+}
+
+export async function createBatch(batchData: any, token?: string, role?: string): Promise<{ batch_id: string }> {
+    const headers = getHeaders(true, token);
+    if (role) headers['X-User-Role'] = role;
+
+    const res = await fetch(`${PASSPORT_URL}/batches`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(batchData),
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || 'Failed to create batch');
+    }
+    return await res.json();
 }
 
 export async function getBlockchainHistory(batchId: string): Promise<BlockchainEvent[]> {

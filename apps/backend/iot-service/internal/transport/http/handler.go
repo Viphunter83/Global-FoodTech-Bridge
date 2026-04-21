@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 
@@ -50,16 +51,20 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 			apiKey := r.Header.Get("x-api-key")
 			expectedKey := os.Getenv("INTERNAL_API_KEY")
 
+			// 1. Validate API Key for ALL requests to protected routes
 			if expectedKey != "" && apiKey != expectedKey {
-				// Also allow role-based if it's an admin from UI, but for service-to-service, API key is required
-				// Simplified for audit: required for POST
-				if r.Method == http.MethodPost {
-					http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
-					return
-				}
+				log.Printf("[AUTH] Denied access to %s %s from %s. Invalid API Key.", r.Method, r.URL.Path, r.RemoteAddr)
+				http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
+				return
 			}
 
+			// 2. Validate Role
 			role := r.Header.Get("X-User-Role")
+			if role == "" {
+				log.Printf("[ROLE] Access denied to %s %s: No X-User-Role header provided", r.Method, r.URL.Path)
+				http.Error(w, "Forbidden: Role header required", http.StatusForbidden)
+				return
+			}
 			
 			allowed := false
 			for _, allowedRole := range allowedRoles {
@@ -69,10 +74,9 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 				}
 			}
 
-			// If it's a POST and no role (direct device), ensure it has API Key
-			// For this audit, we'll be strict
-			if !allowed && (r.Method == http.MethodPost && apiKey != expectedKey) {
-				http.Error(w, "Forbidden: Insufficient Role or Invalid API Key", http.StatusForbidden)
+			if !allowed {
+				log.Printf("[ROLE] Access denied to %s %s: Required one of %v, but got %s", r.Method, r.URL.Path, allowedRoles, role)
+				http.Error(w, "Forbidden: Insufficient Role", http.StatusForbidden)
 				return
 			}
 			next.ServeHTTP(w, r)
