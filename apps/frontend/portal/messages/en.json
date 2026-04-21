@@ -205,7 +205,13 @@
     "uae_location": "UAE Export Node",
     "halal_cert": "Global Halal Cert",
     "tive_integration": "Tive Integration",
-    "polygon_mainnet": "Polygon Mainnet"
+    "polygon_mainnet": "Polygon Mainnet",
+    "location_current": "Current Location",
+    "location_updated_iot": "Updated via Satellite Node",
+    "temp_optimal": "Within Compliance Range",
+    "iot_monitoring": "IoT Monitoring Status",
+    "bc_handover_title": "Protocol Custody",
+    "bc_handover_desc": "Immutable proof of delivery"
   },
   "Auth": {
     "login_title": "Secure Access",

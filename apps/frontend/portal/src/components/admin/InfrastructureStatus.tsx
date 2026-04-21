@@ -177,7 +177,7 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                                                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest italic">
                                                     <span className="text-muted-foreground/60">{t('monitoring_health_check')}</span>
                                                     <span className={service.status === 'SUCCESS' || service.status === 'DEPLOYED' ? 'text-emerald-500' : 'text-muted-foreground/20'}>
-                                                        {t('monitoring_uptime_value').replace('{value}', service.status === 'SUCCESS' || service.status === 'DEPLOYED' ? '99.9' : '0')}
+                                                        {t('monitoring_uptime_value', { value: service.status === 'SUCCESS' || service.status === 'DEPLOYED' ? '99.9' : '0' })}
                                                     </span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-primary/5 rounded-full overflow-hidden shadow-inner">

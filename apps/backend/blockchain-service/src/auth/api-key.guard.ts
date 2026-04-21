@@ -11,17 +11,18 @@ export class ApiKeyGuard implements CanActivate {
     const secretKey = this.configService.get<string>('INTERNAL_API_KEY');
 
     if (!secretKey) {
-        console.error('CRITICAL SECURITY ERROR: INTERNAL_API_KEY is not configured. Blocking all requests.');
-        throw new UnauthorizedException('Service Security Configuration Missing');
+        console.error('CRITICAL: INTERNAL_API_KEY missing in environment variables');
     }
 
     if (request.method === 'GET') {
       return true;
     }
 
-    if (apiKey === secretKey) {
+    if (apiKey && secretKey && apiKey === secretKey) {
       return true;
     }
+
+    console.warn(`[AUTH] Invalid API Key attempt. Received len: ${apiKey?.length}, Expected configured: ${!!secretKey}`);
 
     throw new UnauthorizedException('Invalid or missing API Key');
   }

@@ -57,13 +57,17 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
         }
 
         const finalUrl = `${baseUrl}${targetPath}`;
-        console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}]`);
+        console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}] [Key-Presence: ${!!apiKey}]`);
 
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
             'X-User-Role': userRole,
         };
+
+        if (!apiKey) {
+            console.warn(`[GFTB-PROXY] WARNING: Sending request to ${finalUrl} without INTERNAL_API_KEY`);
+        }
 
         let body: any;
 

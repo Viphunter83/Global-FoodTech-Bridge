@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
         const response = await fetch(finalUrl, {
             headers: {
-                'X-Internal-API-Key': apiKey || '',
+                'x-api-key': apiKey || '',
             },
         });
 

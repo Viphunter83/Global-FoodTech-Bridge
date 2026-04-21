@@ -34,7 +34,7 @@ func main() {
 	body, _ := json.Marshal(payload)
 	req, _ := http.NewRequest("POST", iotServiceURL+"/telemetry", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Internal-API-Key", apiKey)
+	req.Header.Set("x-api-key", apiKey)
 	
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)

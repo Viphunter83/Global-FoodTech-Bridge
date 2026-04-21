@@ -47,7 +47,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			apiKey := r.Header.Get("X-Internal-API-Key")
+			apiKey := r.Header.Get("x-api-key")
 			expectedKey := os.Getenv("INTERNAL_API_KEY")
 
 			if expectedKey != "" && apiKey != expectedKey {
