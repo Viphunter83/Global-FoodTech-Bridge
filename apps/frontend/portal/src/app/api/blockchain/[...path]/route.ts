@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth-server';
+import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
 
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
     const targetPath = request.nextUrl.pathname.replace('/api/blockchain', '');
@@ -13,9 +13,22 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 
     try {
-        const response = await fetch(`${BLOCKCHAIN_SERVICE_URL}${targetPath}?${searchParams}`, {
+        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const userRole = user.role?.toUpperCase() || '';
+
+        // Standardize URL to include /api/v1 if not present
+        let baseUrl = BLOCKCHAIN_SERVICE_URL.replace(/\/$/, '');
+        if (!baseUrl.endsWith('/api/v1')) {
+            baseUrl = `${baseUrl}/api/v1`;
+        }
+
+        const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [Role: ${userRole}]`);
+
+        const response = await fetch(finalUrl, {
             headers: {
-                'x-api-key': process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '',
+                'x-api-key': apiKey || '',
+                'X-User-Role': userRole,
             },
         });
 
@@ -27,7 +40,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 });
 
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
     const targetPath = request.nextUrl.pathname.replace('/api/blockchain', '');
     const BLOCKCHAIN_SERVICE_URL = process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL;
     
@@ -36,9 +49,22 @@ export const POST = withAuth(async (request: NextRequest) => {
     }
 
     try {
+        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const userRole = user.role?.toUpperCase() || '';
+
+        // Standardize URL to include /api/v1 if not present
+        let baseUrl = BLOCKCHAIN_SERVICE_URL.replace(/\/$/, '');
+        if (!baseUrl.endsWith('/api/v1')) {
+            baseUrl = `${baseUrl}/api/v1`;
+        }
+
+        const finalUrl = `${baseUrl}${targetPath}`;
+        console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}]`);
+
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
-            'x-api-key': process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '',
+            'x-api-key': apiKey || '',
+            'X-User-Role': userRole,
         };
 
         let body: any;
@@ -53,7 +79,7 @@ export const POST = withAuth(async (request: NextRequest) => {
             body = request.body;
         }
 
-        const response = await fetch(`${BLOCKCHAIN_SERVICE_URL}${targetPath}`, {
+        const response = await fetch(finalUrl, {
             method: 'POST',
             headers,
             body,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth-server';
+import { withAuth, AuthenticatedUser } from '@/lib/auth-server';
 
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
     const targetPath = request.nextUrl.pathname.replace('/api/telemetry', '');
@@ -13,9 +13,22 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 
     try {
-        const response = await fetch(`${IOT_SERVICE_URL}${targetPath}?${searchParams}`, {
+        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const userRole = user.role?.toUpperCase() || '';
+
+        // Standardize URL to include /api/v1 if not present
+        let baseUrl = IOT_SERVICE_URL.replace(/\/$/, '');
+        if (!baseUrl.endsWith('/api/v1')) {
+            baseUrl = `${baseUrl}/api/v1`;
+        }
+
+        const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [Role: ${userRole}]`);
+
+        const response = await fetch(finalUrl, {
             headers: {
-                'x-api-key': process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY || '',
+                'x-api-key': apiKey || '',
+                'X-User-Role': userRole,
             },
         });
 

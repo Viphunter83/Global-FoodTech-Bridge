@@ -9,6 +9,7 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/domain"
 	"github.com/global-foodtech-bridge/passport-service/internal/service"
 	"github.com/google/uuid"
+	"log"
 	"os"
 )
 
@@ -90,6 +91,16 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		expectedKey := os.Getenv("INTERNAL_API_KEY")
 
 		if expectedKey != "" && apiKey != expectedKey {
+			keyLen := len(apiKey)
+			maskedKey := ""
+			if keyLen > 4 {
+				maskedKey = apiKey[:4] + "****"
+			} else if keyLen > 0 {
+				maskedKey = "****"
+			} else {
+				maskedKey = "(empty)"
+			}
+			log.Printf("[AUTH] Unauthorized: Key mismatch via %s. Recv: %s (len: %d)", r.RemoteAddr, maskedKey, keyLen)
 			http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
 			return
 		}

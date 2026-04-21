@@ -14,15 +14,25 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const userRole = user.role?.toUpperCase() || '';
         
         if (!apiKey) {
             console.error('[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY is missing in environment.');
         }
 
-        const response = await fetch(`${PASSPORT_SERVICE_URL}${targetPath}?${searchParams}`, {
+        // Standardize URL to include /api/v1 if not present
+        let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
+        if (!baseUrl.endsWith('/api/v1')) {
+            baseUrl = `${baseUrl}/api/v1`;
+        }
+        
+        const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [Role: ${userRole}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
+
+        const response = await fetch(finalUrl, {
             headers: {
                 'x-api-key': apiKey || '',
-                'X-User-Role': user.role?.toUpperCase() || '',
+                'X-User-Role': userRole,
             },
         });
 
@@ -44,15 +54,25 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const userRole = user.role?.toUpperCase() || '';
         
         if (!apiKey) {
             console.error(`[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY missing for ${method} request.`);
         }
 
+        // Standardize URL to include /api/v1 if not present
+        let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
+        if (!baseUrl.endsWith('/api/v1')) {
+            baseUrl = `${baseUrl}/api/v1`;
+        }
+
+        const finalUrl = `${baseUrl}${targetPath}`;
+        console.log(`[GFTB-PROXY] ${method} ${finalUrl} [Role: ${userRole}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
+
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
-            'X-User-Role': user.role?.toUpperCase() || '',
+            'X-User-Role': userRole,
         };
 
         let body: any;
@@ -66,7 +86,7 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
             body = request.body;
         }
 
-        const response = await fetch(`${PASSPORT_SERVICE_URL}${targetPath}`, {
+        const response = await fetch(finalUrl, {
             method,
             headers,
             body,
