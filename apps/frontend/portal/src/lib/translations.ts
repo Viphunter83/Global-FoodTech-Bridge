@@ -129,6 +129,7 @@ export type TranslationKey =
     | 'ipfs_no_documents'
     | 'form_production_location'
     | 'form_origin_location'
+    | 'form_origin_country'
     | 'form_destination_country'
     | 'form_unit_of_measure'
     | 'unit_kg'
@@ -317,6 +318,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         ipfs_no_documents: 'No documents uploaded.',
         form_production_location: 'Production Location (City, Country)',
         form_origin_location: 'Dispatch Location (Port/Warehouse)',
+        form_origin_country: 'Origin Country',
         form_destination_country: 'Destination Country',
         form_unit_of_measure: 'Unit of Measure',
         unit_kg: 'Kilograms (kg)',
@@ -496,6 +498,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         ipfs_no_documents: 'Документы не загружены.',
         form_production_location: 'Место производства (Город, Страна)',
         form_origin_location: 'Место отгрузки (Порт/Склад)',
+        form_origin_country: 'Страна происхождения',
         form_destination_country: 'Страна назначения',
         form_unit_of_measure: 'Единица измерения',
         unit_kg: 'Килограммы (кг)',
@@ -675,6 +678,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         ipfs_no_documents: 'لم يتم تحميل أي مستندات.',
         form_production_location: 'موقع الإنتاج (المدينة ، البلد)',
         form_origin_location: 'موقع الإرسال (الميناء / المستودع)',
+        form_origin_country: 'بلد المنشأ',
         form_destination_country: 'بلد الوجهة',
         form_unit_of_measure: 'وحدة القياس',
         unit_kg: 'كيلوغرام (kg)',
@@ -854,6 +858,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
         ipfs_no_documents: 'Chưa có tài liệu nào được tải lên.',
         form_production_location: 'Địa điểm Sản xuất (Thành phố, Quốc gia)',
         form_origin_location: 'Địa điểm Xuất phát (Cảng/Kho)',
+        form_origin_country: 'Quốc gia Xuất xứ',
         form_destination_country: 'Quốc gia Đến',
         form_unit_of_measure: 'Đơn vị Đo lường',
         unit_kg: 'Kilôgam (kg)',

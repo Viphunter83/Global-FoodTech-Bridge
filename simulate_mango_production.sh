@@ -16,8 +16,21 @@ RESPONSE=$(curl -s -X POST $PASSPORT_URL/batches \
     "origin_country": "Vietnam (Bến Tre Province)",
     "destination_country": "USA (Los Angeles Port)",
     "partner_redirect_url": "https://global-food-tech-bridge.vercel.app/demo-shop/vietnam-mango",
-    "ingredients": "Organic Cat Chu Mango, 2% Natural Sugar",
-    "nutrition": "High Fiber, Vitamin C Rich, No Sulfur added",
+    "ingredients": {
+      "en": "Organic Cat Chu Mango (98%), Natural Cane Sugar (2%)",
+      "ru": "Органический манго Кат Чу (98%), Натуральный тростниковый сахар (2%)",
+      "vi": "Xoài Cát Chu hữu cơ (98%), Đường mía tự nhiên (2%)"
+    },
+    "nutrition": {
+      "calories": 320,
+      "protein": 2,
+      "fat": 0.5,
+      "carbs": 78
+    },
+    "marketing_story": {
+      "en": "Grown in the lush Mekong Delta, our mangoes are slow-dried at low temperatures to preserve nutrients and intense tropical flavor.",
+      "ru": "Выращенные в пышной дельте Меконга, наши манго сушатся при низких температурах, чтобы сохранить питательные вещества и насыщенный вкус."
+    },
     "certificates": [
       {"type": "HALAL", "id": "VN-H-2026-992"},
       {"type": "ORGANIC", "id": "USDA-ORG-VN-01"}

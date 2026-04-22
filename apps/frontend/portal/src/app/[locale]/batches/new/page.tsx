@@ -342,6 +342,21 @@ export default function CreateBatchPage() {
 
                                     <div className="grid gap-8 sm:grid-cols-2 items-start">
                                         <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">
+                                                <MapPin size={12} className="mr-1.5 text-primary/40" />{t('form_origin_country')}
+                                            </Label>
+                                            <Input id="origin_country" name="origin_country" placeholder="Vietnam" className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight" required />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">
+                                                <Globe size={12} className="mr-1.5 text-primary/40" />{t('form_destination_country')}
+                                            </Label>
+                                            <Input id="destination_country" name="destination_country" placeholder="UAE" className="h-14 rounded-2xl bg-muted/10 border-primary/5 focus:bg-background focus:border-primary/20 transition-all text-sm font-bold tracking-tight" required />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-8 sm:grid-cols-2 items-start">
+                                        <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1 min-h-[2.5rem] flex items-end pb-1.5">{t('form_batch_size')}</Label>
                                             <Input id="batch_size" name="batch_size" type="number" placeholder="100" className="h-14 rounded-2xl bg-muted/10 border-primary/5 font-bold" required />
                                         </div>
