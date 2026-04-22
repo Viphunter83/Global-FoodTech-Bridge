@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
         <div className="flex min-h-screen bg-[#fafbfc] selection:bg-primary/10">
             {/* Premium Sidebar */}
-            <aside className="w-80 bg-slate-900 text-white flex-shrink-0 hidden xl:flex flex-col border-r border-white/5 relative overflow-hidden">
+            <aside className="w-80 bg-slate-900 text-white flex-shrink-0 hidden lg:flex flex-col border-r border-white/5 relative overflow-hidden">
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32 opacity-50" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 blur-[80px] rounded-full -ml-24 -mb-24" />

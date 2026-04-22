@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const apiKey = process.env.INTERNAL_API_KEY;
         const isAdminPath = targetPath.startsWith('/admin/');
         
         let userRole = '';
@@ -64,7 +64,7 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
     }
 
     try {
-        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const apiKey = process.env.INTERNAL_API_KEY;
         const userRole = user.role?.toUpperCase() || '';
         
         if (!apiKey) {
