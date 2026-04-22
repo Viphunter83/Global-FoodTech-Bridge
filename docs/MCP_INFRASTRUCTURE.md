@@ -33,71 +33,43 @@ Provides tools for user management and Firestore/Storage administration.
 
 ---
 
-## 🛠 Administrative Capabilities
-The integrated MCP servers provide a "Command Center" for the platform:
+## 🛠 Administrative & Troubleshooting Procedures
+ 
+ ### 1. User Role Management (Firestore)
+ If a user encounters a `403 Forbidden` error when creating a batch, verify their role in Firestore.
+ - **Collection**: `users`
+ - **Document ID**: User's Firebase UID.
+ - **Required Fields**: `role` (must be `MANUFACTURER` or `ADMIN`).
+- **Fix Tool**: Use a Node.js script with the **Firebase Admin SDK** (stored in `/Users/apple/Documents/`).
+ 
+ ### 2. Debugging IPFS / Certificate Uploads
+ Certificate uploads pass through a proxy: `Portal (Vercel) -> Blockchain Service (Railway) -> Pinata (IPFS)`.
+ - **Common Failure**: Forcing `application/json` in the proxy breaks `multipart/form-data`. 
+ - **Verification**: Ensure `apps/frontend/portal/src/app/api/blockchain/[...path]/route.ts` correctly detects and forwards the `Content-Type`.
+ 
+ ### 3. Internal Security (`INTERNAL_API_KEY`)
+ All cross-service requests must include the `x-api-key` header.
+ - **Frontend**: The proxy route automatically injects this from `process.env.INTERNAL_API_KEY`.
+ - **Backend**: Services verify this key using `ApiKeyGuard` (NestJS) or custom middleware (Go).
+ 
+ ---
+ 
+ ## Configuration Template (`mcp_config.json`)
+ 
+ ... (previous config) ...
+ 
+ ## Maintenance & Recovery
+ 
+ ### Connection Test
+ If a server appears offline, run the following verification commands:
+ - **Firebase**: `mcp_firebase-mcp-server_firebase_get_project`
+ - **Railway**: `mcp_railway_check-railway-status`
+ - **Vercel**: `mcp_vercel_list_projects` (custom tool from bridge)
+ 
+ ### Troubleshooting Bridge
+ If the Vercel bridge fails, verify that the `@modelcontextprotocol/sdk` and `zod` are installed in the bridge directory:
+ ```bash
+ cd /Users/apple/.gemini/antigravity/mcp-servers/vercel
+ npm install @modelcontextprotocol/sdk zod
+ ```
 
-| Capability | Server | Example Action |
-| :--- | :--- | :--- |
-| **Log Monitoring** | Railway | Real-time debugging of IoT ingestion errors. |
-| **User Audits** | Firebase | Verifying factory technician accounts via email. |
-| **Secret Management** | Vercel/Railway | Syncing `INTERNAL_API_KEY` across all nodes. |
-| **Infrastructure** | Railway | Provisioning Redis instances or checking DB health. |
-
----
-
-## ⚡ Quick Start for New Agents
-To verify your environment is ready for production edits, run:
-1. `mcp_railway_check-railway-status`
-2. `mcp_firebase-mcp-server_firebase_get_project`
-3. `mcp_vercel_list_projects`
-
-If any fail, refer to the **Maintenance** section below.
-
----
-
-## Configuration Template (`mcp_config.json`)
-
-To restore these connections in a new assistant session, ensure your `mcp_config.json` contains the following:
-
-```json
-{
-  "mcpServers": {
-    "firebase-mcp-server": {
-      "command": "/opt/homebrew/bin/npx",
-      "args": ["-y", "firebase-tools@latest", "mcp"],
-      "env": { "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" }
-    },
-    "railway": {
-      "command": "/opt/homebrew/bin/node",
-      "args": ["/Users/apple/.gemini/antigravity/mcp-servers/railway/node_modules/@railway/mcp-server/dist/index.js"],
-      "env": {
-        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-        "HOME": "/Users/apple",
-        "RAILWAY_CONFIG_DIR": "/Users/apple/.railway"
-      }
-    },
-    "vercel": {
-      "command": "/opt/homebrew/bin/node",
-      "args": ["/Users/apple/.gemini/antigravity/mcp-servers/vercel/index.js"],
-      "env": {
-        "VERCEL_TOKEN": "[PROVIDED_BY_USER_OR_KEPT_IN_CONFIG]"
-      }
-    }
-  }
-}
-```
-
-## Maintenance & Recovery
-
-### Connection Test
-If a server appears offline, run the following verification commands:
-- **Firebase**: `mcp_firebase-mcp-server_firebase_get_project`
-- **Railway**: `mcp_railway_check-railway-status`
-- **Vercel**: `mcp_vercel_list_projects` (custom tool from bridge)
-
-### Troubleshooting Bridge
-If the Vercel bridge fails, verify that the `@modelcontextprotocol/sdk` and `zod` are installed in the bridge directory:
-```bash
-cd /Users/apple/.gemini/antigravity/mcp-servers/vercel
-npm install @modelcontextprotocol/sdk zod
-```

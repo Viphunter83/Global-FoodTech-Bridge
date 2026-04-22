@@ -4,30 +4,39 @@
 
 Global FoodTech Bridge — это универсальная экосистема для обеспечения прозрачности международных поставок продуктов питания. Система объединяет данные IoT-датчиков с неизменяемым реестром блокчейна Polygon для создания «Цифровых Паспортов Доверия».
 
-## 🚀 Текущий статус: Production Ready
+## 🚀 Текущий статус: Production (Stable)
 - **Network**: Polygon Mainnet (`https://polygon.drpc.org`)
+- **Frontend**: [global-food-tech-bridge.vercel.app](https://global-food-tech-bridge.vercel.app)
+- **Backend Services**: Railway (IoT, Blockchain, Passport)
 - **Smart Contract**: `0xF48D6846Ac41AE6764f0747E2A1Cb282467F59E5`
-- **Security Check**: Пройден аудит (Апрель 2026). Внедрена модель единого защищенного кастодиального кошелька.
+- **Security Check**: Пройден аудит. Внедрена авторизация через `INTERNAL_API_KEY` для межсервисного взаимодействия.
 
-## 🏗 Архитектура (V3 - Event-Driven)
-Проект переведен на высокопроизводительную событийно-ориентированную архитектуру для обеспечения минимальной задержки при обработке телеметрии:
+## 🏗 Архитектура (V3 - Hybrid Proxy)
+Система использует гибридную модель: Frontend (Vercel) выступает безопасным прокси-слоем для Backend-сервисов (Railway):
 
-1.  **[IoT Service](./apps/backend/iot-service)** (Go): Принимает данные датчиков и мгновенно публикует события нарушений в **Redis Streams**.
-2.  **Redis 7** (Message Broker): Выступает центральной шиной обмена сообщениями, гарантируя доставку и соблюдение порядка событий.
-3.  **[Blockchain Service](./apps/backend/blockchain-service)** (Node.js/NestJS): Асинхронно считывает события из Redis и выполняет нотариацию в Polygon Mainnet.
-4.  **[Passport Service](./apps/backend/passport-service)** (Go): Управление жизненным циклом и метаданными «Цифровых Паспортов».
-5.  **[Portal](./apps/frontend/portal)** (Next.js): Единый интерфейс для мониторинга поставок и верификации.
+1.  **[Portal (Frontend)](./apps/frontend/portal)**: Next.js приложение.
+    - **API Proxy**: Маршрутизирует запросы к `/api/blockchain` и `/api/passport`.
+    - **Auth Injection**: Автоматически добавляет `INTERNAL_API_KEY` и `X-User-Role` к защищенным запросам.
+2.  **[Passport Service](./apps/backend/passport-service)** (Go): Хранит метаданные партий и управляет жизненным циклом паспорта.
+3.  **[Blockchain Service](./apps/backend/blockchain-service)** (NestJS): 
+    - **IPFS Gateway**: Обрабатывает загрузку сертификатов и метаданных через Pinata.
+    - **Polygon Bridge**: Записывает хэши партий в блокчейн.
+4.  **[IoT Service](./apps/backend/iot-service)** (Go): Обработка телеметрии в реальном времени.
+
+## 🛡 Безопасность и Доступы
+- **Межсервисная связь**: Защищена через `x-api-key`.
+- **Роли пользователей**: Управляются через Firestore (`users` collection):
+    - `ADMIN`: Полный доступ ко всем сервисам.
+    - `MANUFACTURER`: Создание партий и загрузка документов.
+    - `LOGISTICS/RETAILER`: Обновление статусов доставки и передача владения.
+- **Admin SDK**: Для административных задач используется ключ `global-foodtech-bridge-prod-firebase-adminsdk-*.json` (хранится локально у администратора).
 
 ## 📚 Документация
-- **[Бизнес-логика (Blueprint)](./BUSINESS_LOGIC_BLUEPRINT.md)**: Полное описание миссии и процессов.
-- **[Руководство по развертыванию](./DEPLOYMENT.md)**: Инструкция для Railway и Vercel.
-- **[Smart Contract V2 (Roadmap)](./docs/SMART_CONTRACT_V2.md)**: Описание следующего поколения инфраструктуры доверия.
-- **[MCP Infrastructure Guide](./docs/MCP_INFRASTRUCTURE.md)**: Настройка и управление проектом через ИИ-агентов.
-
-## 🛡 Безопасность
-- Все секреты хранятся в переменных окружения (Railway/Vercel).
-- Firebase Storage защищен правилами доступа (Auth-Only).
-- Мониторинг "Dirty Migrations" и целостности БД настроен.
+- **[Эталонный Сценарий: Вьетнамское Манго 🥭](./docs/SCENARIO_VIETNAM_MANGO.md)**: Наш маркер качества E2E.
+- **[Техническая Инфраструктура](./docs/MCP_INFRASTRUCTURE.md)**: Настройка и управление через MCP.
+- **[База Знаний (Knowledge Items)](./.gemini/knowledge/)**: Подробные гайды по миграциям и API.
+- **[Бизнес-логика](./BUSINESS_LOGIC_BLUEPRINT.md)**: Описание процессов от фермы до полки.
 
 ---
 *Global FoodTech Bridge: Переход от веры к доказательствам.*
+
