@@ -79,7 +79,7 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
         if (contentType.includes('application/json')) {
             body = JSON.stringify(await request.json());
             // Only set Content-Type if not already present (to allow multipart/form-data for IPFS)
-            const contentType = r.headers.get('content-type');
+            const contentType = request.headers.get('content-type');
             if (contentType) {
                 headers['Content-Type'] = contentType;
             } else {
