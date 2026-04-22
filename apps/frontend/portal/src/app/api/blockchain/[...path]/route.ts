@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         const userRole = user?.role?.toUpperCase() || '';
 
         // Standardize URL to include /api/v1 if not present
-        let baseUrl = BLOCKCHAIN_SERVICE_URL.replace(/\/$/, '');
+        let baseUrl = (BLOCKCHAIN_SERVICE_URL || '').trim().replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }
@@ -56,7 +56,7 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
         const userRole = user.role?.toUpperCase() || '';
 
         // Standardize URL to include /api/v1 if not present
-        let baseUrl = BLOCKCHAIN_SERVICE_URL.replace(/\/$/, '');
+        let baseUrl = (BLOCKCHAIN_SERVICE_URL || '').trim().replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }

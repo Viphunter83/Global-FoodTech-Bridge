@@ -87,6 +87,10 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		MaxTemp:            maxTemp,
 		TokenURI:           &req.TokenURI,
 		Certificates:       req.Certificates,
+		MarketingStory:     req.MarketingStory,
+		PartnerRedirectURL: &req.PartnerRedirectURL,
+		Ingredients:        req.Ingredients,
+		Nutrition:          req.Nutrition,
 	}
 
 	if req.TemplateID != "" {

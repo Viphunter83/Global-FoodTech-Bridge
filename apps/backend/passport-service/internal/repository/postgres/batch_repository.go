@@ -22,9 +22,9 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 			manufacturer_id, product_type, batch_size, unit_of_measure, 
 			origin_country, destination_country, usf_status, 
 			blockchain_hash, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-			marketing_story, partner_redirect_url
+			marketing_story, partner_redirect_url, ingredients, nutrition
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 		RETURNING id
 	`
 
@@ -46,6 +46,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		batch.PartnerID,
 		batch.MarketingStory,
 		batch.PartnerRedirectURL,
+		batch.Ingredients,
+		batch.Nutrition,
 	).Scan(&id)
 
 	if err != nil {
@@ -61,7 +63,7 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 			id, manufacturer_id, product_type, batch_size, unit_of_measure,
 			origin_country, destination_country, usf_status, blockchain_hash, 
 			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-			marketing_story, partner_redirect_url
+			marketing_story, partner_redirect_url, ingredients, nutrition
 		FROM product_batches
 		WHERE id = $1
 	`
@@ -86,6 +88,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		&batch.PartnerID,
 		&batch.MarketingStory,
 		&batch.PartnerRedirectURL,
+		&batch.Ingredients,
+		&batch.Nutrition,
 	)
 
 	if err != nil {

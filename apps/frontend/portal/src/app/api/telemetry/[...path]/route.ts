@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         const apiKey = process.env.INTERNAL_API_KEY;
 
         // Standardize URL to include /api/v1 if not present
-        let baseUrl = IOT_SERVICE_URL.replace(/\/$/, '');
+        let baseUrl = (IOT_SERVICE_URL || '').trim().replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }

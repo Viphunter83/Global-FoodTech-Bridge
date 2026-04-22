@@ -42,6 +42,8 @@ type Batch struct {
 	PartnerID          *uuid.UUID             `json:"partner_id,omitempty"`
 	MarketingStory     map[string]interface{} `json:"marketing_story,omitempty"`
 	PartnerRedirectURL *string                `json:"partner_redirect_url,omitempty"`
+	Ingredients        interface{}            `json:"ingredients,omitempty"`
+	Nutrition          interface{}            `json:"nutrition,omitempty"`
 }
 
 type CreateBatchRequest struct {
@@ -61,6 +63,8 @@ type CreateBatchRequest struct {
 	PartnerID          string                 `json:"partner_id,omitempty"`
 	MarketingStory     map[string]interface{} `json:"marketing_story,omitempty"`
 	PartnerRedirectURL string                 `json:"partner_redirect_url,omitempty"`
+	Ingredients        interface{}            `json:"ingredients,omitempty"`
+	Nutrition          interface{}            `json:"nutrition,omitempty"`
 }
 
 type UpdateBlockchainRequest struct {
