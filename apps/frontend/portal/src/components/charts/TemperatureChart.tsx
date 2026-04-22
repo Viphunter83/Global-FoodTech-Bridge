@@ -68,8 +68,8 @@ export function TemperatureChart({
                 </button>
             </div>
 
-            <div className="h-80 w-full">
-                <ResponsiveContainer width="99%" height="100%">
+            <div className="h-80 w-full min-h-[320px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <LineChart data={formattedData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,209,255,0.05)" />
                         <XAxis

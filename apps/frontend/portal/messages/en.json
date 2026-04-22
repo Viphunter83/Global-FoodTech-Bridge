@@ -211,7 +211,8 @@
     "temp_optimal": "Within Compliance Range",
     "iot_monitoring": "IoT Monitoring Status",
     "bc_handover_title": "Protocol Custody",
-    "bc_handover_desc": "Immutable proof of delivery"
+    "bc_handover_desc": "Immutable proof of delivery",
+    "btn_notarize": "Notarize on Polygon"
   },
   "Auth": {
     "login_title": "Secure Access",
