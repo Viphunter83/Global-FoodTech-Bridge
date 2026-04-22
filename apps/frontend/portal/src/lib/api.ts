@@ -170,8 +170,8 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                         
                         return {
                             stage: step.name,
-                            location: index === 0 ? (data.origin_country || "Origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Destination") : "In Transit"),
-                            timestamp: index === 0 ? "Started" : (index < 3 ? "Completed" : "Estimated"), 
+                            location: index === 0 ? (data.origin_country || "Tracking.origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Tracking.destination") : "Tracking.in_transit"),
+                            timestamp: index === 0 ? "Tracking.started" : (index < 3 ? "Tracking.completed" : "Tracking.estimated"), 
                             status: (index < 3 ? "completed" : (index === 3 ? "current" : "future")) as 'completed' | 'current' | 'future',
                             icon: (step.icon || 'package') as any,
                             is_compliant: isCompliant,
@@ -187,9 +187,9 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         if (!history || history.length === 0) {
             // Default generic history if no template is assigned
             history = [
-                { stage: "Produced & Packed", location: data.origin_country || "Origin Facility", timestamp: data.created_at, status: "completed", icon: "package" },
-                { stage: "Quality Check", location: "Verified", timestamp: "Success", status: "completed", icon: "check" },
-                { stage: "In Transit", location: "Global Network", timestamp: "Current", status: "current", icon: "truck" }
+                { stage: "Tracking.stage_produced", location: data.origin_country || "Tracking.origin_facility", timestamp: data.created_at, status: "completed", icon: "package" },
+                { stage: "Tracking.stage_quality", location: "Tracking.verified", timestamp: "Tracking.success", status: "completed", icon: "check" },
+                { stage: "Tracking.in_transit", location: "Tracking.global_network", timestamp: "Tracking.current", status: "current", icon: "truck" }
             ];
         }
 

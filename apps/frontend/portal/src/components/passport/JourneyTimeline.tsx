@@ -56,7 +56,7 @@ export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-3 mb-2">
                                     <span className={`text-lg font-serif font-black italic tracking-tight ${event.status === 'future' ? 'text-muted-foreground/40' : 'text-foreground'}`}>
-                                        {event.stage}
+                                        {event.stage.includes('.') ? t(event.stage.split('.')[1]) : event.stage}
                                     </span>
                                     
                                     {event.status === 'current' && (
@@ -83,12 +83,12 @@ export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
                                 
                                 <div className={`flex items-center gap-2 text-sm font-medium ${event.status === 'future' ? 'text-muted-foreground/20' : 'text-muted-foreground'}`}>
                                     <MapPin size={14} className="opacity-40" />
-                                    {event.location}
+                                    {event.location.includes('.') ? t(event.location.split('.')[1]) : event.location}
                                 </div>
                                 
                                 {event.timestamp && (
                                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/30 font-mono text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                                        {event.timestamp}
+                                        {event.timestamp.includes('.') ? t(event.timestamp.split('.')[1]) : event.timestamp}
                                     </div>
                                 )}
                             </div>

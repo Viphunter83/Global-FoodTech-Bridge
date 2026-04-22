@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const apiKey = process.env.INTERNAL_API_KEY;
         const user = await verifySession(request);
         const userRole = user?.role?.toUpperCase() || '';
 
@@ -52,7 +52,7 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
     }
 
     try {
-        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const apiKey = process.env.INTERNAL_API_KEY;
         const userRole = user.role?.toUpperCase() || '';
 
         // Standardize URL to include /api/v1 if not present

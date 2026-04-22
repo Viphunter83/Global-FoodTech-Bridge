@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const apiKey = process.env.INTERNAL_API_KEY || process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+        const apiKey = process.env.INTERNAL_API_KEY;
 
         // Standardize URL to include /api/v1 if not present
         let baseUrl = IOT_SERVICE_URL.replace(/\/$/, '');

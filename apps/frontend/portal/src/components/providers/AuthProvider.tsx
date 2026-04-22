@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { setSessionCookie, removeSessionCookie } from '@/lib/cookies';
 
 export type UserRole = 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER' | 'ADMIN' | 'PENDING';
 
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             if (firebaseUser) {
                 // Set session cookie for Middleware
-                document.cookie = `gftb-session=${firebaseUser.uid}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+                setSessionCookie(firebaseUser.uid);
 
                 try {
                     // 1. Try to fetch role from Firestore profiles
@@ -72,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } else {
                 // Remove session cookie
-                document.cookie = 'gftb-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                removeSessionCookie();
                 setRole('PENDING');
                 setCompanyId(null);
                 setLoading(false);

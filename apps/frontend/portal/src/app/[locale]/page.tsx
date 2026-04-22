@@ -409,9 +409,9 @@ export default function Home() {
                             <span>{t('Marketing.blockchain_badge')}</span>
                         </div>
                         <div className="flex gap-8">
-                            <Link href="/legal/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                            <Link href="/legal/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-                            <Link href="/legal/compliance" className="hover:text-primary transition-colors">GDPR / ESG</Link>
+                            <Link href="/contact?subject=privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                            <Link href="/contact?subject=terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                            <Link href="https://github.com/Viphunter83/Global-FoodTech-Bridge/blob/main/docs/COMPLIANCE.md" className="hover:text-primary transition-colors" target="_blank">Compliance / ESG</Link>
                         </div>
                         <div className="flex items-center gap-2">
                              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />

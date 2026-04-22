@@ -8,6 +8,7 @@ import {
     GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { setSessionCookie } from '@/lib/cookies';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +48,8 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            setSessionCookie(userCredential.user.uid);
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Login Error:", err.code);
@@ -61,7 +63,8 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
-            await signInWithPopup(auth, provider);
+            const userCredential = await signInWithPopup(auth, provider);
+            setSessionCookie(userCredential.user.uid);
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Google Login Error:", err.code);
