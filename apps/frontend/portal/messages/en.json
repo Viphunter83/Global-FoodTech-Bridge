@@ -221,6 +221,8 @@
     "iot_monitoring": "IoT Monitoring Status",
     "bc_handover_title": "Protocol Custody",
     "bc_handover_desc": "Immutable proof of delivery",
+    "bc_violation_title": "Compliance Violation",
+    "bc_violation_details": "A critical breach in compliance protocol has been recorded on the blockchain.",
     "btn_notarize": "Notarize on Polygon",
     "bc_waiting_manufacturer": "Waiting for Manufacturer to notarize...",
     "bc_waiting_logistics": "Waiting for Logistics Confirmation",
