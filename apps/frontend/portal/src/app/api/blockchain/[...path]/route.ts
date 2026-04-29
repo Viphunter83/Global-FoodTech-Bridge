@@ -73,17 +73,33 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
             headers['X-User-Role'] = userRole;
         }
 
-        if (contentType) {
-            headers['Content-Type'] = contentType;
+        let requestBody: any = null;
+        
+        if (contentType.includes('multipart/form-data')) {
+            requestBody = await request.formData();
+            // Do NOT set Content-Type header here, fetch will automatically set it 
+            // with the correct boundary when passing a FormData object.
+        } else {
+            if (contentType) {
+                headers['Content-Type'] = contentType;
+            }
+            // For JSON or other requests, just pass as text
+            const textBody = await request.text();
+            if (textBody) {
+                requestBody = textBody;
+            }
         }
 
-        const response = await fetch(finalUrl, {
+        const fetchOptions: RequestInit = {
             method: 'POST',
             headers,
-            body: request.body,
-            // @ts-ignore
-            duplex: 'half',
-        });
+        };
+        
+        if (requestBody) {
+            fetchOptions.body = requestBody;
+        }
+
+        const response = await fetch(finalUrl, fetchOptions);
 
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
