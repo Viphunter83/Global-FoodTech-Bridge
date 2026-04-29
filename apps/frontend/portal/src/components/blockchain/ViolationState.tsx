@@ -11,13 +11,14 @@ export function ViolationState({ violation, txHash, children }: ViolationStatePr
     const t = useTranslations('Tracking');
     
     return (
-        <div className="rounded-[2rem] bg-destructive/5 p-10 border border-destructive/20 shadow-2xl shadow-destructive/10 animate-in zoom-in duration-700">
-            <div className="flex items-center text-destructive font-serif font-black italic mb-6 text-2xl tracking-tight">
-                <AlertTriangle className="mr-4 h-10 w-10 text-destructive" />
-                {t('bc_violation_title')}
+        <div className="rounded-[2rem] bg-destructive/5 p-8 md:p-10 border border-destructive/20 shadow-2xl shadow-destructive/10 animate-in zoom-in duration-700">
+            <div className="flex items-start md:items-center text-destructive font-serif font-black italic mb-6 text-xl md:text-2xl tracking-tight">
+                <AlertTriangle className="mr-4 h-8 w-8 md:h-10 md:w-10 shrink-0 text-destructive mt-1 md:mt-0" />
+                <span className="break-words leading-tight">{t('bc_violation_title')}</span>
             </div>
-            <p className="text-[13px] font-bold text-destructive/80 mb-8 leading-relaxed uppercase tracking-wider italic">
-                {t('bc_violation_details')} <span className="underline decoration-wavy underline-offset-4">{violation}</span>
+            <p className="text-xs md:text-[13px] font-bold text-destructive/80 mb-8 leading-relaxed uppercase tracking-wider italic break-words">
+                <span className="block mb-2">{t('bc_violation_details')}</span>
+                <span className="underline decoration-wavy underline-offset-4 break-all inline-block mt-1">{violation}</span>
             </p>
             {txHash && (
                 <div className="flex items-center gap-3 p-4 bg-background/50 border border-destructive/10 rounded-2xl mb-6 shadow-sm overflow-hidden group">

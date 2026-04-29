@@ -48,8 +48,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         className="h-7 text-[9px] font-black uppercase tracking-widest hover:text-destructive hover:bg-destructive/5 px-3 rounded-full border border-transparent hover:border-destructive/10 transition-all"
                         onClick={() => {
                             resetBatchState(batchId);
-                            if (onRefresh) onRefresh();
-                            else window.location.reload();
+                            window.location.reload();
                         }}
                     >
                         <RefreshCcw className="h-3 w-3 mr-1.5" />
