@@ -37,13 +37,15 @@ interface BatchDetailsClientProps {
     bcHistory: any[];
 }
 
-export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockchain, alerts, bcHistory }: BatchDetailsClientProps) {
+export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockchain, alerts: initialAlerts, bcHistory }: BatchDetailsClientProps) {
     const t = useTranslations();
     const locale = useLocale();
     const { getBatchState, isInitialized } = useDemoState();
     const [mounted, setMounted] = useState(false);
     const [telemetry, setTelemetry] = useState(initialTelemetry);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    
+    const alerts = Array.isArray(initialAlerts) ? initialAlerts : [];
 
     useEffect(() => {
         setMounted(true);
