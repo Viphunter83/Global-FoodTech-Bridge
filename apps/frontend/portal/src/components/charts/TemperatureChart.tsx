@@ -38,7 +38,9 @@ export function TemperatureChart({
         setIsMounted(true);
     }, []);
 
-    const formattedData = data.map((d) => ({
+    const safeData = Array.isArray(data) ? data : [];
+    
+    const formattedData = safeData.map((d) => ({
         ...d,
         time: format(new Date(d.timestamp), 'HH:mm'),
         fullDate: format(new Date(d.timestamp), 'dd MMM HH:mm'),
