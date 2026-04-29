@@ -36,22 +36,22 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
     const DebugFooter = () => {
         if (role !== 'ADMIN') return null;
         return (
-            <div className="mt-8 pt-6 border-t border-primary/10 flex flex-col gap-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="mt-8 pt-6 border-t border-primary/10 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
                     <span className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                        Protocol Engine v5.0 (Edge Optimized)
+                        <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
+                        <span className="leading-tight">Protocol Engine v5.0 (Edge)</span>
                     </span>
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-[9px] font-black uppercase tracking-widest hover:text-destructive hover:bg-destructive/5 px-3 rounded-full border border-transparent hover:border-destructive/10 transition-all"
+                        className="h-8 text-[9px] font-black uppercase tracking-widest hover:text-destructive hover:bg-destructive/5 px-4 rounded-full border border-destructive/10 sm:border-transparent transition-all self-start sm:self-auto w-full sm:w-auto"
                         onClick={() => {
                             resetBatchState(batchId);
                             window.location.reload();
                         }}
                     >
-                        <RefreshCcw className="h-3 w-3 mr-1.5" />
+                        <RefreshCcw className="h-3 w-3 mr-2" />
                         Reset State
                     </Button>
                 </div>
