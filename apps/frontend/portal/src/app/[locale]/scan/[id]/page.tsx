@@ -10,6 +10,7 @@ import { BlockchainControls } from '@/components/ui/BlockchainControls';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ProductHero } from '@/components/passport/ProductHero';
 import { JourneyTimeline } from '@/components/passport/JourneyTimeline';
+import { RouteMapDynamic } from '@/components/passport/RouteMapDynamic';
 import { CertificateCard } from '@/components/passport/CertificateCard';
 import { TrustMetricBadge } from '@/components/passport/TrustMetricBadge';
 import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
@@ -229,6 +230,17 @@ export default function ScanPage() {
                     </TabsList>
 
                     <TabsContent value="journey" className="pt-6 space-y-4">
+                        {/* Interactive Route Map */}
+                        <Card className="p-6 md:p-8 border-emerald-50 shadow-sm bg-white rounded-3xl overflow-hidden">
+                            <RouteMapDynamic
+                                events={batchDetails?.history || []}
+                                originCountry={batchDetails?.origin_country}
+                                destinationCountry={batchDetails?.destination_country}
+                                height="380px"
+                            />
+                        </Card>
+
+                        {/* Chain of Custody Timeline */}
                         <Card className="p-8 border-emerald-50 shadow-sm relative overflow-hidden bg-white rounded-3xl">
                             <h3 className="text-xl font-bold text-emerald-950 mb-8 flex items-center gap-2">
                                 <ArrowRightLeft className="h-5 w-5 text-emerald-600" />

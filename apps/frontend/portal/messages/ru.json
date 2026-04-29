@@ -239,7 +239,15 @@
     "uae_location": "Узел экспорта ОАЭ",
     "halal_cert": "Сертиф. Global Halal",
     "tive_integration": "Интеграция Tive",
-    "polygon_mainnet": "Polygon Mainnet"
+    "polygon_mainnet": "Polygon Mainnet",
+    "route_map_title": "Маршрут поставки",
+    "route_waypoints": "точек маршрута",
+    "route_no_data": "Данные маршрута недоступны",
+    "route_satellite_verified": "Маршрут подтверждён спутником",
+    "route_completed": "Завершено",
+    "route_active": "Активно",
+    "route_pending": "Ожидание",
+    "map_loading": "Инициализация карты маршрута..."
   },
   "Auth": {
     "login_title": "Безопасный доступ",

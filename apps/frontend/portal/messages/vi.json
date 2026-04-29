@@ -213,7 +213,14 @@
     "live_badge": "TRỰC TIẾP",
     "chart_title": "Dữ liệu đo lường thời gian thực",
     "chart_desc": "Nhật ký cảm biến môi trường liên tục",
-    "chart_no_data": "Đang chờ đồng bộ cảm biến..."
+    "chart_no_data": "Đang chờ đồng bộ cảm biến...",
+    "route_map_title": "Tuyến vận chuyển",
+    "route_waypoints": "điểm tuyến",
+    "route_no_data": "Dữ liệu tuyến không khả dụng",
+    "route_satellite_verified": "Tuyến đã xác minh vệ tinh",
+    "route_completed": "Hoàn thành",
+    "route_active": "Đang hoạt động",
+    "route_pending": "Đang chờ"
   },
   "Auth": {
     "login_title": "Truy cập Bảo mật",

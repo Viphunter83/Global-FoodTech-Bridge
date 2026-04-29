@@ -239,7 +239,16 @@
     "stage_quality": "Quality Check",
     "origin_facility": "Origin Facility",
     "global_network": "Global Network",
-    "verified": "Verified"
+    "verified": "Verified",
+    "farm_to_fork_journey": "Farm to Fork Journey",
+    "route_map_title": "Shipment Route",
+    "route_waypoints": "waypoints",
+    "route_no_data": "Route data unavailable",
+    "route_satellite_verified": "Satellite Verified Route",
+    "route_completed": "Completed",
+    "route_active": "Active",
+    "route_pending": "Pending",
+    "map_loading": "Initializing route map..."
   },
   "Auth": {
     "login_title": "Secure Access",

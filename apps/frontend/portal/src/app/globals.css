@@ -104,3 +104,25 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
 }
+
+/* Leaflet Route Map Overrides */
+.custom-route-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.custom-route-tooltip::before {
+  display: none !important;
+}
+
+.custom-route-marker {
+  background: none !important;
+  border: none !important;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.1; transform: scale(1.3); }
+}

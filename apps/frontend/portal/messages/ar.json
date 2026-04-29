@@ -208,7 +208,14 @@
     "live_badge": "مباشر",
     "chart_title": "بيانات القياس عن بعد في الوقت الفعلي",
     "chart_desc": "سجلات مستشعرات البيئة المستمرة",
-    "chart_no_data": "في انتظار مزامنة المستشعر..."
+    "chart_no_data": "في انتظار مزامنة المستشعر...",
+    "route_map_title": "مسار الشحنة",
+    "route_waypoints": "نقاط المسار",
+    "route_no_data": "بيانات المسار غير متوفرة",
+    "route_satellite_verified": "مسار تم التحقق منه عبر القمر الصناعي",
+    "route_completed": "مكتمل",
+    "route_active": "نشط",
+    "route_pending": "معلق"
   },
   "Auth": {
     "login_title": "وصول آمن",
