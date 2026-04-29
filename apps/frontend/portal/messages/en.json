@@ -110,6 +110,8 @@
     "form_expiration_date": "Expiry Date",
     "form_production_location": "facility GPS / Address",
     "form_origin_location": "Source Point GPS",
+    "form_origin_country": "Origin Country",
+    "form_destination_country": "Destination Country",
     "product_pho_bo": "Vietnam Soup (Pho Bo)",
     "product_mango_shake": "Mango Shake",
     "product_dried_mango": "Dried Mango (Global)",

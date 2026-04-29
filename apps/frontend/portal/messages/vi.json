@@ -110,6 +110,8 @@
     "form_expiration_date": "Ngày Hết hạn",
     "form_production_location": "Tọa độ GPS / Địa chỉ Nhà máy",
     "form_origin_location": "Tọa độ GPS Điểm nguồn",
+    "form_origin_country": "Quốc gia Xuất xứ",
+    "form_destination_country": "Quốc gia Đích",
     "product_pho_bo": "Phở Bò Việt Nam",
     "product_mango_shake": "Sinh tố Xoài",
     "product_dried_mango": "Xoài Sấy (Toàn cầu)",

@@ -67,44 +67,30 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
-            'X-User-Role': userRole,
         };
-
-        if (!apiKey) {
-            console.warn(`[GFTB-PROXY] WARNING: Sending request to ${finalUrl} without INTERNAL_API_KEY`);
+        
+        if (userRole) {
+            headers['X-User-Role'] = userRole;
         }
 
-        let body: any;
-
-        if (contentType.includes('application/json')) {
-            body = JSON.stringify(await request.json());
-            // Only set Content-Type if not already present (to allow multipart/form-data for IPFS)
-            const contentType = request.headers.get('content-type');
-            if (contentType) {
-                headers['Content-Type'] = contentType;
-            } else {
-                headers['Content-Type'] = 'application/json';
-            }
-        } else if (contentType.includes('multipart/form-data')) {
-            const formData = await request.formData();
-            body = formData;
-        } else {
-            body = request.body;
+        if (contentType) {
+            headers['Content-Type'] = contentType;
         }
 
         const response = await fetch(finalUrl, {
             method: 'POST',
             headers,
-            body,
+            body: request.body,
             // @ts-ignore
             duplex: 'half',
         });
 
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Blockchain Proxy POST Error:', error);
-        return NextResponse.json({ error: 'Failed to connect to blockchain service' }, { status: 502 });
+        console.error(error.stack);
+        return NextResponse.json({ error: 'Failed to connect to blockchain service', message: error.message }, { status: 502 });
     }
 });
 

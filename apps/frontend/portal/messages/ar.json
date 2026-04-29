@@ -105,6 +105,8 @@
     "form_expiration_date": "تاريخ انتهاء الصلاحية",
     "form_production_location": "GPS المنشأة / العنوان",
     "form_origin_location": "GPS نقطة المصدر",
+    "form_origin_country": "بلد المنشأ",
+    "form_destination_country": "بلد الوجهة",
     "product_pho_bo": "حساء فيتنامي (Pho Bo)",
     "product_mango_shake": "مخفوق المانجو",
     "product_dried_mango": "مانجو مجفف (عالمي)",

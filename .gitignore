@@ -54,3 +54,5 @@ scratch/
 # Firebase Secrets (CRITICAL)
 *firebase-service-account.json
 *-adminsdk-*.json
+fix-role.js
+*.tmp
