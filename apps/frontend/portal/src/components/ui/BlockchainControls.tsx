@@ -97,7 +97,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
 
             {/* Role-Specific Controls */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {role === 'MANUFACTURER' && (
+                {(role === 'MANUFACTURER' || role === 'ADMIN') && (
                     <ManufacturerActions
                         batchId={batchId}
                         isVerified={status.verified}
@@ -112,7 +112,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                     />
                 )}
 
-                {role === 'LOGISTICS' && status.verified && (
+                {(role === 'LOGISTICS' || role === 'ADMIN') && status.verified && (
                     <LogisticsActions
                         status={status}
                         onAccept={() => ops.acceptTransfer(LOGISTICS_ADDR)}
@@ -123,7 +123,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                     />
                 )}
 
-                {role === 'RETAILER' && status.verified && (
+                {(role === 'RETAILER' || role === 'ADMIN') && status.verified && (
                     <RetailerActions
                         status={status}
                         onAccept={() => ops.acceptTransfer(RETAILER_ADDR)}
@@ -133,7 +133,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 )}
 
                 {/* Default state for unverified non-manufacturers */}
-                {!status.verified && role !== 'MANUFACTURER' && (
+                {!status.verified && role !== 'MANUFACTURER' && role !== 'ADMIN' && (
                     <div className="text-center p-12 bg-muted/20 rounded-[2rem] border-2 border-dashed border-primary/10 flex flex-col items-center justify-center gap-4">
                         <div className="h-16 w-16 rounded-full bg-background flex items-center justify-center shadow-lg border border-primary/5">
                             <Package className="h-8 w-8 text-primary/20" />
