@@ -73,33 +73,20 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
             headers['X-User-Role'] = userRole;
         }
 
-        let requestBody: any = null;
-        
-        if (contentType.includes('multipart/form-data')) {
-            requestBody = await request.formData();
-            // Do NOT set Content-Type header here, fetch will automatically set it 
-            // with the correct boundary when passing a FormData object.
-        } else {
-            if (contentType) {
-                headers['Content-Type'] = contentType;
-            }
-            // For JSON or other requests, just pass as text
-            const textBody = await request.text();
-            if (textBody) {
-                requestBody = textBody;
-            }
+        if (contentType) {
+            headers['Content-Type'] = contentType;
         }
 
-        const fetchOptions: RequestInit = {
+        // Consume the entire request body into memory as an ArrayBuffer.
+        // This avoids Vercel Edge Serverless streaming limitations (duplex: half) 
+        // and FormData parsing issues in node-fetch.
+        const arrayBuffer = await request.arrayBuffer();
+
+        const response = await fetch(finalUrl, {
             method: 'POST',
             headers,
-        };
-        
-        if (requestBody) {
-            fetchOptions.body = requestBody;
-        }
-
-        const response = await fetch(finalUrl, fetchOptions);
+            body: arrayBuffer,
+        });
 
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
