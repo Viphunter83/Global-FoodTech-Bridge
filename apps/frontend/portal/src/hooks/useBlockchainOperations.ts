@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDemoState } from '@/components/providers/DemoStateProvider';
+import { auth } from '@/lib/firebase';
 import { 
     notarizeBatch, 
     initiateHandover, 
@@ -15,10 +16,10 @@ export function useBlockchainOperations(batchId: string) {
     const { updateBatchState } = useDemoState();
 
     const handleAction = async (
-        actionFn: () => Promise<{ status: string; txHash?: string; error?: string }>,
+        actionFn: (token: string) => Promise<{ status: string; txHash?: string; error?: string }>,
         optimisticUpdate?: any,
         successUpdate?: (txHash: string) => any,
-        syncToDb?: (txHash: string) => Promise<any>
+        syncToDb?: (txHash: string, token: string) => Promise<any>
     ) => {
         setLoading(true);
         setError(null);
@@ -28,7 +29,10 @@ export function useBlockchainOperations(batchId: string) {
         }
 
         try {
-            const res = await actionFn();
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('Session expired or not authenticated');
+
+            const res = await actionFn(token);
 
             if (res.error) {
                 setError(res.error);
@@ -43,7 +47,7 @@ export function useBlockchainOperations(batchId: string) {
 
                 if (syncToDb) {
                     try {
-                        await syncToDb(res.txHash);
+                        await syncToDb(res.txHash, token);
                     } catch (e) {
                         console.error('Failed to sync to DB:', e);
                     }
@@ -61,27 +65,27 @@ export function useBlockchainOperations(batchId: string) {
     };
 
     const notarize = () => handleAction(
-        () => notarizeBatch(batchId),
+        (token) => notarizeBatch(batchId, "hash", token),
         { status: 'Notarizing...', verified: false },
         (txHash) => ({ status: 'Notarized', verified: true, txHash, owner: MANUFACTURER_ADDR }),
-        (txHash) => updateBatchBlockchainHash(batchId, txHash)
+        (txHash, token) => updateBatchBlockchainHash(batchId, txHash, token)
     );
 
     const initiateTransfer = (toAddress: string) => handleAction(
-        () => initiateHandover(batchId, toAddress),
+        (token) => initiateHandover(batchId, toAddress, token),
         { pendingOwner: toAddress },
         () => ({ pendingOwner: toAddress })
     );
 
     const acceptTransfer = (newOwner: string) => handleAction(
-        () => acceptHandover(batchId),
+        (token) => acceptHandover(batchId, token),
         { status: 'Accepting...' },
         (txHash) => ({ owner: newOwner, pendingOwner: null, txHash }),
-        (txHash) => updateBatchBlockchainHash(batchId, txHash)
+        (txHash, token) => updateBatchBlockchainHash(batchId, txHash, token)
     );
 
     const report = (details: string) => handleAction(
-        () => reportViolation(batchId, details),
+        (token) => reportViolation(batchId, details, token),
         { status: 'Reporting...' },
         (txHash) => ({ violation: details, txHash })
     );

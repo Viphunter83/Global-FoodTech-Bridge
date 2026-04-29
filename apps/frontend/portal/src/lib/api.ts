@@ -367,11 +367,11 @@ export async function getAlerts(id: string): Promise<Alert[]> {
     }
 }
 
-export async function notarizeBatch(batchId: string, dataHash: string = "hash"): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function notarizeBatch(batchId: string, dataHash: string = "hash", token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/notarize`, {
             method: 'POST',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify({ batchId, dataHash }),
             cache: 'no-store'
         });
@@ -388,10 +388,10 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash"):
     }
 }
 
-export async function updateBatchBlockchainHash(batchId: string, blockchainHash: string) {
+export async function updateBatchBlockchainHash(batchId: string, blockchainHash: string, token?: string) {
     const response = await fetch(`${PASSPORT_URL}/batches/${batchId}/blockchain`, {
         method: 'PATCH',
-        headers: getHeaders(true),
+        headers: getHeaders(true, token),
         body: JSON.stringify({ blockchain_hash: blockchainHash }),
     });
 
@@ -402,11 +402,11 @@ export async function updateBatchBlockchainHash(batchId: string, blockchainHash:
     return response.json();
 }
 
-export async function initiateHandover(batchId: string, toAddress: string): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function initiateHandover(batchId: string, toAddress: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
             method: 'POST',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify({ batchId, toAddress }),
             cache: 'no-store'
         });
@@ -422,11 +422,11 @@ export async function initiateHandover(batchId: string, toAddress: string): Prom
     }
 }
 
-export async function acceptHandover(batchId: string): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function acceptHandover(batchId: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/accept`, {
             method: 'POST',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify({ batchId }),
             cache: 'no-store'
         });
@@ -442,11 +442,11 @@ export async function acceptHandover(batchId: string): Promise<{ status: string;
     }
 }
 
-export async function reportViolation(batchId: string, details: string): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function reportViolation(batchId: string, details: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/violation`, {
             method: 'POST',
-            headers: getHeaders(true),
+            headers: getHeaders(true, token),
             body: JSON.stringify({ batchId, details }),
             cache: 'no-store'
         });
