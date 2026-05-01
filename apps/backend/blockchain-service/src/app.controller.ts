@@ -49,4 +49,9 @@ export class AppController {
     async getAdminStatus() {
         return this.blockchainService.getAdminStatus();
     }
+
+    @Post('demo/advance')
+    async advanceBatch(@Body() body: { batchId: string; targetRole: 'LOGISTICS' | 'RETAILER' }) {
+        return this.blockchainService.advanceBatch(body.batchId, body.targetRole);
+    }
 }

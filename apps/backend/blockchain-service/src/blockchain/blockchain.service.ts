@@ -385,4 +385,36 @@ export class BlockchainService implements OnModuleInit {
             ]
         };
     }
+
+    async advanceBatch(batchId: string, targetRole: 'LOGISTICS' | 'RETAILER'): Promise<{ txHash: string }> {
+        this.logger.log(`Demo: Advancing batch ${batchId} to ${targetRole}`);
+
+        if (this.isMockMode) {
+            const state = this.mockStore.get(batchId);
+            if (state) {
+                state.owner = targetRole === 'LOGISTICS' ? '0xLogisticsAddress' : '0xRetailerAddress';
+                state.pendingOwner = null;
+                this.mockStore.set(batchId, state);
+            }
+            return { txHash: `0xMOCK_ADVANCE_${Date.now()}` };
+        }
+
+        try {
+            // 1. Determine target address
+            const targetAddress = targetRole === 'LOGISTICS' ? this.logisticsWallet.address : this.retailerWallet.address;
+
+            // 2. Initiate
+            const initTx = await this.initiateTransfer(batchId, targetAddress);
+            this.logger.log(`Demo: Init TX: ${initTx}`);
+
+            // 3. Accept (Wait a bit for block confirmation if needed, but initiate already waits)
+            const acceptTx = await this.acceptTransfer(batchId);
+            this.logger.log(`Demo: Accept TX: ${acceptTx}`);
+
+            return { txHash: acceptTx };
+        } catch (error) {
+            this.logger.error('Failed to advance batch in demo mode', error);
+            throw new Error(`Demo advance failed: ${error.message}`);
+        }
+    }
 }
