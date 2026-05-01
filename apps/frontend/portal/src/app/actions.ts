@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 
 export async function refreshAdminData() {
-    revalidatePath('/[locale]/admin/dashboard', 'page');
-    revalidatePath('/[locale]/admin/demo', 'page');
-    revalidatePath('/[locale]/admin/operations', 'page');
+    // Revalidate everything under admin to ensure all components see new data
+    revalidatePath('/[locale]/admin', 'layout');
 }

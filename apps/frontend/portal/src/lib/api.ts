@@ -169,8 +169,9 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         if (!res.ok) return null;
         const data = await res.json();
 
-        // Dynamic History/Timeline Logic
         let history: BatchDetails['history'] = [];
+        const bcStatus = await getBlockchainStatus(data.id);
+
         if (data.template_id) {
             try {
                 const template = await getTemplateDetails(data.template_id);
@@ -179,11 +180,32 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                         const isCompliant = !step.required_cert || 
                                            data.certificates?.some((c: any) => c.type === step.required_cert);
                         
+                        // Dynamic status logic based on blockchain owner
+                        let status: 'completed' | 'current' | 'future' = 'future';
+                        
+                        // Simplified mapping:
+                        // MANUFACTURER -> Step 0 current, others future
+                        // LOGISTICS -> Step 0 completed, Step 1 current, others future
+                        // RETAILER -> Step 0, 1 completed, Step 2 current, others future
+                        const ownerRole = bcStatus.owner === '0xLogisticsAddress' ? 'LOGISTICS' : (bcStatus.owner === '0xRetailerAddress' ? 'RETAILER' : 'MANUFACTURER');
+                        
+                        if (ownerRole === 'MANUFACTURER') {
+                            status = index === 0 ? 'current' : 'future';
+                        } else if (ownerRole === 'LOGISTICS') {
+                            if (index === 0) status = 'completed';
+                            else if (index === 1) status = 'current';
+                            else status = 'future';
+                        } else if (ownerRole === 'RETAILER') {
+                            if (index <= 1) status = 'completed';
+                            else if (index === 2) status = 'current';
+                            else status = 'future';
+                        }
+
                         return {
                             stage: step.name,
                             location: index === 0 ? (data.origin_country || "Tracking.origin") : (index === template.steps!.length - 1 ? (data.destination_country || "Tracking.destination") : "Tracking.in_transit"),
-                            timestamp: index === 0 ? "Tracking.started" : (index < 3 ? "Tracking.completed" : "Tracking.estimated"), 
-                            status: (index < 3 ? "completed" : (index === 3 ? "current" : "future")) as 'completed' | 'current' | 'future',
+                            timestamp: status === 'completed' ? "Tracking.completed" : (status === 'current' ? "Tracking.live" : "Tracking.estimated"), 
+                            status,
                             icon: (step.icon || 'package') as any,
                             is_compliant: isCompliant,
                             required_cert: step.required_cert
@@ -196,11 +218,30 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         }
 
         if (!history || history.length === 0) {
-            // Default generic history if no template is assigned
+            const ownerRole = bcStatus.owner === '0xLogisticsAddress' ? 'LOGISTICS' : (bcStatus.owner === '0xRetailerAddress' ? 'RETAILER' : 'MANUFACTURER');
+
             history = [
-                { stage: "Tracking.stage_produced", location: data.origin_country || "Tracking.origin_facility", timestamp: data.created_at, status: "completed", icon: "package" },
-                { stage: "Tracking.stage_quality", location: "Tracking.verified", timestamp: "Tracking.success", status: "completed", icon: "check" },
-                { stage: "Tracking.in_transit", location: "Tracking.global_network", timestamp: "Tracking.current", status: "current", icon: "truck" }
+                { 
+                    stage: "Tracking.stage_produced", 
+                    location: data.origin_country || "Tracking.origin_facility", 
+                    timestamp: data.created_at, 
+                    status: ownerRole === 'MANUFACTURER' ? "current" : "completed", 
+                    icon: "package" 
+                },
+                { 
+                    stage: "Tracking.in_transit", 
+                    location: "Tracking.global_network", 
+                    timestamp: "Tracking.current", 
+                    status: ownerRole === 'LOGISTICS' ? "current" : (ownerRole === 'RETAILER' ? "completed" : "future"), 
+                    icon: "truck" 
+                },
+                { 
+                    stage: "Tracking.stage_quality", 
+                    location: "Tracking.verified", 
+                    timestamp: "Tracking.success", 
+                    status: ownerRole === 'RETAILER' ? "current" : "future", 
+                    icon: "check" 
+                }
             ];
         }
 

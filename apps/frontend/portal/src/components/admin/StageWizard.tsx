@@ -20,12 +20,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
 import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface StageWizardProps {
     batches: BatchDetails[];
 }
 
 export function StageWizard({ batches }: StageWizardProps) {
+    const router = useRouter();
     const [selectedBatchId, setSelectedBatchId] = useState<string>(batches[0]?.id || '');
     const [loading, setLoading] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                 loading: `Advancing to ${targetRole}...`,
                 success: (data) => {
                     refreshAdminData();
+                    router.refresh();
                     return `Successfully moved to ${targetRole}. TX: ${data.txHash?.slice(0, 10) || 'Verified'}...`;
                 },
                 error: (err) => `Demo Advance Failed: ${err.message}`
@@ -68,6 +71,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                 loading: 'Notarizing violation on blockchain...',
                 success: (data) => {
                     refreshAdminData();
+                    router.refresh();
                     return `Violation Recorded. TX: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
                 },
                 error: (err) => `Failed to report: ${err.message}`
@@ -82,10 +86,10 @@ export function StageWizard({ batches }: StageWizardProps) {
     };
 
     const stages = [
-        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: 'completed' },
-        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: selectedBatch?.history?.some(h => h.stage === 'Логистика') ? 'completed' : 'pending' },
-        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: selectedBatch?.history?.some(h => h.stage === 'Дистрибуция') ? 'completed' : 'pending' },
-        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: 'pending' },
+        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: selectedBatch?.history?.[0]?.status || 'pending' },
+        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: selectedBatch?.history?.[1]?.status || 'pending' },
+        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: selectedBatch?.history?.[2]?.status || 'pending' },
+        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: selectedBatch?.history?.[3]?.status || 'pending' },
     ];
 
     return (
@@ -169,12 +173,18 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         <div className={`h-16 w-16 rounded-2xl flex items-center justify-center border-4 transition-all duration-500 ${
                                             stage.status === 'completed' 
                                                 ? 'bg-emerald-500 border-emerald-100 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]' 
+                                                : stage.status === 'current'
+                                                ? 'bg-blue-600 border-blue-100 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] animate-pulse'
                                                 : 'bg-white border-slate-100 text-slate-300'
                                         }`}>
                                             <stage.icon size={24} />
                                         </div>
                                         <div className="text-center">
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${stage.status === 'completed' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${
+                                                stage.status === 'completed' ? 'text-emerald-500' : 
+                                                stage.status === 'current' ? 'text-blue-600' : 
+                                                'text-slate-400'
+                                            }`}>
                                                 {stage.name}
                                             </p>
                                         </div>
