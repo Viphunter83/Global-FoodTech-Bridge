@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ethers, JsonRpcProvider, Wallet, Contract } from 'ethers';
+import Redis from 'ioredis';
 
 const REGISTRY_ABI = [
     "function createBatch(string memory batchUUID, string memory tokenURI) public",
@@ -24,6 +25,7 @@ export class BlockchainService implements OnModuleInit {
     private manufacturerWallet: Wallet; // Default Admin
     private logisticsWallet: Wallet;
     private retailerWallet: Wallet;
+    private redis: Redis;
 
     private contract: Contract;
     private isMockMode: boolean = false;
@@ -39,6 +41,9 @@ export class BlockchainService implements OnModuleInit {
         const logisticsKey = this.configService.get<string>('LOGISTICS_KEY');
         const retailerKey = this.configService.get<string>('RETAILER_KEY');
         const contractAddress = this.configService.get<string>('CONTRACT_ADDRESS');
+        const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
+
+        this.redis = new Redis(redisUrl);
 
         if (!rpcUrl || !privateKey || !contractAddress) {
             this.logger.warn('Blockchain config missing. Starting in MOCK mode.');
@@ -87,6 +92,8 @@ export class BlockchainService implements OnModuleInit {
             const tx = await (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri);
             this.logger.log(`Mint Transaction sent: ${tx.hash}`);
             await tx.wait();
+            // Set initial logical role for single-wallet notary model
+            await this.redis.set(`batch_role:${batchId}`, 'MANUFACTURER');
             return tx.hash;
         } catch (error) {
             this.logger.error('Blockchain minting failed', error);
@@ -147,6 +154,15 @@ export class BlockchainService implements OnModuleInit {
             const tx = await (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress);
             this.logger.log(`Initiate Transaction sent: ${tx.hash}`);
             await tx.wait();
+
+            // Single-wallet logic: advance logical role to pending
+            const currentRole = await this.redis.get(`batch_role:${batchId}`);
+            if (currentRole === 'MANUFACTURER') {
+                await this.redis.set(`pending_batch_role:${batchId}`, 'LOGISTICS');
+            } else if (currentRole === 'LOGISTICS') {
+                await this.redis.set(`pending_batch_role:${batchId}`, 'RETAILER');
+            }
+
             return tx.hash;
         } catch (error) {
             this.logger.error(`Failed to initiate transfer for ${batchId}: ${error.message}`, error.stack);
@@ -197,6 +213,14 @@ export class BlockchainService implements OnModuleInit {
             const tx = await (this.contract.connect(signer as any) as any).acceptTransfer(tokenId);
             this.logger.log(`Transfer accepted: ${tx.hash}`);
             await tx.wait();
+
+            // Single-wallet logic: finalize logical role
+            const pendingRole = await this.redis.get(`pending_batch_role:${batchId}`);
+            if (pendingRole) {
+                await this.redis.set(`batch_role:${batchId}`, pendingRole);
+                await this.redis.del(`pending_batch_role:${batchId}`);
+            }
+
             return tx.hash;
         } catch (error) {
             this.logger.error(`Failed to accept transfer for ${batchId}: ${error.message}`, error.stack);
@@ -232,8 +256,14 @@ export class BlockchainService implements OnModuleInit {
             const owner = result[0];
             const pendingOwner = result[5] === '0x0000000000000000000000000000000000000000' ? null : result[5];
 
-            const resolveRole = (addr: string) => {
+            const resolveRole = async (addr: string, isPending: boolean = false) => {
                 if (!addr) return 'UNKNOWN';
+                
+                // Single Wallet Logic: Check Redis first
+                const redisKey = isPending ? `pending_batch_role:${batchId}` : `batch_role:${batchId}`;
+                const logicalRole = await this.redis.get(redisKey);
+                if (logicalRole) return logicalRole;
+
                 const lower = addr.toLowerCase();
                 if (lower === this.manufacturerWallet.address.toLowerCase()) return 'MANUFACTURER';
                 if (lower === this.logisticsWallet.address.toLowerCase()) return 'LOGISTICS';
@@ -241,13 +271,18 @@ export class BlockchainService implements OnModuleInit {
                 return 'PARTNER';
             };
 
+            const ownerRole = await resolveRole(owner, false);
+            const pendingOwnerRole = pendingOwner ? await resolveRole(pendingOwner, true) : null;
+
             return {
                 exists: true,
                 owner: owner,
-                ownerRole: resolveRole(owner),
+                ownerRole: ownerRole,
                 violation: result[3] ? result[2] : null,
                 timestamp: Number(result[4]) * 1000,
                 pendingOwner: pendingOwner,
+                pendingOwnerRole: pendingOwnerRole
+            };
                 pendingOwnerRole: pendingOwner ? resolveRole(pendingOwner) : null
             };
         } catch (error) {
