@@ -85,10 +85,12 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                 </div>
                 
                 <div className="flex items-center gap-4">
-                    <Button className="h-14 px-8 bg-slate-900 text-white hover:bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95">
-                        <Plus className="w-4 h-4 mr-3" />
-                        Create Global Batch
-                    </Button>
+                    <Link href="/batches/new">
+                        <Button className="h-14 px-8 bg-slate-900 text-white hover:bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95">
+                            <Plus className="w-4 h-4 mr-3" />
+                            Create Global Batch
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
