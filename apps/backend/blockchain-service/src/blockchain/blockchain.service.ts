@@ -421,6 +421,13 @@ export class BlockchainService implements OnModuleInit {
         }
 
         try {
+            // 0. Check if batch exists on chain
+            const bcData = await this.getBatchPublicData(batchId);
+            if (!bcData.exists) {
+                this.logger.log(`Demo: Batch ${batchId} not on chain. Notarizing first...`);
+                await this.createBatch(batchId, `ipfs://demo-metadata-${batchId}`);
+            }
+
             // 1. Determine target address
             const targetAddress = targetRole === 'LOGISTICS' ? this.logisticsWallet.address : this.retailerWallet.address;
 
@@ -428,7 +435,7 @@ export class BlockchainService implements OnModuleInit {
             const initTx = await this.initiateTransfer(batchId, targetAddress);
             this.logger.log(`Demo: Init TX: ${initTx}`);
 
-            // 3. Accept (Wait a bit for block confirmation if needed, but initiate already waits)
+            // 3. Accept
             const acceptTx = await this.acceptTransfer(batchId);
             this.logger.log(`Demo: Accept TX: ${acceptTx}`);
 
