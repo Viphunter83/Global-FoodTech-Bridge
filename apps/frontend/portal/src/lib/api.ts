@@ -607,8 +607,11 @@ export async function getDevices(token?: string): Promise<Device[]> {
 
 export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
     try {
+        const headers = getHeaders(false, token);
+        headers['X-User-Role'] = 'ADMIN';
+
         const res = await fetch(`${PASSPORT_URL}/admin/batches`, {
-            headers: getHeaders(false, token),
+            headers,
             cache: 'no-store'
         });
         if (!res.ok) return [];
@@ -621,8 +624,11 @@ export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
 
 export async function getBlockchainAdminStatus(token?: string): Promise<any> {
     try {
+        const headers = getHeaders(false, token);
+        headers['X-User-Role'] = 'ADMIN';
+
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/admin/status`, {
-            headers: getHeaders(false, token),
+            headers,
             cache: 'no-store'
         });
         if (!res.ok) return null;
@@ -635,9 +641,12 @@ export async function getBlockchainAdminStatus(token?: string): Promise<any> {
 
 export async function advanceBatchDemo(batchId: string, targetRole: 'LOGISTICS' | 'RETAILER', token?: string): Promise<any> {
     try {
+        const headers = getHeaders(true, token);
+        headers['X-User-Role'] = 'ADMIN';
+
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/demo/advance`, {
             method: 'POST',
-            headers: getHeaders(true, token),
+            headers,
             body: JSON.stringify({ batchId, targetRole }),
             cache: 'no-store'
         });

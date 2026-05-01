@@ -17,6 +17,8 @@ import {
 import { useState } from 'react';
 import { BatchDetails, advanceBatchDemo, reportViolation } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { refreshAdminData } from '@/app/actions';
 
 interface StageWizardProps {
     batches: BatchDetails[];
@@ -31,12 +33,20 @@ export function StageWizard({ batches }: StageWizardProps) {
     const handleAdvance = async (targetRole: 'LOGISTICS' | 'RETAILER') => {
         if (!selectedBatchId) return;
         setLoading(targetRole);
+        
+        const promise = advanceBatchDemo(selectedBatchId, targetRole);
+
+        toast.promise(promise, {
+            loading: `Advancing to ${targetRole}...`,
+            success: (data) => {
+                refreshAdminData();
+                return `Successfully moved to ${targetRole}. TX: ${data.txHash?.slice(0, 10) || 'Verified'}...`;
+            },
+            error: (err) => `Demo Advance Failed: ${err.message}`
+        });
+
         try {
-            const res = await advanceBatchDemo(selectedBatchId, targetRole);
-            alert(`Succesfully advanced to ${targetRole}. TX: ${res.txHash}`);
-            window.location.reload(); // Refresh to show new state
-        } catch (err: any) {
-            alert(`Error: ${err.message}`);
+            await promise;
         } finally {
             setLoading(null);
         }
@@ -45,12 +55,20 @@ export function StageWizard({ batches }: StageWizardProps) {
     const handleTriggerViolation = async () => {
         if (!selectedBatchId) return;
         setLoading('violation');
+        
+        const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)");
+
+        toast.promise(promise, {
+            loading: 'Notarizing violation on blockchain...',
+            success: (data) => {
+                refreshAdminData();
+                return `Violation Recorded. TX: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+            },
+            error: (err) => `Failed to report: ${err.message}`
+        });
+
         try {
-            const res = await reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)");
-            alert(`Violation Reported: ${res.txHash}`);
-            window.location.reload();
-        } catch (err: any) {
-            alert(`Error: ${err.message}`);
+            await promise;
         } finally {
             setLoading(null);
         }

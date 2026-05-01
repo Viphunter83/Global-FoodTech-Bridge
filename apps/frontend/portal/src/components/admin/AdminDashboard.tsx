@@ -22,6 +22,8 @@ import { useTranslations } from 'next-intl';
 import { BatchDetails, reportViolation, advanceBatchDemo } from '@/lib/api';
 import { Link } from '@/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { refreshAdminData } from '@/app/actions';
 
 interface AdminDashboardProps {
     batches: BatchDetails[];
@@ -74,15 +76,19 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
         if (!latestBatch) return;
 
         setIsDemoLoading('violation');
+        const promise = reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)");
+        
+        toast.promise(promise, {
+            loading: 'Reporting violation...',
+            success: (data) => {
+                refreshAdminData();
+                return `Violation Notarized: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+            },
+            error: (err) => `Error: ${err.message}`
+        });
+
         try {
-            const res = await reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)");
-            if (res.status === 'success') {
-                alert(`Violation notarized: ${res.txHash}`);
-            } else {
-                throw new Error(res.error);
-            }
-        } catch (err: any) {
-            alert(`Demo Error: ${err.message}`);
+            await promise;
         } finally {
             setIsDemoLoading(null);
         }
@@ -93,14 +99,19 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
         if (!latestBatch) return;
 
         setIsDemoLoading('handover');
+        const promise = advanceBatchDemo(latestBatch.id, 'LOGISTICS');
+
+        toast.promise(promise, {
+            loading: 'Processing handover...',
+            success: (data) => {
+                refreshAdminData();
+                return `Handover complete: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+            },
+            error: (err) => `Error: ${err.message}`
+        });
+
         try {
-            // Check current owner to decide target
-            // Simplified for demo: if it's the first handover, go to LOGISTICS.
-            // In a real demo, we'd check the current owner.
-            const res = await advanceBatchDemo(latestBatch.id, 'LOGISTICS');
-            alert(`Handover complete: ${res.txHash}`);
-        } catch (err: any) {
-            alert(`Demo Error: ${err.message}`);
+            await promise;
         } finally {
             setIsDemoLoading(null);
         }
