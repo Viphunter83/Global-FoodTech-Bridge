@@ -47,8 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(firebaseUser);
             
             if (firebaseUser) {
-                // Set session cookie for Middleware
-                setSessionCookie(firebaseUser.uid);
+                // Set session token for Middleware & Proxy resilience
+                const token = await firebaseUser.getIdToken();
+                setSessionCookie(token);
 
                 try {
                     // 1. Try to fetch role from Firestore profiles

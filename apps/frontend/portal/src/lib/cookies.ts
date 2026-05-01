@@ -2,8 +2,8 @@
 /**
  * Utility to manage session cookies for GFTB Bridge.
  */
-export const setSessionCookie = (uid: string) => {
-    document.cookie = `gftb-session=${uid}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+export const setSessionCookie = (token: string) => {
+    document.cookie = `gftb-session=${token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
 };
 
 export const removeSessionCookie = () => {

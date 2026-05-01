@@ -49,7 +49,8 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            setSessionCookie(userCredential.user.uid);
+            const token = await userCredential.user.getIdToken();
+            setSessionCookie(token);
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Login Error:", err.code);
@@ -64,7 +65,8 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await signInWithPopup(auth, provider);
-            setSessionCookie(userCredential.user.uid);
+            const token = await userCredential.user.getIdToken();
+            setSessionCookie(token);
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Google Login Error:", err.code);
