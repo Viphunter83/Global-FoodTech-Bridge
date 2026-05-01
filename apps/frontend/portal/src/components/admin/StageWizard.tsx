@@ -40,6 +40,7 @@ export function StageWizard({ batches }: StageWizardProps) {
     const [loading, setLoading] = useState<string | null>(null);
     const [adminStatus, setAdminStatus] = useState<any>(null);
     const [bcStatus, setBcStatus] = useState<any>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const selectedBatch = batches.find(b => b.id === selectedBatchId);
 
@@ -54,7 +55,7 @@ export function StageWizard({ batches }: StageWizardProps) {
             setBcStatus(status);
         };
         fetchMeta();
-    }, [selectedBatchId]);
+    }, [selectedBatchId, refreshKey]);
 
     const handleNotarize = async () => {
         if (!selectedBatchId) return;
@@ -64,6 +65,7 @@ export function StageWizard({ batches }: StageWizardProps) {
             const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`, token);
             if (res.txHash) {
                 toast.success('Product Notarized on Blockchain');
+                setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
@@ -86,6 +88,7 @@ export function StageWizard({ batches }: StageWizardProps) {
             const res = await initiateHandover(selectedBatchId, targetAddress, token);
             if (res.txHash) {
                 toast.success(`Handover initiated to ${targetRole}`);
+                setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
@@ -104,6 +107,7 @@ export function StageWizard({ batches }: StageWizardProps) {
             const res = await acceptHandover(selectedBatchId, token);
             if (res.txHash) {
                 toast.success('Ownership Transferred Successfully');
+                setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
@@ -213,12 +217,28 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         Blockchain Notarized Progress
                                     </CardDescription>
                                 </div>
-                                <Badge className="bg-emerald-500 text-white border-0 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                    LIVE SYNC
-                                </Badge>
+                                <div className="flex gap-2">
+                                    {bcStatus?.violation && (
+                                        <Badge className="bg-rose-500 text-white border-0 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-bounce">
+                                            VIOLATION DETECTED
+                                        </Badge>
+                                    )}
+                                    <Badge className="bg-emerald-500 text-white border-0 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        LIVE SYNC
+                                    </Badge>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-10">
+                            {bcStatus?.violation && (
+                                <div className="mb-8 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-start gap-3">
+                                    <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-1">Blockchain Alert</p>
+                                        <p className="text-xs text-rose-600/80 font-medium">{bcStatus.violation}</p>
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center relative mb-20">
                                 {/* Connector Line */}
                                 <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0" />
