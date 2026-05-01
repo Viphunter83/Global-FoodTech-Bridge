@@ -16,9 +16,13 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
     const authHeader = request.headers.get('authorization');
     if (authHeader?.startsWith('Bearer ')) {
         token = authHeader.split('Bearer ')[1];
+        console.log(`[AUTH-SERVER] Verifying token from Authorization Header (length: ${token.length})`);
     } else {
         // Fallback to cookie for resilience against client-side Firebase blocks
         token = request.cookies.get('gftb-session')?.value;
+        if (token) {
+            console.log(`[AUTH-SERVER] Verifying token from Cookie (length: ${token.length})`);
+        }
     }
 
     if (!token) {
@@ -27,6 +31,7 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
 
     try {
         const decodedToken = await adminAuth.verifyIdToken(token);
+        console.log(`[AUTH-SERVER] Token verified for UID: ${decodedToken.uid}`);
         
         // Custom roles: check 'role' claim or 'admin' flag
         let role: AuthenticatedUser['role'] = 'manufacturer';

@@ -6,13 +6,18 @@ export async function POST(request: NextRequest) {
         const { idToken } = await request.json();
 
         if (!idToken) {
+            console.error('[AUTH_SESSION_API] Missing idToken in request body');
             return NextResponse.json({ error: 'ID Token is required' }, { status: 400 });
         }
+
+        console.log(`[AUTH_SESSION_API] Verifying token (length: ${idToken.length})...`);
 
         // 1. Verify the token on the server
         const decodedToken = await adminAuth.verifyIdToken(idToken);
         const uid = decodedToken.uid;
         let role = decodedToken.role || 'PENDING';
+
+        console.log(`[AUTH_SESSION_API] Token verified for UID: ${uid}, currentRole: ${role}`);
 
         // 2. Self-healing: If role is missing in token, try to fetch from Firestore and sync
         if (!decodedToken.role) {
@@ -45,8 +50,18 @@ export async function POST(request: NextRequest) {
 
         return response;
     } catch (error: any) {
-        console.error('[AUTH_SESSION_API] Error:', error);
-        return NextResponse.json({ error: 'Failed to establish session', message: error.message }, { status: 401 });
+        console.error('[AUTH_SESSION_API] Authentication Error:', error.code, error.message);
+        
+        // Handle specific Firebase Admin errors
+        if (error.code === 'auth/id-token-expired') {
+            return NextResponse.json({ error: 'Token expired', code: 'EXPIRED' }, { status: 401 });
+        }
+        
+        return NextResponse.json({ 
+            error: 'Failed to establish session', 
+            message: error.message,
+            code: error.code 
+        }, { status: 401 });
     }
 }
 
