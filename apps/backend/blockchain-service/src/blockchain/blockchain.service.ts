@@ -200,15 +200,23 @@ export class BlockchainService implements OnModuleInit {
         }
     }
 
-    async getBatchPublicData(batchId: string): Promise<{ exists: boolean; owner?: string; pendingOwner?: string | null; violation?: string | null; timestamp?: number }> {
+    async getBatchPublicData(batchId: string): Promise<{ exists: boolean; owner?: string; ownerRole?: string; pendingOwner?: string | null; pendingOwnerRole?: string | null; violation?: string | null; timestamp?: number }> {
         if (this.isMockMode) {
             const state = this.mockStore.get(batchId);
             if (!state) return { exists: false };
 
+            const resolveMockRole = (addr: string) => {
+                if (addr === '0xLogisticsAddress') return 'LOGISTICS';
+                if (addr === '0xRetailerAddress') return 'RETAILER';
+                return 'MANUFACTURER';
+            };
+
             return {
                 exists: true,
                 owner: state.owner,
+                ownerRole: resolveMockRole(state.owner),
                 pendingOwner: state.pendingOwner,
+                pendingOwnerRole: state.pendingOwner ? resolveMockRole(state.pendingOwner) : null,
                 violation: state.violation,
                 timestamp: state.timestamp
             };
@@ -217,13 +225,26 @@ export class BlockchainService implements OnModuleInit {
         try {
             // returns (owner, uri, violation, isViolated, timestamp, pendingOwner)
             const result = await this.contract.getBatchData(batchId);
+            const owner = result[0];
+            const pendingOwner = result[5] === '0x0000000000000000000000000000000000000000' ? null : result[5];
+
+            const resolveRole = (addr: string) => {
+                if (!addr) return 'UNKNOWN';
+                const lower = addr.toLowerCase();
+                if (lower === this.manufacturerWallet.address.toLowerCase()) return 'MANUFACTURER';
+                if (lower === this.logisticsWallet.address.toLowerCase()) return 'LOGISTICS';
+                if (lower === this.retailerWallet.address.toLowerCase()) return 'RETAILER';
+                return 'PARTNER';
+            };
 
             return {
                 exists: true,
-                owner: result[0],
+                owner: owner,
+                ownerRole: resolveRole(owner),
                 violation: result[3] ? result[2] : null,
                 timestamp: Number(result[4]) * 1000,
-                pendingOwner: result[5] === '0x0000000000000000000000000000000000000000' ? null : result[5]
+                pendingOwner: pendingOwner,
+                pendingOwnerRole: pendingOwner ? resolveRole(pendingOwner) : null
             };
         } catch (error) {
             this.logger.error(`Failed to get batch data for ${batchId}`, error);

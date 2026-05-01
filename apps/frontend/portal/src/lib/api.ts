@@ -64,6 +64,8 @@ export interface BlockchainStatus {
     violation?: string | null;
     pendingOwner?: string | null;
     owner?: string;
+    ownerRole?: string;
+    pendingOwnerRole?: string | null;
     sensorPaired?: boolean;
     sensor_id?: string;
     shippingStatus?: string;
@@ -180,14 +182,10 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
                         const isCompliant = !step.required_cert || 
                                            data.certificates?.some((c: any) => c.type === step.required_cert);
                         
-                        // Dynamic status logic based on blockchain owner
+                        // Dynamic status logic based on blockchain ownerRole
                         let status: 'completed' | 'current' | 'future' = 'future';
                         
-                        // Simplified mapping:
-                        // MANUFACTURER -> Step 0 current, others future
-                        // LOGISTICS -> Step 0 completed, Step 1 current, others future
-                        // RETAILER -> Step 0, 1 completed, Step 2 current, others future
-                        const ownerRole = bcStatus.owner === '0xLogisticsAddress' ? 'LOGISTICS' : (bcStatus.owner === '0xRetailerAddress' ? 'RETAILER' : 'MANUFACTURER');
+                        const ownerRole = bcStatus.ownerRole || 'MANUFACTURER';
                         
                         if (ownerRole === 'MANUFACTURER') {
                             status = index === 0 ? 'current' : 'future';
@@ -218,7 +216,7 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
         }
 
         if (!history || history.length === 0) {
-            const ownerRole = bcStatus.owner === '0xLogisticsAddress' ? 'LOGISTICS' : (bcStatus.owner === '0xRetailerAddress' ? 'RETAILER' : 'MANUFACTURER');
+            const ownerRole = bcStatus.ownerRole || 'MANUFACTURER';
 
             history = [
                 { 
@@ -352,7 +350,9 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
             handover: data.handover,
             violation: data.violation,
             pendingOwner: data.pendingOwner,
-            owner: data.owner
+            pendingOwnerRole: data.pendingOwnerRole,
+            owner: data.owner,
+            ownerRole: data.ownerRole
         };
     } catch (e) {
         console.error('Failed to fetch blockchain status:', e);
