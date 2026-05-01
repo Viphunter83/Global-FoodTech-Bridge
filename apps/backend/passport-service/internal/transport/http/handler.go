@@ -71,6 +71,9 @@ func (h *Handler) InitRoutes() *chi.Mux {
 				r.Get("/admin/companies", h.listCompanies)
 				r.Patch("/admin/companies/{id}/approve", h.approveCompany)
 				
+				// Admin Batches
+				r.Get("/admin/batches", h.listBatches)
+				
 				// Admin Templates
 				r.Post("/admin/templates", h.createTemplate)
 				r.Put("/admin/templates/{id}", h.updateTemplate)
@@ -345,4 +348,14 @@ func (h *Handler) deleteTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) listBatches(w http.ResponseWriter, r *http.Request) {
+	batches, err := h.service.ListAllBatches(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(batches)
 }

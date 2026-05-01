@@ -109,3 +109,54 @@ func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID
 	_, err := r.db.Exec(ctx, query, hash, id)
 	return err
 }
+
+func (r *BatchRepository) ListAll(ctx context.Context) ([]domain.Batch, error) {
+	query := `
+		SELECT 
+			id, manufacturer_id, product_type, batch_size, unit_of_measure,
+			origin_country, destination_country, usf_status, blockchain_hash, 
+			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+			marketing_story, partner_redirect_url, ingredients, nutrition
+		FROM product_batches
+		ORDER BY created_at DESC
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list batches: %w", err)
+	}
+	defer rows.Close()
+
+	var batches []domain.Batch
+	for rows.Next() {
+		var batch domain.Batch
+		err := rows.Scan(
+			&batch.ID,
+			&batch.ManufacturerID,
+			&batch.ProductType,
+			&batch.BatchSize,
+			&batch.UnitOfMeasure,
+			&batch.OriginCountry,
+			&batch.DestinationCountry,
+			&batch.USFStatus,
+			&batch.BlockchainHash,
+			&batch.CreatedAt,
+			&batch.MinTemp,
+			&batch.MaxTemp,
+			&batch.TokenURI,
+			&batch.Certificates,
+			&batch.TemplateID,
+			&batch.PartnerID,
+			&batch.MarketingStory,
+			&batch.PartnerRedirectURL,
+			&batch.Ingredients,
+			&batch.Nutrition,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan batch: %w", err)
+		}
+		batches = append(batches, batch)
+	}
+
+	return batches, nil
+}

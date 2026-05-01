@@ -60,3 +60,20 @@ If you see `401 Unauthorized` between services:
 `mcp_railway_check-railway-status` && `mcp_firebase-mcp-server_firebase_get_project`
 
 
+## 🌐 Frontend Architecture (Refactored May 2026)
+
+The frontend has been migrated to a **Domain-Driven SSR** architecture to ensure production-grade performance and premium aesthetics.
+
+### Key Directories
+- `src/components/blockchain`: Governance and transaction UI.
+- `src/components/passport`: Consumer-facing digital twin components.
+- `src/components/maps`: Multi-layer interactive maps.
+- `src/components/ui`: Generic shadcn primitives (DO NOT place business logic here).
+
+### Rendering Strategy
+- **SSR-First**: Pages like `/verify/[id]`, `/scan/[id]`, and `/dashboard` are Server Components. 
+- **Hybrid Interactivity**: Server-side data fetching + Client-side polling for live IoT/Blockchain status.
+
+### Deployment
+- **Main URL**: [https://global-food-tech-bridge.vercel.app/en](https://global-food-tech-bridge.vercel.app/en)
+- **Automatic Deploys**: Push to `main` branch triggers auto-deploy to Vercel and Railway.

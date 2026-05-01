@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { useNotifications } from '@/components/providers/NotificationProvider';
 import { toast } from 'sonner';
 import { getAlerts, getBatchDetails } from '@/lib/api';
-import { fetchInfrastructureStatus } from '@/lib/railway';
 import { useTranslations } from 'next-intl';
 
 export function useAlertSentinel() {
@@ -53,36 +52,39 @@ export function useAlertSentinel() {
                 }
             }
 
-            // 2. Check Infrastructure (Railway)
+            // 2. Check Infrastructure (Railway Proxy)
             try {
-                const infra = await fetchInfrastructureStatus();
-                infra.forEach(project => {
-                    project.services.forEach(service => {
-                        const prevStatus = checkedServiceStatuses.current[service.id];
-                        const currentStatus = service.status.toUpperCase();
+                const res = await fetch('/api/admin/infra');
+                if (res.ok) {
+                    const infra = await res.json();
+                    infra.forEach((project: any) => {
+                        project.services.forEach((service: any) => {
+                            const prevStatus = checkedServiceStatuses.current[service.id];
+                            const currentStatus = service.status.toUpperCase();
 
-                        if (prevStatus && prevStatus !== currentStatus) {
-                            if (currentStatus === 'CRASHED' || currentStatus === 'FAILED') {
-                                const infraAlertTitle = t('Notifications.infra_alert');
-                                const infraAlertDesc = t('Notifications.infra_service_changed', { name: service.name, status: currentStatus });
+                            if (prevStatus && prevStatus !== currentStatus) {
+                                if (currentStatus === 'CRASHED' || currentStatus === 'FAILED') {
+                                    const infraAlertTitle = t('Notifications.infra_alert');
+                                    const infraAlertDesc = t('Notifications.infra_service_changed', { name: service.name, status: currentStatus });
 
-                                toast.warning(infraAlertTitle, {
-                                    description: infraAlertDesc,
-                                });
+                                    toast.warning(infraAlertTitle, {
+                                        description: infraAlertDesc,
+                                    });
 
-                                addNotification({
-                                    title: infraAlertTitle,
-                                    message: infraAlertDesc,
-                                    type: 'warning',
-                                    link: '/admin/monitoring'
-                                });
+                                    addNotification({
+                                        title: infraAlertTitle,
+                                        message: infraAlertDesc,
+                                        type: 'warning',
+                                        link: '/admin/monitoring'
+                                    });
+                                }
                             }
-                        }
-                        checkedServiceStatuses.current[service.id] = currentStatus;
+                            checkedServiceStatuses.current[service.id] = currentStatus;
+                        });
                     });
-                });
+                }
             } catch (e) {
-                console.error('Sentinel failed to check infra status', e);
+                console.error('Sentinel failed to check infra status via proxy', e);
             }
         };
 

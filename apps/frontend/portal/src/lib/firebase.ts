@@ -15,32 +15,26 @@ const firebaseConfig = {
 // Check if critical config is present to prevent SSR crashes
 const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
 
-// Production Diagnostics (Client-side)
-if (typeof window !== 'undefined') {
+// Production Diagnostics (Only in development or if DEBUG=true)
+const isDebug = typeof window !== 'undefined' && (window.location.search.includes('debug=true') || process.env.NODE_ENV === 'development');
+
+if (isDebug && typeof window !== 'undefined') {
     console.log("%c [GFTB-DIAGNOSTIC] Checking Environment Variables...", "color: #16a34a; font-weight: bold;");
     
     const configCheck = {
-        NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
         NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
         NEXT_PUBLIC_PASSPORT_SERVICE_URL: process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL
     };
 
     Object.entries(configCheck).forEach(([key, val]) => {
         if (!val) {
-            console.warn(`%c [GFTB-DIAGNOSTIC] ${key} is MISSING! Please add it in Vercel Project Settings -> Environment Variables.`, "color: #dc2626; font-weight: bold;");
-        } else {
-            console.log(`[GFTB-DIAGNOSTIC] ${key} is present.`);
+            console.warn(`%c [GFTB-DIAGNOSTIC] ${key} is MISSING!`, "color: #dc2626; font-weight: bold;");
         }
     });
 }
 
 if (!isConfigValid && typeof window !== 'undefined') {
-    console.warn('⚠️ Firebase configuration is missing! Check NEXT_PUBLIC_FIREBASE_ env variables on Vercel.');
-}
-
-if (!process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL && typeof window !== 'undefined') {
-    console.warn('⚠️ NEXT_PUBLIC_PASSPORT_SERVICE_URL is missing! Backend integration may fail.');
+    console.error('❌ Critical: Firebase configuration is missing! Check NEXT_PUBLIC_FIREBASE_ env variables.');
 }
 
 const app = isConfigValid 

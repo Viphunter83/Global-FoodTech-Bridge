@@ -1,32 +1,44 @@
-# 🚀 Идеальный Промпт для Инициализации Сессии
+# Global FoodTech Bridge - Next Session Context
 
-*Скопируйте текст ниже и вставьте его в начало нового чата с ИИ-ассистентом.*
+## 🚀 Current Project State (End of Session 5)
+The project has undergone a massive architecture and UI/UX refactoring to bring it to production-grade standards.
 
----
+### 🏗 Architecture Overhaul
+- **Domain-Driven Components**: Components moved from `src/components/ui` to specialized folders:
+  - `blockchain/`: Blockchain controls, proofs, and transaction states.
+  - `passport/`: Digital twin elements (sustainability, journey, certificates).
+  - `maps/`: Interactive Route and Dashboard maps.
+  - `shared/`: Generic premium elements (tooltips, empty states).
+  - `layout/`: Language/Role switchers.
+- **SSR/SEO Optimization**: Critical pages converted to Server Components:
+  - `/dashboard`: Hybrid SSR for layout, Client for live telemetry.
+  - `/verify/[id]`: Fully SEO-optimized with dynamic OpenGraph metadata.
+  - `/scan/[id]`: Operational portal for logistics with SSR verification check.
+  - `/admin/sensors`: Server-side initial data fetch for faster load.
 
-**PROMPT START:**
+### 💎 UI/UX Standards
+- **Design System**: Consistent use of Serif fonts (for titles), `rounded-[3rem]`, and Glassmorphism.
+- **Loading UX**: Skeleton states (`loading.tsx`) implemented for all primary routes.
+- **Feedback**: `sonner` toasts integrated for all blockchain and API operations.
 
-«Действуй как Senior Fullstack Engineer и Архитектор системы Global FoodTech Bridge. Твоя задача — продолжить развитие платформы. **ВАЖНО: Давай ответы только на русском языке.**
+### 🛠 Infrastructure
+- **Unified Deployment**: Removed redundant Vercel projects. Active URL: `https://global-food-tech-bridge.vercel.app/en`.
+- **API Strategy**: Using `INTERNAL_API_KEY` for server-side fetches and Firebase Auth for client-side operations.
 
-**1. Контекст и Инфраструктура:**
-- Изучи `README.md` и `docs/MCP_INFRASTRUCTURE.md`. 
-- **Стек**: Next.js 14 (App Router), Go (Passport/IoT Services), NestJS (Blockchain Service), Firebase (Auth/Firestore), Polygon (Blockchain).
-- **Секреты**: Для Firebase Admin используй JSON по адресу: `/Users/apple/Documents/global-foodtech-bridge-prod-firebase-adminsdk-fbsvc-70d33782fb.json`.
-- **Межсервисная связь**: Vercel и Railway связаны через `INTERNAL_API_KEY`. Если видишь ошибки 401/403 — проверяй синхронизацию этого ключа.
+## 📋 Outstanding Tasks / Next Steps
+1.  **Admin Panel Deep Audit**:
+    - Systematically go through each section of the `/admin` subtree.
+    - Ensure all forms use Shadcn components (not raw HTML).
+    - Implement "Edit" functionality for Companies and Protocols (currently mostly "Create").
+2.  **Analytics Page Refactor**:
+    - The `/admin/monitoring` and other analytics pages need to be connected to the real `iot-service` analytics endpoints.
+3.  **Localization Audit**:
+    - Check for hardcoded strings in the new components (specifically in the new `Client` wrappers).
+4.  **Mobile App PWA**:
+    - Finalize manifest and offline capabilities for the logistics `ScanPage`.
 
-**2. Эталон качества и Бизнес-логика:**
-- Наш маркер качества — сценарий «Вьетнамское Манго» (`docs/SCENARIO_VIETNAM_MANGO.md`). Каждое изменение должно приближать нас к его 100% выполнению.
-
-**3. Текущий статус (Recent Fixes):**
-- **Auth & Blockchain**: Решена проблема 401 Unauthorized. Теперь фронтенд передает Firebase ID Token в прокси-сервер для всех мутаций блокчейна.
-- **Admin RBAC**: Роли `ADMIN` разрешено выполнять любые блокчейн-действия (Notarize, Pair Sensor, Handover) на любом этапе для упрощения E2E тестирования.
-- **Локализация и UI**: Добавлены переводы для состояния нарушения (`bc_violation`) в `en.json` и `ru.json`. Исправлена верстка блока нарушений и кнопки Reset State.
-- **Reset State**: Кнопка "Reset State" в админ-панели теперь принудительно перезагружает страницу для очистки кеша.
-
-**4. Твоя первая задача (Diagnostic):**
-1. Проверь доступность MCP серверов: Vercel, Railway, Firebase.
-2. Проверь статус последнего деплоя на Vercel (через `mcp_vercel_list_deployments`).
-3. Сделай `git pull` и проверь целостность `node_modules` в `apps/frontend/portal`.
-4. Подтверди готовность и предложи 3 приоритетных шага для развития проекта.»
-
-**PROMPT END**
+## ⚠️ Guidelines for the AI Assistant
+- **Absolute Imports**: Always use `@/` for imports.
+- **Component Placement**: Do NOT put business logic components in `src/components/ui`. Use the domain-specific folders.
+- **SSR First**: Aim for Server Components by default. Use `"use client"` only for interactivity.
+- **Premium Aesthetics**: Maintain the "Premium" look (spacing, typography, subtle shadows).

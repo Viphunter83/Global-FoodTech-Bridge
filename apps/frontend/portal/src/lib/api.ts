@@ -605,3 +605,17 @@ export async function getDevices(token?: string): Promise<Device[]> {
     }
 }
 
+export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/admin/batches`, {
+            headers: getHeaders(false, token),
+            cache: 'no-store'
+        });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error (getAdminBatches):', e);
+        return [];
+    }
+}
+

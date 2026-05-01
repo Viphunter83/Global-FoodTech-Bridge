@@ -147,3 +147,7 @@ func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, h
 
 	return s.repo.UpdateBlockchainHash(ctx, id, hash)
 }
+
+func (s *BatchService) ListAllBatches(ctx context.Context) ([]domain.Batch, error) {
+	return s.repo.ListAll(ctx)
+}
