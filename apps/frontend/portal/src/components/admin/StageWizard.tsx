@@ -28,7 +28,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
-import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 interface StageWizardProps {
