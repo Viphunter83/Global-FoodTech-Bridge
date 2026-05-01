@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ethers, JsonRpcProvider, Wallet, Contract } from 'ethers';
 import Redis from 'ioredis';
+import { Mutex } from 'async-mutex';
 
 const REGISTRY_ABI = [
     "function createBatch(string memory batchUUID, string memory tokenURI) public",
@@ -29,11 +30,43 @@ export class BlockchainService implements OnModuleInit {
 
     private contract: Contract;
     private isMockMode: boolean = false;
+    private readonly walletMutexes = new Map<string, Mutex>();
 
     // Mock Store
     private mockStore = new Map<string, { owner: string; pendingOwner: string | null; uri: string; violation: string | null; timestamp: number }>();
 
     constructor(private configService: ConfigService) { }
+
+    private getMutexForAddress(address: string): Mutex {
+        const lower = address.toLowerCase();
+        if (!this.walletMutexes.has(lower)) {
+            this.walletMutexes.set(lower, new Mutex());
+        }
+        return this.walletMutexes.get(lower)!;
+    }
+
+    /**
+     * Helper to execute transaction with manual nonce management (queued via Mutex)
+     */
+    private async executeTransaction(signer: Wallet, contractCall: () => Promise<any>): Promise<any> {
+        const mutex = this.getMutexForAddress(signer.address);
+        
+        return await mutex.runExclusive(async () => {
+            this.logger.log(`[NONCE-MANAGER] Executing transaction for ${signer.address}`);
+            try {
+                // ethers v6 automatically fetches the latest nonce including pending when using a wallet connected to a provider
+                // but concurrent calls still risk collisions. The mutex ensures we wait for the previous one to be broadcast.
+                const tx = await contractCall();
+                this.logger.log(`[NONCE-MANAGER] TX Sent: ${tx.hash}. Waiting for confirmation...`);
+                const receipt = await tx.wait();
+                this.logger.log(`[NONCE-MANAGER] TX Confirmed in block ${receipt.blockNumber}`);
+                return tx;
+            } catch (error) {
+                this.logger.error(`[NONCE-MANAGER] Transaction failed: ${error.message}`);
+                throw error;
+            }
+        });
+    }
 
     onModuleInit() {
         const rpcUrl = this.configService.get<string>('RPC_URL');
@@ -89,9 +122,10 @@ export class BlockchainService implements OnModuleInit {
 
         try {
             // Manufacturer creates batch
-            const tx = await (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri);
-            this.logger.log(`Mint Transaction sent: ${tx.hash}`);
-            await tx.wait();
+            const tx = await this.executeTransaction(this.manufacturerWallet, () => 
+                (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri)
+            );
+            
             // Set initial logical role for single-wallet notary model
             await this.redis.set(`batch_role:${batchId}`, 'MANUFACTURER');
             return tx.hash;
@@ -113,14 +147,32 @@ export class BlockchainService implements OnModuleInit {
         }
 
         try {
-            const tx = await this.contract.reportViolation(batchId, details);
-            this.logger.log(`Violation reported: ${tx.hash}`);
-            await tx.wait();
+            const tx = await this.executeTransaction(this.manufacturerWallet, () => 
+                this.contract.reportViolation(batchId, details)
+            );
             return tx.hash;
         } catch (error) {
             this.logger.error('Failed to report violation', error);
             throw new Error(`Blockchain violation report failed: ${error.message}`);
         }
+    }
+
+    /**
+     * Outbox Pattern: Pushes violation to Redis Stream for async processing
+     */
+    async reportViolationAsync(batchId: string, details: string): Promise<{ status: string; eventId: string }> {
+        const streamKey = 'batch:violations';
+        const payload = JSON.stringify({
+            batch_id: batchId,
+            message: details,
+            timestamp: new Date().toISOString(),
+            type: 'MANUAL_VIOLATION'
+        });
+
+        const eventId = await this.redis.xadd(streamKey, '*', 'payload', payload);
+        this.logger.log(`[OUTBOX] Violation queued for batch ${batchId}. EventID: ${eventId}`);
+        
+        return { status: 'queued', eventId };
     }
 
     /**
@@ -151,9 +203,9 @@ export class BlockchainService implements OnModuleInit {
 
             this.logger.log(`Initiating transfer of ${batchId} to ${toAddress}. Signer: ${signer.address}`);
 
-            const tx = await (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress);
-            this.logger.log(`Initiate Transaction sent: ${tx.hash}`);
-            await tx.wait();
+            const tx = await this.executeTransaction(signer, () => 
+                (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress)
+            );
 
             // Single-wallet logic: advance logical role to pending
             const currentRole = await this.redis.get(`batch_role:${batchId}`);
@@ -210,9 +262,9 @@ export class BlockchainService implements OnModuleInit {
 
             this.logger.log(`Signing acceptTransfer with ${signer.address}`);
 
-            const tx = await (this.contract.connect(signer as any) as any).acceptTransfer(tokenId);
-            this.logger.log(`Transfer accepted: ${tx.hash}`);
-            await tx.wait();
+            const tx = await this.executeTransaction(signer, () => 
+                (this.contract.connect(signer as any) as any).acceptTransfer(tokenId)
+            );
 
             // Single-wallet logic: finalize logical role
             const pendingRole = await this.redis.get(`pending_batch_role:${batchId}`);
@@ -402,9 +454,9 @@ export class BlockchainService implements OnModuleInit {
 
         try {
             // Only Default Admin (Manufacturer Wallet in this setup) can grant roles
-            const tx = await (this.contract.connect(this.manufacturerWallet) as any).grantRole(roleHash, targetAddress);
-            this.logger.log(`Grant Role TX: ${tx.hash}`);
-            await tx.wait();
+            const tx = await this.executeTransaction(this.manufacturerWallet, () => 
+                (this.contract.connect(this.manufacturerWallet) as any).grantRole(roleHash, targetAddress)
+            );
             return tx.hash;
         } catch (error) {
             this.logger.error('Failed to grant role', error);
@@ -485,6 +537,31 @@ export class BlockchainService implements OnModuleInit {
     async resetBatch(batchId: string): Promise<{ txHash: string }> {
         this.logger.log(`Demo: Resetting batch ${batchId}`);
         
+        // 0. Coordinate internal service resets
+        const iotUrl = this.configService.get<string>('IOT_SERVICE_URL');
+        const passportUrl = this.configService.get<string>('PASSPORT_SERVICE_URL');
+        const apiKey = this.configService.get<string>('INTERNAL_API_KEY');
+
+        try {
+            if (iotUrl && apiKey) {
+                this.logger.log(`Demo: Resetting IoT state for ${batchId}`);
+                await fetch(`${iotUrl}/demo/reset/${batchId}`, {
+                    method: 'POST',
+                    headers: { 'x-api-key': apiKey }
+                });
+            }
+
+            if (passportUrl && apiKey) {
+                this.logger.log(`Demo: Resetting Passport state for ${batchId}`);
+                await fetch(`${passportUrl}/demo/reset/${batchId}`, {
+                    method: 'POST',
+                    headers: { 'x-api-key': apiKey }
+                });
+            }
+        } catch (err) {
+            this.logger.warn(`Demo: Internal service reset warning (non-fatal): ${err.message}`);
+        }
+
         if (this.isMockMode) {
             this.mockStore.delete(batchId);
             return { txHash: `0xMOCK_RESET_${Date.now()}` };

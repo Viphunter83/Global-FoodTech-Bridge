@@ -109,3 +109,13 @@ func (r *TelemetryRepository) GetAlertsByBatchID(ctx context.Context, batchID st
 	}
 	return alerts, nil
 }
+
+func (r *TelemetryRepository) DeleteByBatchID(ctx context.Context, batchID string) error {
+	_, err := r.db.Exec(ctx, "DELETE FROM telemetry_readings WHERE batch_id = $1", batchID)
+	return err
+}
+
+func (r *TelemetryRepository) DeleteAlertsByBatchID(ctx context.Context, batchID string) error {
+	_, err := r.db.Exec(ctx, "DELETE FROM alerts WHERE batch_id = $1", batchID)
+	return err
+}

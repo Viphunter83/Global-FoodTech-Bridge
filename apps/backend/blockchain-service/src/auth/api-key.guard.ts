@@ -14,10 +14,6 @@ export class ApiKeyGuard implements CanActivate {
         console.error('CRITICAL: INTERNAL_API_KEY missing in environment variables');
     }
 
-    if (request.method === 'GET') {
-      return true;
-    }
-
     if (apiKey && secretKey && apiKey === secretKey) {
       return true;
     }

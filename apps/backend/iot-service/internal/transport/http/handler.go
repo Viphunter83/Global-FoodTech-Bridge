@@ -31,34 +31,41 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(h.AuthMiddleware)
+
 		// Protected Routes (Logistics or Manufacturer)
 		r.Group(func(r chi.Router) {
 			r.Use(h.RoleMiddleware("LOGISTICS", "MANUFACTURER"))
 			r.Post("/telemetry", h.ingestTelemetry)
 		})
 
-		// Public Routes
+		// Public Routes (now protected by API Key)
 		r.Get("/telemetry/{batchId}", h.getReadings)
 		r.Get("/telemetry/{batchId}/alerts", h.getAlerts)
+		r.Post("/demo/reset/{batchId}", h.resetBatch)
 	})
 
 	return r
 }
 
+func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiKey := r.Header.Get("x-api-key")
+		expectedKey := os.Getenv("INTERNAL_API_KEY")
+
+		if expectedKey != "" && apiKey != expectedKey {
+			log.Printf("[AUTH] Denied access to %s %s from %s. Invalid API Key.", r.Method, r.URL.Path, r.RemoteAddr)
+			http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			apiKey := r.Header.Get("x-api-key")
-			expectedKey := os.Getenv("INTERNAL_API_KEY")
-
-			// 1. Validate API Key for ALL requests to protected routes
-			if expectedKey != "" && apiKey != expectedKey {
-				log.Printf("[AUTH] Denied access to %s %s from %s. Invalid API Key.", r.Method, r.URL.Path, r.RemoteAddr)
-				http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
-				return
-			}
-
-			// 2. Validate Role
+			// Role check only (API Key is handled by AuthMiddleware)
 			role := r.Header.Get("X-User-Role")
 			if role == "" {
 				log.Printf("[ROLE] Access denied to %s %s: No X-User-Role header provided", r.Method, r.URL.Path)
@@ -131,4 +138,20 @@ func (h *Handler) getAlerts(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(alerts)
+}
+
+func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
+	batchID := chi.URLParam(r, "batchId")
+	if batchID == "" {
+		http.Error(w, "missing batch_id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.ResetBatch(r.Context(), batchID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"success"}`))
 }

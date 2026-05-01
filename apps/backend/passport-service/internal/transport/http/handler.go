@@ -43,20 +43,22 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public Routes (Moving these OUT of the AuthMiddleware group below)
+		r.Use(h.AuthMiddleware)
+
+		// Formerly Public Routes (now protected by API Key)
 		r.Get("/batches/{id}", h.getBatch)
 		r.Get("/partners/{id}", h.getPartner)
 		r.Get("/templates", h.listTemplates)
 		r.Get("/templates/{id}", h.getTemplate)
+		r.Post("/demo/reset/{id}", h.resetBatch)
+		
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("ok"))
 		})
 
-		// Protected Routes
+		// Protected Routes with Role Checks
 		r.Group(func(r chi.Router) {
-			r.Use(h.AuthMiddleware)
-
 			r.Group(func(r chi.Router) {
 				r.Use(h.RoleMiddleware("MANUFACTURER", "ADMIN"))
 				r.Post("/batches", h.createBatch)
@@ -358,4 +360,19 @@ func (h *Handler) listBatches(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(batches)
+}
+
+func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.ResetBatch(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

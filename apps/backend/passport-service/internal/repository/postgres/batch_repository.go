@@ -110,6 +110,16 @@ func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID
 	return err
 }
 
+func (r *BatchRepository) Reset(ctx context.Context, id uuid.UUID) error {
+	query := `
+		UPDATE product_batches
+		SET blockchain_hash = NULL, usf_status = 'PENDING'
+		WHERE id = $1
+	`
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
 func (r *BatchRepository) ListAll(ctx context.Context) ([]domain.Batch, error) {
 	query := `
 		SELECT 

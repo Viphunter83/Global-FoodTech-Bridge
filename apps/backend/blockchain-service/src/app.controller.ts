@@ -26,8 +26,7 @@ export class AppController {
 
     @Post('violation')
     async reportViolation(@Body() body: { batchId: string; details: string }) {
-        const txHash = await this.blockchainService.registerViolation(body.batchId, body.details);
-        return { status: 'success', txHash };
+        return this.blockchainService.reportViolationAsync(body.batchId, body.details);
     }
 
     @Post('transfer/initiate')

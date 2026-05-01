@@ -123,7 +123,18 @@ func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchRespons
 		passportURL = "http://passport-service:8080/api/v1"
 	}
 
-	resp, err := http.Get(fmt.Sprintf("%s/batches/%s", passportURL, batchID))
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/batches/%s", passportURL, batchID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	apiKey := os.Getenv("INTERNAL_API_KEY")
+	if apiKey != "" {
+		req.Header.Set("x-api-key", apiKey)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -189,4 +200,16 @@ func (s *TelemetryService) GetReadings(ctx context.Context, batchID string) ([]*
 
 	// 2. Retrieval
 	return s.repo.GetByBatchID(ctx, batchID)
+}
+
+func (s *TelemetryService) ResetBatch(ctx context.Context, batchID string) error {
+	if _, err := uuid.Parse(batchID); err != nil {
+		return errors.New("invalid batch_id")
+	}
+
+	if err := s.repo.DeleteByBatchID(ctx, batchID); err != nil {
+		return err
+	}
+
+	return s.repo.DeleteAlertsByBatchID(ctx, batchID)
 }

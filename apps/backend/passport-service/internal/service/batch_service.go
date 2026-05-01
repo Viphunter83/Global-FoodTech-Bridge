@@ -151,3 +151,12 @@ func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, h
 func (s *BatchService) ListAllBatches(ctx context.Context) ([]domain.Batch, error) {
 	return s.repo.ListAll(ctx)
 }
+
+func (s *BatchService) ResetBatch(ctx context.Context, idStr string) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return errors.New("invalid batch id")
+	}
+
+	return s.repo.Reset(ctx, id)
+}

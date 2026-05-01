@@ -52,10 +52,29 @@ export class ViolationStreamListener implements OnModuleInit, OnModuleDestroy {
 
                 if (entries) {
                     for (const [stream, messages] of (entries as any)) {
-                        for (const [id, [_, payload]] of (messages as any)) {
-                            await this.processMessage(id, payload);
-                            // Acknowledge
-                            await this.redis.xack(streamKey, groupName, id);
+                        for (const [id, fields] of (messages as any)) {
+                            try {
+                                // Redis Stream fields are flat: ['field1', 'val1', 'field2', 'val2']
+                                let payload: string | null = null;
+                                for (let i = 0; i < fields.length; i += 2) {
+                                    if (fields[i] === 'payload') {
+                                        payload = fields[i + 1];
+                                        break;
+                                    }
+                                }
+
+                                if (!payload) {
+                                    this.logger.warn(`Message ${id} missing 'payload' field. Fields: ${fields}`);
+                                    await this.redis.xack(streamKey, groupName, id);
+                                    continue;
+                                }
+
+                                await this.processMessage(id, payload);
+                                // Acknowledge only on success
+                                await this.redis.xack(streamKey, groupName, id);
+                            } catch (e) {
+                                this.logger.error(`Skipping ACK for message ${id} due to processing error: ${e.message}`);
+                            }
                         }
                     }
                 }
@@ -71,13 +90,14 @@ export class ViolationStreamListener implements OnModuleInit, OnModuleDestroy {
             const event = JSON.parse(payloadStr);
             this.logger.log(`Processing violation event for batch: ${event.batch_id}`);
             
-            // Call blockchain service with retry logic managed internally or here
+            // Call blockchain service
             await this.blockchainService.registerViolation(event.batch_id, event.message);
             
             this.logger.log(`Successfully processed event ${id}`);
         } catch (e) {
             this.logger.error(`Failed to process message ${id}: ${e.message}`);
-            // In a production system, we might move this to a DLQ or retry later
+            // Rethrow so the caller knows it failed
+            throw e;
         }
     }
 }

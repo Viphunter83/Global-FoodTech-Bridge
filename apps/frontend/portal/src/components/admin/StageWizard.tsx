@@ -41,6 +41,7 @@ export function StageWizard({ batches }: StageWizardProps) {
     const { getToken } = useAuth();
     const tAdmin = useTranslations('Admin');
     const tTracking = useTranslations('Tracking');
+    const tAuth = useTranslations('Auth');
     const [selectedBatchId, setSelectedBatchId] = useState<string>(batches[0]?.id || '');
     const [loading, setLoading] = useState<string | null>(null);
     const [adminStatus, setAdminStatus] = useState<any>(null);
@@ -74,14 +75,14 @@ export function StageWizard({ batches }: StageWizardProps) {
             }
 
             if (res.txHash) {
-                toast.success('Product Notarized on Blockchain');
+                toast.success(tAdmin('notarized_success'));
                 setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
         } catch (err: any) {
             console.error('Notarize Error:', err);
-            toast.error(err.message || 'Notarization failed');
+            toast.error(err.message || tAdmin('notarization_failed'));
         } finally {
             setLoading(null);
         }
@@ -90,7 +91,7 @@ export function StageWizard({ batches }: StageWizardProps) {
     const handleInitiate = async (targetRole: 'LOGISTICS' | 'RETAILER') => {
         if (!selectedBatchId) return;
         if (!adminStatus) {
-            toast.error('Admin wallet status not loaded. Please wait or refresh.');
+            toast.error(tAdmin('wallet_status_error'));
             return;
         }
 
@@ -112,14 +113,15 @@ export function StageWizard({ batches }: StageWizardProps) {
             }
 
             if (res.txHash) {
-                toast.success(`Handover initiated to ${targetRole}`);
+                const localizedRole = tAuth(`role_${targetRole.toLowerCase()}` as any);
+                toast.success(tAdmin('handover_initiated', { role: localizedRole }));
                 setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
         } catch (err: any) {
             console.error('Initiate Error:', err);
-            toast.error(err.message || 'Failed to initiate transfer');
+            toast.error(err.message || tAdmin('failed_to_initiate'));
         } finally {
             setLoading(null);
         }
@@ -137,14 +139,14 @@ export function StageWizard({ batches }: StageWizardProps) {
             }
 
             if (res.txHash) {
-                toast.success('Ownership Transferred Successfully');
+                toast.success(tAdmin('ownership_transferred'));
                 setRefreshKey(prev => prev + 1);
                 refreshAdminData();
                 router.refresh();
             }
         } catch (err: any) {
             console.error('Accept Error:', err);
-            toast.error(err.message || 'Failed to accept transfer');
+            toast.error(err.message || tAdmin('failed_to_accept'));
         } finally {
             setLoading(null);
         }
@@ -157,18 +159,18 @@ export function StageWizard({ batches }: StageWizardProps) {
             const token = await getToken();
             const promise = resetBatchDemo(selectedBatchId, token ?? undefined);
             toast.promise(promise, {
-                loading: 'Resetting simulation state...',
+                loading: tAdmin('reset_loading'),
                 success: () => {
                     setRefreshKey(prev => prev + 1);
                     refreshAdminData();
                     router.refresh();
-                    return 'Demo State Reset Successful';
+                    return tAdmin('reset_success');
                 },
-                error: 'Reset Failed'
+                error: tAdmin('reset_failed')
             });
             await promise;
         } catch (err: any) {
-            toast.error(`Auth Error: ${err.message}`);
+            toast.error(tAdmin('auth_error', { msg: err.message }));
         } finally {
             setLoading(null);
         }
@@ -180,21 +182,22 @@ export function StageWizard({ batches }: StageWizardProps) {
         
         try {
             const token = await getToken();
-            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)", token ?? undefined);
+            const demoMsg = tAdmin('demo_violation_msg');
+            const promise = reportViolation(selectedBatchId, demoMsg, token ?? undefined);
 
             toast.promise(promise, {
-                loading: 'Notarizing violation on blockchain...',
+                loading: tAdmin('notarizing_violation'),
                 success: (data) => {
                     refreshAdminData();
                     router.refresh();
-                    return `Violation Recorded. TX: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                    return tAdmin('violation_recorded', { tx: data.txHash?.slice(0, 10) || 'Confirmed' });
                 },
-                error: (err) => `Failed to report: ${err.message}`
+                error: (err) => tAdmin('failed_to_report', { msg: err.message })
             });
 
             await promise;
         } catch (err: any) {
-            toast.error(`Auth Error: ${err.message}`);
+            toast.error(tAdmin('auth_error', { msg: err.message }));
         } finally {
             setLoading(null);
         }
@@ -384,7 +387,9 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         disabled={loading !== null}
                                         className="col-span-2 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
                                     >
-                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : tAdmin('confirm_acceptance', { role: bcStatus.pendingOwnerRole })}
+                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : tAdmin('confirm_acceptance', { 
+                                            role: tAuth(`role_${bcStatus.pendingOwnerRole.toLowerCase()}` as any) 
+                                        })}
                                     </Button>
                                 )}
 
