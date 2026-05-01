@@ -212,7 +212,7 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                             <Zap size={120} />
                         </div>
                         <CardHeader className="p-10 relative z-10">
-                            <CardTitle className="text-2xl font-serif font-black italic tracking-tighter text-blue-400">Demo Engine</    CardTitle>
+                            <CardTitle className="text-2xl font-serif font-black italic tracking-tighter text-blue-400">Demo Engine</CardTitle>
                             <CardDescription className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mt-2">
                                 Simulate full lifecycle stages for partners
                             </CardDescription>

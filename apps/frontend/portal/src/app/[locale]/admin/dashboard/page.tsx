@@ -1,6 +1,5 @@
 import { getAdminBatches } from '@/lib/api';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { auth } from '@/lib/firebase-admin'; // Use server-side admin SDK if possible, or just call with internal key
 
 export const metadata = {
     title: 'Command Center | GFTB Admin',
