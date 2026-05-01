@@ -8,7 +8,6 @@ import {
     GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { setSessionCookie } from '@/lib/cookies';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,8 +48,15 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const token = await userCredential.user.getIdToken();
-            setSessionCookie(token);
+            const idToken = await userCredential.user.getIdToken();
+            
+            // Call our new secure session API
+            await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            });
+
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Login Error:", err.code);
@@ -65,8 +71,15 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await signInWithPopup(auth, provider);
-            const token = await userCredential.user.getIdToken();
-            setSessionCookie(token);
+            const idToken = await userCredential.user.getIdToken();
+            
+            // Call our new secure session API
+            await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            });
+
             router.push('/dashboard');
         } catch (err: any) {
             console.error("Google Login Error:", err.code);

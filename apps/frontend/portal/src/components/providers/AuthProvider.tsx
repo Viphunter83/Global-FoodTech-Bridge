@@ -47,28 +47,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(firebaseUser);
             
             if (firebaseUser) {
-                // Set session token for Middleware & Proxy resilience
-                const token = await firebaseUser.getIdToken();
-                setSessionCookie(token);
-
                 try {
-                    // 1. Try to fetch role from Firestore profiles
-                    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                    // 1. Refresh session cookie & sync roles to Custom Claims via our API
+                    const idToken = await firebaseUser.getIdToken();
+                    const sessionRes = await fetch('/api/auth/session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken })
+                    });
                     
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        setRole(data.role as UserRole);
-                        setCompanyId(data.companyId || null);
-                    } else {
-                        // No Firestore profile found — user needs to be provisioned by admin
-                        // Security: roles are ONLY assigned through Firestore documents, never via email patterns
-                        console.warn(`[GFTB-AUTH] No profile found for user ${firebaseUser.uid}. Role set to PENDING.`);
-                        setRole('PENDING');
+                    const sessionData = await sessionRes.json();
+
+                    // 2. Extract role from ID Token Result (Custom Claims)
+                    const tokenResult = await firebaseUser.getIdTokenResult();
+                    const claimsRole = tokenResult.claims.role as UserRole;
+                    
+                    if (claimsRole) {
+                        setRole(claimsRole);
+                        console.log(`[GFTB-AUTH] Role resolved from JWT Claims: ${claimsRole}`);
+                    } else if (sessionData.role) {
+                        setRole(sessionData.role);
+                        console.log(`[GFTB-AUTH] Role resolved from Session API: ${sessionData.role}`);
                     }
+
+                    // 3. Optional: Fetch extra data (like companyId) from Firestore if NOT blocked
+                    // We don't block the UI on this anymore
+                    getDoc(doc(db, 'users', firebaseUser.uid)).then(userDoc => {
+                        if (userDoc.exists()) {
+                            const data = userDoc.data();
+                            setCompanyId(data.companyId || null);
+                            if (!claimsRole && data.role) setRole(data.role as UserRole);
+                        }
+                    }).catch(err => {
+                        console.warn("[GFTB-AUTH] Optional Firestore data fetch failed (likely blocked), using JWT defaults.");
+                    });
+
                 } catch (error) {
-                    console.error("Error fetching user role:", error);
-                    setRole('PENDING');
-                    // Ensure we don't hang on error
+                    console.error("[GFTB-AUTH] Initialization error:", error);
                 } finally {
                     setLoading(false);
                 }
@@ -100,7 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         setLoading(true);
-        await signOut(auth);
+        try {
+            await fetch('/api/auth/session', { method: 'DELETE' });
+            await signOut(auth);
+        } catch (error) {
+            console.error("Logout Error:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
