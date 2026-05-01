@@ -353,4 +353,36 @@ export class BlockchainService implements OnModuleInit {
             throw new Error(`Grant Role failed: ${error.message}`);
         }
     }
+
+    async getAdminStatus() {
+        if (this.isMockMode) {
+            return {
+                mode: 'MOCK',
+                network: 'Simulation',
+                contract: '0xMockContractAddress',
+                wallets: [
+                    { name: 'Manufacturer (Admin)', address: '0xProducerAddress', balance: '100.0 MATIC' },
+                    { name: 'Logistics Partner', address: '0xLogisticsAddress', balance: '50.0 MATIC' },
+                    { name: 'Retailer Partner', address: '0xRetailerAddress', balance: '25.0 MATIC' }
+                ]
+            };
+        }
+
+        const [mBal, lBal, rBal] = await Promise.all([
+            this.provider.getBalance(this.manufacturerWallet.address),
+            this.provider.getBalance(this.logisticsWallet.address),
+            this.provider.getBalance(this.retailerWallet.address)
+        ]);
+
+        return {
+            mode: 'LIVE',
+            network: (await this.provider.getNetwork()).name,
+            contract: await this.contract.getAddress(),
+            wallets: [
+                { name: 'Manufacturer (Admin)', address: this.manufacturerWallet.address, balance: `${ethers.formatEther(mBal)} MATIC` },
+                { name: 'Logistics Partner', address: this.logisticsWallet.address, balance: `${ethers.formatEther(lBal)} MATIC` },
+                { name: 'Retailer Partner', address: this.retailerWallet.address, balance: `${ethers.formatEther(rBal)} MATIC` }
+            ]
+        };
+    }
 }

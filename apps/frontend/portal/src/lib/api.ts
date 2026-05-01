@@ -619,3 +619,17 @@ export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
     }
 }
 
+export async function getBlockchainAdminStatus(token?: string): Promise<any> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/admin/status`, {
+            headers: getHeaders(false, token),
+            cache: 'no-store'
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.error('Admin API Error (getBlockchainAdminStatus):', e);
+        return null;
+    }
+}
+

@@ -44,4 +44,9 @@ export class AppController {
         const txHash = await this.blockchainService.acceptTransfer(body.batchId);
         return { status: 'success', txHash };
     }
+
+    @Get('admin/status')
+    async getAdminStatus() {
+        return this.blockchainService.getAdminStatus();
+    }
 }

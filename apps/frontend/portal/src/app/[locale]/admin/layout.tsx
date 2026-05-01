@@ -85,10 +85,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </Button>
                     </Link>
                     
-                    <Button variant="ghost" className="w-full h-14 justify-start text-white/20 cursor-not-allowed rounded-2xl px-4 opacity-50">
-                        <Database className="mr-4 h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Smart Contracts</span>
-                    </Button>
+                    <Link href="/admin/contracts">
+                        <Button asChild variant="ghost" className="w-full h-14 justify-start text-white/40 hover:text-white hover:bg-white/5 rounded-2xl px-4 group transition-all">
+                            <span>
+                                <Database className="mr-4 h-5 w-5 group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Smart Contracts</span>
+                            </span>
+                        </Button>
+                    </Link>
                 </nav>
 
                 <div className="p-8 relative z-10">
