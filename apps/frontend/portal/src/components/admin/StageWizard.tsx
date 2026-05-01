@@ -19,6 +19,7 @@ import { BatchDetails, advanceBatchDemo, reportViolation } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
+import { auth } from '@/lib/firebase';
 
 interface StageWizardProps {
     batches: BatchDetails[];
@@ -34,19 +35,22 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading(targetRole);
         
-        const promise = advanceBatchDemo(selectedBatchId, targetRole);
-
-        toast.promise(promise, {
-            loading: `Advancing to ${targetRole}...`,
-            success: (data) => {
-                refreshAdminData();
-                return `Successfully moved to ${targetRole}. TX: ${data.txHash?.slice(0, 10) || 'Verified'}...`;
-            },
-            error: (err) => `Demo Advance Failed: ${err.message}`
-        });
-
         try {
+            const token = await auth.currentUser?.getIdToken();
+            const promise = advanceBatchDemo(selectedBatchId, targetRole, token);
+
+            toast.promise(promise, {
+                loading: `Advancing to ${targetRole}...`,
+                success: (data) => {
+                    refreshAdminData();
+                    return `Successfully moved to ${targetRole}. TX: ${data.txHash?.slice(0, 10) || 'Verified'}...`;
+                },
+                error: (err) => `Demo Advance Failed: ${err.message}`
+            });
+
             await promise;
+        } catch (err: any) {
+            toast.error(`Auth Error: ${err.message}`);
         } finally {
             setLoading(null);
         }
@@ -56,19 +60,22 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('violation');
         
-        const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)");
-
-        toast.promise(promise, {
-            loading: 'Notarizing violation on blockchain...',
-            success: (data) => {
-                refreshAdminData();
-                return `Violation Recorded. TX: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
-            },
-            error: (err) => `Failed to report: ${err.message}`
-        });
-
         try {
+            const token = await auth.currentUser?.getIdToken();
+            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)", token);
+
+            toast.promise(promise, {
+                loading: 'Notarizing violation on blockchain...',
+                success: (data) => {
+                    refreshAdminData();
+                    return `Violation Recorded. TX: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                },
+                error: (err) => `Failed to report: ${err.message}`
+            });
+
             await promise;
+        } catch (err: any) {
+            toast.error(`Auth Error: ${err.message}`);
         } finally {
             setLoading(null);
         }

@@ -24,6 +24,7 @@ import { Link } from '@/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
+import { auth } from '@/lib/firebase';
 
 interface AdminDashboardProps {
     batches: BatchDetails[];
@@ -76,19 +77,23 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
         if (!latestBatch) return;
 
         setIsDemoLoading('violation');
-        const promise = reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)");
         
-        toast.promise(promise, {
-            loading: 'Reporting violation...',
-            success: (data) => {
-                refreshAdminData();
-                return `Violation Notarized: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
-            },
-            error: (err) => `Error: ${err.message}`
-        });
-
         try {
+            const token = await auth.currentUser?.getIdToken();
+            const promise = reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)", token);
+            
+            toast.promise(promise, {
+                loading: 'Reporting violation...',
+                success: (data) => {
+                    refreshAdminData();
+                    return `Violation Notarized: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                },
+                error: (err) => `Error: ${err.message}`
+            });
+
             await promise;
+        } catch (err: any) {
+            toast.error(`Auth Error: ${err.message}`);
         } finally {
             setIsDemoLoading(null);
         }
@@ -99,19 +104,23 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
         if (!latestBatch) return;
 
         setIsDemoLoading('handover');
-        const promise = advanceBatchDemo(latestBatch.id, 'LOGISTICS');
-
-        toast.promise(promise, {
-            loading: 'Processing handover...',
-            success: (data) => {
-                refreshAdminData();
-                return `Handover complete: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
-            },
-            error: (err) => `Error: ${err.message}`
-        });
-
+        
         try {
+            const token = await auth.currentUser?.getIdToken();
+            const promise = advanceBatchDemo(latestBatch.id, 'LOGISTICS', token);
+
+            toast.promise(promise, {
+                loading: 'Processing handover...',
+                success: (data) => {
+                    refreshAdminData();
+                    return `Handover complete: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                },
+                error: (err) => `Error: ${err.message}`
+            });
+
             await promise;
+        } catch (err: any) {
+            toast.error(`Auth Error: ${err.message}`);
         } finally {
             setIsDemoLoading(null);
         }
