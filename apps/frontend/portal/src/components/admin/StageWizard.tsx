@@ -14,8 +14,16 @@ import {
     Loader2,
     Search
 } from 'lucide-react';
-import { useState } from 'react';
-import { BatchDetails, advanceBatchDemo, reportViolation } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { 
+    BatchDetails, 
+    reportViolation, 
+    notarizeBatch, 
+    initiateHandover, 
+    acceptHandover, 
+    getBlockchainAdminStatus,
+    getBlockchainStatus
+} from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
@@ -30,30 +38,77 @@ export function StageWizard({ batches }: StageWizardProps) {
     const router = useRouter();
     const [selectedBatchId, setSelectedBatchId] = useState<string>(batches[0]?.id || '');
     const [loading, setLoading] = useState<string | null>(null);
+    const [adminStatus, setAdminStatus] = useState<any>(null);
+    const [bcStatus, setBcStatus] = useState<any>(null);
 
     const selectedBatch = batches.find(b => b.id === selectedBatchId);
 
-    const handleAdvance = async (targetRole: 'LOGISTICS' | 'RETAILER') => {
+    useEffect(() => {
+        const fetchMeta = async () => {
+            const token = await auth.currentUser?.getIdToken();
+            const [admin, status] = await Promise.all([
+                getBlockchainAdminStatus(token),
+                selectedBatchId ? getBlockchainStatus(selectedBatchId) : null
+            ]);
+            setAdminStatus(admin);
+            setBcStatus(status);
+        };
+        fetchMeta();
+    }, [selectedBatchId]);
+
+    const handleNotarize = async () => {
         if (!selectedBatchId) return;
-        setLoading(targetRole);
-        
+        setLoading('notarize');
         try {
             const token = await auth.currentUser?.getIdToken();
-            const promise = advanceBatchDemo(selectedBatchId, targetRole, token);
-
-            toast.promise(promise, {
-                loading: `Advancing to ${targetRole}...`,
-                success: (data) => {
-                    refreshAdminData();
-                    router.refresh();
-                    return `Successfully moved to ${targetRole}. TX: ${data.txHash?.slice(0, 10) || 'Verified'}...`;
-                },
-                error: (err) => `Demo Advance Failed: ${err.message}`
-            });
-
-            await promise;
+            const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`, token);
+            if (res.txHash) {
+                toast.success('Product Notarized on Blockchain');
+                refreshAdminData();
+                router.refresh();
+            }
         } catch (err: any) {
-            toast.error(`Auth Error: ${err.message}`);
+            toast.error(err.message);
+        } finally {
+            setLoading(null);
+        }
+    };
+
+    const handleInitiate = async (targetRole: 'LOGISTICS' | 'RETAILER') => {
+        if (!selectedBatchId || !adminStatus) return;
+        setLoading(`initiate-${targetRole}`);
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            const targetAddress = targetRole === 'LOGISTICS' 
+                ? adminStatus.wallets.find((w: any) => w.name.includes('Logistics'))?.address 
+                : adminStatus.wallets.find((w: any) => w.name.includes('Retailer'))?.address;
+
+            const res = await initiateHandover(selectedBatchId, targetAddress, token);
+            if (res.txHash) {
+                toast.success(`Handover initiated to ${targetRole}`);
+                refreshAdminData();
+                router.refresh();
+            }
+        } catch (err: any) {
+            toast.error(err.message);
+        } finally {
+            setLoading(null);
+        }
+    };
+
+    const handleAccept = async () => {
+        if (!selectedBatchId) return;
+        setLoading('accept');
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            const res = await acceptHandover(selectedBatchId, token);
+            if (res.txHash) {
+                toast.success('Ownership Transferred Successfully');
+                refreshAdminData();
+                router.refresh();
+            }
+        } catch (err: any) {
+            toast.error(err.message);
         } finally {
             setLoading(null);
         }
@@ -193,30 +248,65 @@ export function StageWizard({ batches }: StageWizardProps) {
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Button 
-                                    onClick={() => handleAdvance('LOGISTICS')}
-                                    disabled={loading !== null}
-                                    className="h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] group shadow-xl"
-                                >
-                                    {loading === 'LOGISTICS' ? <Loader2 className="animate-spin" /> : (
-                                        <>
-                                            Handover to Logistics
-                                            <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
-                                        </>
-                                    )}
-                                </Button>
-                                <Button 
-                                    onClick={() => handleAdvance('RETAILER')}
-                                    disabled={loading !== null}
-                                    className="h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] group shadow-xl"
-                                >
-                                    {loading === 'RETAILER' ? <Loader2 className="animate-spin" /> : (
-                                        <>
-                                            Handover to Distributor
-                                            <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
-                                        </>
-                                    )}
-                                </Button>
+                                {bcStatus?.verified === false && (
+                                    <Button 
+                                        onClick={handleNotarize}
+                                        disabled={loading !== null}
+                                        className="col-span-2 h-16 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
+                                    >
+                                        {loading === 'notarize' ? <Loader2 className="animate-spin" /> : 'Notarize Product on Blockchain'}
+                                    </Button>
+                                )}
+
+                                {bcStatus?.verified && bcStatus?.ownerRole === 'MANUFACTURER' && !bcStatus?.pendingOwnerRole && (
+                                    <Button 
+                                        onClick={() => handleInitiate('LOGISTICS')}
+                                        disabled={loading !== null}
+                                        className="col-span-2 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] group shadow-xl"
+                                    >
+                                        {loading === 'initiate-LOGISTICS' ? <Loader2 className="animate-spin" /> : (
+                                            <>
+                                                Initiate Transfer to Logistics
+                                                <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+
+                                {bcStatus?.pendingOwnerRole === 'LOGISTICS' && (
+                                    <Button 
+                                        onClick={handleAccept}
+                                        disabled={loading !== null}
+                                        className="col-span-2 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
+                                    >
+                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : 'Confirm Acceptance (Logistics Partner)'}
+                                    </Button>
+                                )}
+
+                                {bcStatus?.ownerRole === 'LOGISTICS' && !bcStatus?.pendingOwnerRole && (
+                                    <Button 
+                                        onClick={() => handleInitiate('RETAILER')}
+                                        disabled={loading !== null}
+                                        className="col-span-2 h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] group shadow-xl"
+                                    >
+                                        {loading === 'initiate-RETAILER' ? <Loader2 className="animate-spin" /> : (
+                                            <>
+                                                Initiate Transfer to Distributor
+                                                <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+
+                                {bcStatus?.pendingOwnerRole === 'RETAILER' && (
+                                    <Button 
+                                        onClick={handleAccept}
+                                        disabled={loading !== null}
+                                        className="col-span-2 h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
+                                    >
+                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : 'Confirm Acceptance (Distributor)'}
+                                    </Button>
+                                )}
                             </div>
 
                             <div className="mt-8 p-8 border-t border-dashed border-primary/10 bg-rose-50/50 rounded-[2.5rem]">
