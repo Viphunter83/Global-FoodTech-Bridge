@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
+    let idToken: string | undefined;
     try {
-        const { idToken } = await request.json();
+        const body = await request.json();
+        idToken = body.idToken;
 
         if (!idToken) {
             console.error('[AUTH_SESSION_API] Missing idToken in request body');
@@ -60,7 +62,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ 
             error: 'Failed to establish session', 
             message: error.message,
-            code: error.code 
+            code: error.code,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+            debug_info: {
+                hasEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+                hasKey: !!process.env.FIREBASE_PRIVATE_KEY,
+                tokenLength: idToken?.length
+            }
         }, { status: 401 });
     }
 }

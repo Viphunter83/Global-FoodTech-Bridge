@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     signInWithEmailAndPassword, 
-    signInWithPopup, 
+    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -24,6 +26,29 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Handle Google redirect result on page load (fallback from signInWithRedirect)
+    useEffect(() => {
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (result?.user) {
+                    setLoading(true);
+                    const idToken = await result.user.getIdToken();
+                    await fetch('/api/auth/session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken })
+                    });
+                    router.push('/dashboard');
+                }
+            })
+            .catch((err: any) => {
+                console.error('Google Redirect Error:', err.code);
+                if (err.code && err.code !== 'auth/popup-closed-by-user') {
+                    setError(getFriendlyError(err.code));
+                }
+            });
+    }, []);
 
     const getFriendlyError = (code: string) => {
         switch (code) {
@@ -70,10 +95,10 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
+            // Try popup first (works on desktop browsers with correct COOP headers)
             const userCredential = await signInWithPopup(auth, provider);
             const idToken = await userCredential.user.getIdToken();
             
-            // Call our new secure session API
             await fetch('/api/auth/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -82,8 +107,30 @@ export default function LoginPage() {
 
             router.push('/dashboard');
         } catch (err: any) {
-            console.error("Google Login Error:", err.code);
-            setError(getFriendlyError(err.code));
+            console.error("Google Login Error:", err.code, err.message);
+            
+            // Fallback to redirect for environments that block popups
+            // (mobile browsers, strict COOP, embedded webviews)
+            if (
+                err.code === 'auth/popup-blocked' ||
+                err.code === 'auth/popup-closed-by-user' ||
+                err.code === 'auth/cancelled-popup-request' ||
+                err.code === 'auth/internal-error' ||
+                err.message?.includes('cross-origin') ||
+                err.message?.includes('popup')
+            ) {
+                console.log('[GFTB-AUTH] Popup failed, falling back to redirect...');
+                try {
+                    await signInWithRedirect(auth, provider);
+                    // Page will redirect to Google, no further code runs here
+                    return;
+                } catch (redirectErr: any) {
+                    console.error('Google Redirect Error:', redirectErr.code);
+                    setError(getFriendlyError(redirectErr.code));
+                }
+            } else {
+                setError(getFriendlyError(err.code));
+            }
             setLoading(false);
         }
     };
