@@ -195,11 +195,32 @@ export function StageWizard({ batches }: StageWizardProps) {
         }
     };
 
+    const getStageStatus = (idx: number): 'completed' | 'current' | 'future' => {
+        if (!bcStatus) return selectedBatch?.history?.[idx]?.status || 'future';
+        
+        const ownerRole = bcStatus.ownerRole || 'MANUFACTURER';
+        
+        if (ownerRole === 'MANUFACTURER') {
+            return idx === 0 ? 'current' : 'future';
+        } else if (ownerRole === 'LOGISTICS') {
+            if (idx === 0) return 'completed';
+            if (idx === 1) return 'current';
+            return 'future';
+        } else if (ownerRole === 'RETAILER') {
+            if (idx <= 1) return 'completed';
+            if (idx === 2) return 'current';
+            return 'future';
+        } else if (ownerRole === 'END_USER' || bcStatus.shippingStatus === 'Delivered') {
+            return idx <= 2 ? 'completed' : 'current';
+        }
+        return 'future';
+    };
+
     const stages = [
-        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: selectedBatch?.history?.[0]?.status || 'pending' },
-        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: selectedBatch?.history?.[1]?.status || 'pending' },
-        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: selectedBatch?.history?.[2]?.status || 'pending' },
-        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: selectedBatch?.history?.[3]?.status || 'pending' },
+        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: getStageStatus(0) },
+        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: getStageStatus(1) },
+        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: getStageStatus(2) },
+        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: getStageStatus(3) },
     ];
 
     return (
