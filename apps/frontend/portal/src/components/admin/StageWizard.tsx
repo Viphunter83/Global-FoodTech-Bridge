@@ -64,6 +64,11 @@ export function StageWizard({ batches }: StageWizardProps) {
         try {
             const token = await auth.currentUser?.getIdToken();
             const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`, token);
+            
+            if (res.status === 'error' || res.error) {
+                throw new Error(res.error || 'Notarization failed');
+            }
+
             if (res.txHash) {
                 toast.success('Product Notarized on Blockchain');
                 setRefreshKey(prev => prev + 1);
@@ -71,14 +76,20 @@ export function StageWizard({ batches }: StageWizardProps) {
                 router.refresh();
             }
         } catch (err: any) {
-            toast.error(err.message);
+            console.error('Notarize Error:', err);
+            toast.error(err.message || 'Notarization failed');
         } finally {
             setLoading(null);
         }
     };
 
     const handleInitiate = async (targetRole: 'LOGISTICS' | 'RETAILER') => {
-        if (!selectedBatchId || !adminStatus) return;
+        if (!selectedBatchId) return;
+        if (!adminStatus) {
+            toast.error('Admin wallet status not loaded. Please wait or refresh.');
+            return;
+        }
+
         setLoading(`initiate-${targetRole}`);
         try {
             const token = await auth.currentUser?.getIdToken();
@@ -86,7 +97,16 @@ export function StageWizard({ batches }: StageWizardProps) {
                 ? adminStatus.wallets.find((w: any) => w.name.includes('Logistics'))?.address 
                 : adminStatus.wallets.find((w: any) => w.name.includes('Retailer'))?.address;
 
+            if (!targetAddress) {
+                throw new Error(`Target address for ${targetRole} not found in admin wallets`);
+            }
+
             const res = await initiateHandover(selectedBatchId, targetAddress, token);
+            
+            if (res.status === 'error' || res.error) {
+                throw new Error(res.error || 'Initiation failed');
+            }
+
             if (res.txHash) {
                 toast.success(`Handover initiated to ${targetRole}`);
                 setRefreshKey(prev => prev + 1);
@@ -94,7 +114,8 @@ export function StageWizard({ batches }: StageWizardProps) {
                 router.refresh();
             }
         } catch (err: any) {
-            toast.error(err.message);
+            console.error('Initiate Error:', err);
+            toast.error(err.message || 'Failed to initiate transfer');
         } finally {
             setLoading(null);
         }
@@ -106,6 +127,11 @@ export function StageWizard({ batches }: StageWizardProps) {
         try {
             const token = await auth.currentUser?.getIdToken();
             const res = await acceptHandover(selectedBatchId, token);
+            
+            if (res.status === 'error' || res.error) {
+                throw new Error(res.error || 'Acceptance failed');
+            }
+
             if (res.txHash) {
                 toast.success('Ownership Transferred Successfully');
                 setRefreshKey(prev => prev + 1);
@@ -113,7 +139,8 @@ export function StageWizard({ batches }: StageWizardProps) {
                 router.refresh();
             }
         } catch (err: any) {
-            toast.error(err.message);
+            console.error('Accept Error:', err);
+            toast.error(err.message || 'Failed to accept transfer');
         } finally {
             setLoading(null);
         }
@@ -205,7 +232,10 @@ export function StageWizard({ batches }: StageWizardProps) {
             {/* Selection Area */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
                 <Card className="rounded-[2.5rem] border-primary/5 glass p-8 space-y-6">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">1. Target Selection</h3>
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">1. Target Selection</h3>
+                        {!adminStatus && <Loader2 className="animate-spin text-blue-500" size={14} />}
+                    </div>
                     <div className="space-y-4">
                         <p className="text-xs font-bold">Select Active Batch</p>
                         <div className="space-y-2 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
@@ -219,12 +249,17 @@ export function StageWizard({ batches }: StageWizardProps) {
                                             : 'bg-white/40 border-primary/5 hover:border-primary/20'
                                     }`}
                                 >
-                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">
-                                        {batch.product_type}
-                                    </p>
-                                    <p className="text-sm font-serif font-black italic truncate">
-                                        #{batch.id.slice(0, 12).toUpperCase()}
-                                    </p>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">
+                                                {batch.product_type}
+                                            </p>
+                                            <p className="text-sm font-serif font-black italic truncate">
+                                                #{batch.id.slice(0, 12).toUpperCase()}
+                                            </p>
+                                        </div>
+                                        {selectedBatchId === batch.id && <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />}
+                                    </div>
                                 </button>
                             ))}
                         </div>

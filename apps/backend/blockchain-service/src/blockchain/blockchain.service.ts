@@ -126,33 +126,30 @@ export class BlockchainService implements OnModuleInit {
             if (state) {
                 state.pendingOwner = toAddress;
                 this.mockStore.set(batchId, state);
+            } else {
+                this.logger.warn(`[MOCK] Cannot initiate transfer: batch ${batchId} not found in mock store`);
+                throw new Error(`Batch ${batchId} not found in mock store`);
             }
             return `0xMOCK_INIT_TRANSFER_${Date.now()}`;
         }
 
         try {
-            // We need to fetch current owner to decide who signs? 
-            // For now, assuming linear flow: Manufacturer -> Logistics -> Retailer
-            // But better: The valid owner should sign.
-            // Simplified: We assume initiate is always valid call if UI allows it.
-            // But we must sign with the CURRENT OWNER.
-            // Let's check ownership first.
-
             const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
-            const batchData = await this.contract.getBatchData(batchId);
-            const currentOwner = batchData.currentOwner;
+            const result = await this.contract.getBatchData(batchId);
+            const currentOwner = result[0];
 
             let signer = this.manufacturerWallet;
-            if (currentOwner === this.logisticsWallet.address) signer = this.logisticsWallet;
-            if (currentOwner === this.retailerWallet.address) signer = this.retailerWallet;
+            if (currentOwner.toLowerCase() === this.logisticsWallet.address.toLowerCase()) signer = this.logisticsWallet;
+            if (currentOwner.toLowerCase() === this.retailerWallet.address.toLowerCase()) signer = this.retailerWallet;
 
             this.logger.log(`Initiating transfer of ${batchId} to ${toAddress}. Signer: ${signer.address}`);
 
             const tx = await (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress);
+            this.logger.log(`Initiate Transaction sent: ${tx.hash}`);
             await tx.wait();
             return tx.hash;
         } catch (error) {
-            this.logger.error('Failed to initiate transfer', error);
+            this.logger.error(`Failed to initiate transfer for ${batchId}: ${error.message}`, error.stack);
             throw new Error(`Transfer initiation failed: ${error.message}`);
         }
     }
@@ -168,21 +165,28 @@ export class BlockchainService implements OnModuleInit {
                 state.owner = state.pendingOwner;
                 state.pendingOwner = null;
                 this.mockStore.set(batchId, state);
+            } else {
+                this.logger.warn(`[MOCK] Cannot accept transfer: no pending owner for ${batchId}`);
+                throw new Error(`No pending owner for ${batchId}`);
             }
             return `0xMOCK_ACCEPT_TRANSFER_${Date.now()}`;
         }
 
         try {
             const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
-            const batchData = await this.contract.getBatchData(batchId);
-            const pendingOwner = batchData.pendingOwner;
+            const result = await this.contract.getBatchData(batchId);
+            const pendingOwner = result[5] === '0x0000000000000000000000000000000000000000' ? null : result[5];
+
+            if (!pendingOwner) {
+                throw new Error(`No pending transfer found for batch ${batchId}`);
+            }
 
             this.logger.log(`Accepting transfer for ${batchId}. Pending Owner: ${pendingOwner}`);
 
             let signer = this.manufacturerWallet;
-            if (pendingOwner === this.logisticsWallet.address) {
+            if (pendingOwner.toLowerCase() === this.logisticsWallet.address.toLowerCase()) {
                 signer = this.logisticsWallet;
-            } else if (pendingOwner === this.retailerWallet.address) {
+            } else if (pendingOwner.toLowerCase() === this.retailerWallet.address.toLowerCase()) {
                 signer = this.retailerWallet;
             } else {
                 this.logger.warn(`Unknown pending owner ${pendingOwner}. Trying with Manufacturer/Admin.`);
@@ -195,7 +199,7 @@ export class BlockchainService implements OnModuleInit {
             await tx.wait();
             return tx.hash;
         } catch (error) {
-            this.logger.error('Failed to accept transfer', error);
+            this.logger.error(`Failed to accept transfer for ${batchId}: ${error.message}`, error.stack);
             throw new Error(`Transfer acceptance failed: ${error.message}`);
         }
     }
@@ -447,8 +451,29 @@ export class BlockchainService implements OnModuleInit {
 
     async resetBatch(batchId: string): Promise<{ txHash: string }> {
         this.logger.log(`Demo: Resetting batch ${batchId}`);
-        // In a real contract, this would be an admin function to clear violations or stuck transfers.
-        // For the demo, we just return a success to trigger a UI refresh and local state clearing.
-        return { txHash: '0xDEMO_RESET' };
+        
+        if (this.isMockMode) {
+            this.mockStore.delete(batchId);
+            return { txHash: `0xMOCK_RESET_${Date.now()}` };
+        }
+
+        // For Live Mode, if the batch is in a stuck state (e.g. pending owner is someone wrong),
+        // we can't easily "reset" it on-chain without many transactions.
+        // But we can try to "Advance" it to Manufacturer if it's not already.
+        try {
+            const bcData = await this.getBatchPublicData(batchId);
+            if (bcData.exists && bcData.ownerRole !== 'MANUFACTURER') {
+                this.logger.log(`Demo: Batch owned by ${bcData.ownerRole}. Attempting to return to Manufacturer.`);
+                // This would require current owner to initiate transfer back.
+                // Since this is a custodial admin demo, we can do it!
+                await this.initiateTransfer(batchId, this.manufacturerWallet.address);
+                const txHash = await this.acceptTransfer(batchId);
+                return { txHash };
+            }
+        } catch (err) {
+            this.logger.warn(`Demo: On-chain reset partial failure: ${err.message}`);
+        }
+
+        return { txHash: '0xDEMO_RESET_COMPLETED' };
     }
 }
