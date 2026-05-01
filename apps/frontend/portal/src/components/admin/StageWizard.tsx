@@ -22,7 +22,8 @@ import {
     initiateHandover, 
     acceptHandover, 
     getBlockchainAdminStatus,
-    getBlockchainStatus
+    getBlockchainStatus,
+    resetBatchDemo
 } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';

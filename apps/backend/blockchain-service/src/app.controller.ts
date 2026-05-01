@@ -53,6 +53,8 @@ export class AppController {
     @Post('demo/advance')
     async advanceBatch(@Body() body: { batchId: string; targetRole: 'LOGISTICS' | 'RETAILER' }) {
         return this.blockchainService.advanceBatch(body.batchId, body.targetRole);
+    }
+
     @Post('demo/reset')
     async resetBatch(@Body() body: { batchId: string }) {
         return this.blockchainService.resetBatch(body.batchId);
