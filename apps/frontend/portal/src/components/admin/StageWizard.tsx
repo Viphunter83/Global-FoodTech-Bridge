@@ -118,6 +118,30 @@ export function StageWizard({ batches }: StageWizardProps) {
         }
     };
 
+    const handleReset = async () => {
+        if (!selectedBatchId) return;
+        setLoading('reset');
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            const promise = resetBatchDemo(selectedBatchId, token);
+            toast.promise(promise, {
+                loading: 'Resetting simulation state...',
+                success: () => {
+                    setRefreshKey(prev => prev + 1);
+                    refreshAdminData();
+                    router.refresh();
+                    return 'Demo State Reset Successful';
+                },
+                error: 'Reset Failed'
+            });
+            await promise;
+        } catch (err: any) {
+            toast.error(`Auth Error: ${err.message}`);
+        } finally {
+            setLoading(null);
+        }
+    };
+
     const handleTriggerViolation = async () => {
         if (!selectedBatchId) return;
         setLoading('violation');
@@ -278,7 +302,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     </Button>
                                 )}
 
-                                {bcStatus?.verified && bcStatus?.ownerRole === 'MANUFACTURER' && !bcStatus?.pendingOwnerRole && (
+                                {bcStatus?.verified && bcStatus?.ownerRole === 'MANUFACTURER' && (bcStatus?.pendingOwnerRole === null || bcStatus?.pendingOwnerRole === 'MANUFACTURER') && (
                                     <Button 
                                         onClick={() => handleInitiate('LOGISTICS')}
                                         disabled={loading !== null}
@@ -293,13 +317,13 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     </Button>
                                 )}
 
-                                {bcStatus?.pendingOwnerRole === 'LOGISTICS' && (
+                                {bcStatus?.pendingOwnerRole && (
                                     <Button 
                                         onClick={handleAccept}
                                         disabled={loading !== null}
                                         className="col-span-2 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
                                     >
-                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : 'Confirm Acceptance (Logistics Partner)'}
+                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : `Confirm Acceptance (${bcStatus.pendingOwnerRole})`}
                                     </Button>
                                 )}
 
@@ -318,15 +342,14 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     </Button>
                                 )}
 
-                                {bcStatus?.pendingOwnerRole === 'RETAILER' && (
-                                    <Button 
-                                        onClick={handleAccept}
-                                        disabled={loading !== null}
-                                        className="col-span-2 h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
-                                    >
-                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : 'Confirm Acceptance (Distributor)'}
-                                    </Button>
-                                )}
+                                <Button 
+                                    onClick={handleReset}
+                                    disabled={loading !== null}
+                                    variant="ghost"
+                                    className="col-span-2 mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
+                                >
+                                    {loading === 'reset' ? <Loader2 className="animate-spin" /> : 'Emergency Reset Simulation State'}
+                                </Button>
                             </div>
 
                             <div className="mt-8 p-8 border-t border-dashed border-primary/10 bg-rose-50/50 rounded-[2.5rem]">

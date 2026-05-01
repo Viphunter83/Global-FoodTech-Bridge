@@ -444,5 +444,10 @@ export class BlockchainService implements OnModuleInit {
             this.logger.error('Failed to advance batch in demo mode', error);
             throw new Error(`Demo advance failed: ${error.message}`);
         }
+    async resetBatch(batchId: string): Promise<{ txHash: string }> {
+        this.logger.log(`Demo: Resetting batch ${batchId}`);
+        // In a real contract, this would be an admin function to clear violations or stuck transfers.
+        // For the demo, we just return a success to trigger a UI refresh and local state clearing.
+        return { txHash: '0xDEMO_RESET' };
     }
 }

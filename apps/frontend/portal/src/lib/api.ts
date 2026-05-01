@@ -496,6 +496,24 @@ export async function acceptHandover(batchId: string, token?: string): Promise<{
     }
 }
 
+export async function resetBatchDemo(batchId: string, token?: string): Promise<{ txHash: string }> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/demo/reset`, {
+            method: 'POST',
+            headers: getHeaders(true, token),
+            body: JSON.stringify({ batchId }),
+            cache: 'no-store'
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || 'Reset failed');
+        }
+        return await res.json();
+    } catch (e: any) {
+        throw new Error(e.message);
+    }
+}
+
 export async function reportViolation(batchId: string, details: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/violation`, {
