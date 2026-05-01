@@ -47,9 +47,9 @@ export function StageWizard({ batches }: StageWizardProps) {
 
     useEffect(() => {
         const fetchMeta = async () => {
-            const token = await auth.currentUser?.getIdToken();
+            // No longer explicitly fetching token to avoid blocking on Firebase SDK
             const [admin, status] = await Promise.all([
-                getBlockchainAdminStatus(token),
+                getBlockchainAdminStatus(),
                 selectedBatchId ? getBlockchainStatus(selectedBatchId) : null
             ]);
             setAdminStatus(admin);
@@ -62,8 +62,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('notarize');
         try {
-            const token = await auth.currentUser?.getIdToken();
-            const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`, token);
+            // Relying on session cookie instead of manual token
+            const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Notarization failed');
@@ -92,7 +92,6 @@ export function StageWizard({ batches }: StageWizardProps) {
 
         setLoading(`initiate-${targetRole}`);
         try {
-            const token = await auth.currentUser?.getIdToken();
             const targetAddress = targetRole === 'LOGISTICS' 
                 ? adminStatus.wallets.find((w: any) => w.name.includes('Logistics'))?.address 
                 : adminStatus.wallets.find((w: any) => w.name.includes('Retailer'))?.address;
@@ -101,7 +100,8 @@ export function StageWizard({ batches }: StageWizardProps) {
                 throw new Error(`Target address for ${targetRole} not found in admin wallets`);
             }
 
-            const res = await initiateHandover(selectedBatchId, targetAddress, token);
+            // Relying on session cookie
+            const res = await initiateHandover(selectedBatchId, targetAddress);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Initiation failed');
@@ -125,8 +125,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('accept');
         try {
-            const token = await auth.currentUser?.getIdToken();
-            const res = await acceptHandover(selectedBatchId, token);
+            // Relying on session cookie
+            const res = await acceptHandover(selectedBatchId);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Acceptance failed');
@@ -150,8 +150,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('reset');
         try {
-            const token = await auth.currentUser?.getIdToken();
-            const promise = resetBatchDemo(selectedBatchId, token);
+            // Relying on session cookie
+            const promise = resetBatchDemo(selectedBatchId);
             toast.promise(promise, {
                 loading: 'Resetting simulation state...',
                 success: () => {
@@ -175,8 +175,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         setLoading('violation');
         
         try {
-            const token = await auth.currentUser?.getIdToken();
-            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)", token);
+            // Relying on session cookie
+            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)");
 
             toast.promise(promise, {
                 loading: 'Notarizing violation on blockchain...',

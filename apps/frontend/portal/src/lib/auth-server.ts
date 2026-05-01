@@ -11,12 +11,19 @@ export interface AuthenticatedUser {
  * Verifies the Firebase ID token from the request headers.
  */
 export async function verifySession(request: NextRequest): Promise<AuthenticatedUser | null> {
+    let token: string | undefined;
+
     const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-        return null;
+    if (authHeader?.startsWith('Bearer ')) {
+        token = authHeader.split('Bearer ')[1];
+    } else {
+        // Fallback to cookie for resilience against client-side Firebase blocks
+        token = request.cookies.get('gftb-session')?.value;
     }
 
-    const token = authHeader.split('Bearer ')[1];
+    if (!token) {
+        return null;
+    }
 
     try {
         const decodedToken = await adminAuth.verifyIdToken(token);
