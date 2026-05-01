@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { BatchDetails } from '@/lib/api';
+import { BatchDetails, reportViolation, advanceBatchDemo } from '@/lib/api';
 import { Link } from '@/navigation';
+import { useState } from 'react';
 
 interface AdminDashboardProps {
     batches: BatchDetails[];
@@ -65,6 +66,45 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
             bg: 'bg-destructive/10'
         }
     ];
+
+    const [isDemoLoading, setIsDemoLoading] = useState<string | null>(null);
+
+    const handleSimulateViolation = async () => {
+        const latestBatch = batches[0];
+        if (!latestBatch) return;
+
+        setIsDemoLoading('violation');
+        try {
+            const res = await reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)");
+            if (res.status === 'success') {
+                alert(`Violation notarized: ${res.txHash}`);
+            } else {
+                throw new Error(res.error);
+            }
+        } catch (err: any) {
+            alert(`Demo Error: ${err.message}`);
+        } finally {
+            setIsDemoLoading(null);
+        }
+    };
+
+    const handleRapidHandover = async () => {
+        const latestBatch = batches[0];
+        if (!latestBatch) return;
+
+        setIsDemoLoading('handover');
+        try {
+            // Check current owner to decide target
+            // Simplified for demo: if it's the first handover, go to LOGISTICS.
+            // In a real demo, we'd check the current owner.
+            const res = await advanceBatchDemo(latestBatch.id, 'LOGISTICS');
+            alert(`Handover complete: ${res.txHash}`);
+        } catch (err: any) {
+            alert(`Demo Error: ${err.message}`);
+        } finally {
+            setIsDemoLoading(null);
+        }
+    };
 
     return (
         <div className="space-y-12 pb-20">
@@ -194,9 +234,11 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                                                     </div>
                                                 </div>
 
-                                                <Button size="icon" variant="ghost" className="rounded-xl hover:bg-primary/5 hover:text-primary transition-all">
-                                                    <ArrowRight size={20} />
-                                                </Button>
+                                                <Link href={`/batches/${batch.id}`}>
+                                                    <Button size="icon" variant="ghost" className="rounded-xl hover:bg-primary/5 hover:text-primary transition-all">
+                                                        <ArrowRight size={20} />
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -220,21 +262,31 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-10 pt-0 relative z-10 space-y-4">
-                            <Button className="w-full h-14 bg-white/5 hover:bg-white/10 text-white border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-widest justify-start px-6 group">
-                                <Activity className="mr-4 text-emerald-500 group-hover:animate-pulse" size={18} />
-                                Simulate Violation
+                            <Button 
+                                onClick={handleSimulateViolation}
+                                disabled={isDemoLoading !== null}
+                                className="w-full h-14 bg-white/5 hover:bg-white/10 text-white border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-widest justify-start px-6 group"
+                            >
+                                <Activity className={`mr-4 text-emerald-500 ${isDemoLoading === 'violation' ? 'animate-spin' : 'group-hover:animate-pulse'}`} size={18} />
+                                {isDemoLoading === 'violation' ? 'Notarizing...' : 'Simulate Violation'}
                             </Button>
-                            <Button className="w-full h-14 bg-white/5 hover:bg-white/10 text-white border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-widest justify-start px-6 group">
-                                <Truck className="mr-4 text-blue-400" size={18} />
-                                Rapid Handover
+                            <Button 
+                                onClick={handleRapidHandover}
+                                disabled={isDemoLoading !== null}
+                                className="w-full h-14 bg-white/5 hover:bg-white/10 text-white border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-widest justify-start px-6 group"
+                            >
+                                <Truck className={`mr-4 text-blue-400 ${isDemoLoading === 'handover' ? 'animate-bounce' : ''}`} size={18} />
+                                {isDemoLoading === 'handover' ? 'Processing...' : 'Rapid Handover'}
                             </Button>
                             <div className="pt-4 mt-4 border-t border-white/5">
                                 <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-4 italic">
                                     Demo mode uses custodial wallets for gas-less testing
                                 </p>
-                                <Button className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">
-                                    Launch Stage Wizard
-                                </Button>
+                                <Link href="/admin/demo">
+                                    <Button className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">
+                                        Launch Stage Wizard
+                                    </Button>
+                                </Link>
                             </div>
                         </CardContent>
                     </Card>

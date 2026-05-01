@@ -633,3 +633,22 @@ export async function getBlockchainAdminStatus(token?: string): Promise<any> {
     }
 }
 
+export async function advanceBatchDemo(batchId: string, targetRole: 'LOGISTICS' | 'RETAILER', token?: string): Promise<any> {
+    try {
+        const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/demo/advance`, {
+            method: 'POST',
+            headers: getHeaders(true, token),
+            body: JSON.stringify({ batchId, targetRole }),
+            cache: 'no-store'
+        });
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || 'Demo advance failed');
+        }
+        return await res.json();
+    } catch (e: any) {
+        console.error('Demo API Error (advanceBatchDemo):', e);
+        throw e;
+    }
+}
+
