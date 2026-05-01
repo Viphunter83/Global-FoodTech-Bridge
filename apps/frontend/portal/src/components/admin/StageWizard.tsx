@@ -57,10 +57,10 @@ export function StageWizard({ batches }: StageWizardProps) {
     };
 
     const stages = [
-        { name: 'Производство', icon: Package, role: 'MANUFACTURER', status: 'completed' },
-        { name: 'Логистика', icon: Truck, role: 'LOGISTICS', status: selectedBatch?.history?.some(h => h.stage === 'Логистика') ? 'completed' : 'pending' },
-        { name: 'Дистрибуция', icon: Warehouse, role: 'RETAILER', status: selectedBatch?.history?.some(h => h.stage === 'Дистрибуция') ? 'completed' : 'pending' },
-        { name: 'Доставка', icon: CheckCircle, role: 'END_USER', status: 'pending' },
+        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: 'completed' },
+        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: selectedBatch?.history?.some(h => h.stage === 'Логистика') ? 'completed' : 'pending' },
+        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: selectedBatch?.history?.some(h => h.stage === 'Дистрибуция') ? 'completed' : 'pending' },
+        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: 'pending' },
     ];
 
     return (
@@ -77,6 +77,16 @@ export function StageWizard({ batches }: StageWizardProps) {
                 <p className="text-muted-foreground/60 text-sm max-w-lg mx-auto">
                     Bypass physical world constraints and simulate end-to-end supply chain transitions for partners and clients.
                 </p>
+                <div className="pt-4">
+                    {selectedBatchId && (
+                        <a href={`/en/batches/${selectedBatchId}`} target="_blank">
+                            <Button variant="outline" className="rounded-full px-8 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5">
+                                <Search className="mr-2" size={14} />
+                                View Digital Passport (Consumer View)
+                            </Button>
+                        </a>
+                    )}
+                </div>
             </div>
 
             {/* Selection Area */}
@@ -155,7 +165,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                 >
                                     {loading === 'LOGISTICS' ? <Loader2 className="animate-spin" /> : (
                                         <>
-                                            Transition to Logistics
+                                            Handover to Logistics
                                             <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
                                         </>
                                     )}
@@ -167,7 +177,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                 >
                                     {loading === 'RETAILER' ? <Loader2 className="animate-spin" /> : (
                                         <>
-                                            Move to Distribution
+                                            Handover to Distributor
                                             <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
                                         </>
                                     )}
