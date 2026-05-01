@@ -9,6 +9,7 @@ import {
     updateBatchBlockchainHash 
 } from '@/lib/api';
 import { MANUFACTURER_ADDR } from '@/lib/constants';
+import { toast } from 'sonner';
 
 export function useBlockchainOperations(batchId: string) {
     const [loading, setLoading] = useState(false);
@@ -36,11 +37,14 @@ export function useBlockchainOperations(batchId: string) {
 
             if (res.error) {
                 setError(res.error);
-                // Rollback or handle error state if needed
+                toast.error(`Operation failed: ${res.error}`);
                 return { success: false, error: res.error };
             }
 
             if (res.txHash) {
+                toast.success('Blockchain transaction confirmed', {
+                    description: `Transaction: ${res.txHash.substring(0, 16)}...`
+                });
                 if (successUpdate) {
                     updateBatchState(batchId, successUpdate(res.txHash));
                 }
@@ -55,10 +59,13 @@ export function useBlockchainOperations(batchId: string) {
                 return { success: true, txHash: res.txHash };
             }
             
+            toast.success('Action successfully recorded');
             return { success: true };
         } catch (err: any) {
-            setError(err.message || 'Unknown error');
-            return { success: false, error: err.message };
+            const msg = err.message || 'Unknown error';
+            setError(msg);
+            toast.error(`Error: ${msg}`);
+            return { success: false, error: msg };
         } finally {
             setLoading(false);
         }

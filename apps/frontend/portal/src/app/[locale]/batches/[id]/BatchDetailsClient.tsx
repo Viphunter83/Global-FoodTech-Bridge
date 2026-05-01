@@ -12,8 +12,8 @@ const LiveMap = dynamic(
 );
 import { Link } from '@/navigation';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle, RefreshCw, Search, Box, Fingerprint } from 'lucide-react';
-import { DashboardQR } from '@/components/ui/DashboardQR';
-import { BlockchainControls } from '@/components/ui/BlockchainControls';
+import { DashboardQR } from '@/components/shared/DashboardQR';
+import { BlockchainControls } from '@/components/blockchain/BlockchainControls';
 import { ProductHero } from '@/components/passport/ProductHero';
 import { useTranslations, useLocale } from 'next-intl';
 import { useDemoState } from '@/components/providers/DemoStateProvider';

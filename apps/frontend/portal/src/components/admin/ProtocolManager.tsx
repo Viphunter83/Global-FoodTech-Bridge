@@ -22,6 +22,7 @@ import {
 import { auth } from '@/lib/firebase';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export function ProtocolManager() {
     const t = useTranslations('Admin');
@@ -42,6 +43,7 @@ export function ProtocolManager() {
             setTemplates(data);
         } catch (error) {
             console.error('Failed to load templates:', error);
+            toast.error('Failed to load protocols');
         } finally {
             setIsLoading(false);
         }
@@ -69,14 +71,17 @@ export function ProtocolManager() {
             const token = await auth.currentUser?.getIdToken();
             if (editingTemplate.id) {
                 await updateAdminTemplate(editingTemplate.id, editingTemplate, token);
+                toast.success('Protocol updated successfully');
             } else {
                 await createAdminTemplate(editingTemplate, token);
+                toast.success('Protocol created successfully');
             }
             
             setIsDialogOpen(false);
             loadTemplates();
         } catch (error) {
             console.error('Failed to save template:', error);
+            toast.error('Failed to save protocol');
         }
     };
 
@@ -85,9 +90,11 @@ export function ProtocolManager() {
             try {
                 const token = await auth.currentUser?.getIdToken();
                 await deleteAdminTemplate(id, token);
+                toast.success('Protocol deleted successfully');
                 loadTemplates();
             } catch (error) {
                 console.error('Failed to delete template:', error);
+                toast.error('Failed to delete protocol');
             }
         }
     };

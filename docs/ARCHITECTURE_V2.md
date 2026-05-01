@@ -43,7 +43,8 @@ The **[Blockchain Service](../../apps/backend/blockchain-service)** runs a dedic
 - **Retry Logic**: Failed transactions can be retried without losing sensor data.
 
 ### 4. Verification Layer (Next.js)
-The **[Portal](../../apps/frontend/portal)** directly interacts with both the Blockchain Service (for real-time status) and the Polygon network (для верификации неизменяемых записей).
+The **[Portal](../../apps/frontend/portal)** directly interacts with both the Blockchain Service (for real-time status) and the Polygon network.
+- **Admin Superuser**: For testing and audit purposes, users with the `ADMIN` role can bypass stage-specific restrictions (e.g., performing notarization or sensor pairing regardless of the current batch status).
 
 ## 🚀 Benefits of V2 Architecture
 - **Zero-Data-Loss**: Events stay in Redis until acknowledged (`XACK`).

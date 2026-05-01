@@ -1,6 +1,6 @@
 'use client';
 
-import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
+import { QRCodeDisplay } from '@/components/shared/QRCodeDisplay';
 import { useState, useEffect } from 'react';
 
 export function DashboardQR({ batchId, partnerRedirectUrl }: { batchId: string; partnerRedirectUrl?: string }) {

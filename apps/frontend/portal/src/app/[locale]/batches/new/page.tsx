@@ -42,7 +42,8 @@ import {
 import { Link } from '@/navigation';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { QRCodeDisplay } from '@/components/ui/QRCodeDisplay';
+import { QRCodeDisplay } from '@/components/shared/QRCodeDisplay';
+import { toast } from 'sonner';
 
 export default function CreateBatchPage() {
     const { role, companyId } = useAuth();
@@ -183,6 +184,9 @@ export default function CreateBatchPage() {
             const registration = await createBatch(batchData, token, role || 'MANUFACTURER');
             console.log(`[GFTB-BATCH] Batch successfully registered: ${registration.batch_id}`);
             
+            toast.success('Digital Passport Created', {
+                description: `Batch ID: ${registration.batch_id.substring(0, 16)}...`
+            });
             setCreatedBatchId(registration.batch_id);
             saveToHistory(registration.batch_id);
         } catch (err: any) {

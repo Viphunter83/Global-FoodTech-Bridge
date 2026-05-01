@@ -1,256 +1,226 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
-import { CheckCircle, ShieldCheck, AlertTriangle, FileText, Activity, MapPin, Truck, ChevronRight, ShoppingCart } from 'lucide-react';
-import { BatchDetails, BlockchainStatus } from '@/lib/api';
-import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+    getBlockchainStatus, 
+    getTelemetry, 
+    getBlockchainHistory, 
+    BlockchainStatus, 
+    Telemetry, 
+    BlockchainEvent, 
+    BatchDetails 
+} from '@/lib/api';
+import { 
+    Loader2, 
+    CheckCircle, 
+    ShieldCheck, 
+    Thermometer, 
+    Leaf, 
+    ShoppingCart 
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import dynamic from 'next/dynamic';
+import { BlockchainProof } from '@/components/blockchain/BlockchainProof';
+import { BlockchainHistory } from '@/components/blockchain/BlockchainHistory';
+import { SustainabilitySection } from '@/components/passport/SustainabilitySection';
+
+const TelemetryChart = dynamic<{ data: Telemetry[] }>(
+    () => import('@/components/charts/TelemetryChart'),
+    { ssr: false, loading: () => <div className="h-40 w-full bg-gray-50 animate-pulse rounded-md" /> }
+);
 
 interface VerifyClientProps {
-    batch: BatchDetails;
-    blockchain: BlockchainStatus;
+    batchId: string;
+    initialBatch: BatchDetails;
+    initialStatus: BlockchainStatus;
+    initialTelemetry: Telemetry[];
+    initialHistory: BlockchainEvent[];
 }
 
-export function VerifyClient({ batch, blockchain }: VerifyClientProps) {
-    const t = useTranslations();
-    const locale = useLocale();
-    const [activeTab, setActiveTab] = useState<'details' | 'process'>('details');
+export function VerifyClient({ 
+    batchId, 
+    initialBatch, 
+    initialStatus, 
+    initialTelemetry, 
+    initialHistory 
+}: VerifyClientProps) {
+    const [batch, setBatch] = useState<BatchDetails>(initialBatch);
+    const [status, setStatus] = useState<BlockchainStatus>(initialStatus);
+    const [telemetry, setTelemetry] = useState<Telemetry[]>(initialTelemetry);
+    const [bcHistory, setBcHistory] = useState<BlockchainEvent[]>(initialHistory);
 
-    const isVerified = blockchain.verified && !blockchain.violation;
+    // Refresh data periodically for live tracking
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const [bcData, telemData, historyData] = await Promise.all([
+                    getBlockchainStatus(batchId),
+                    getTelemetry(batchId),
+                    getBlockchainHistory(batchId)
+                ]);
+                setStatus(bcData);
+                setTelemetry(telemData);
+                setBcHistory(historyData);
+            } catch (error) {
+                console.warn("Silent refresh failed:", error);
+            }
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [batchId]);
+
+    if (!status || !status.verified || !batch) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
+                <ShieldCheck className="h-20 w-20 text-gray-300 mb-4" />
+                <h1 className="text-2xl font-bold text-gray-800">Product Not Verified</h1>
+                <p className="text-gray-500">This product does not have a valid digital passport record.</p>
+            </div>
+        );
+    }
+
+    const displayMetrics = batch.trust_metrics || [
+        { label: 'Carbon', value: '1.2 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
+        { label: 'Authenticity', value: 'Blockchain Secured', icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
+    ];
+
+    const marketingStory = (batch as any).marketing_story?.en || (batch as any).marketing_story || "";
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-            {/* Mobile Header - Premium Glassmorphism */}
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-primary/10 bg-background/80 px-6 py-4 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-                <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xs shadow-lg shadow-primary/20">
-                        GF
-                    </div>
-                    <div className="font-serif font-black text-xl tracking-tighter">
-                        <span className="text-primary pr-0.5">Bridge</span>
-                        <span className="text-muted-foreground font-light text-sm uppercase tracking-widest pl-1 border-l border-primary/20 ml-1">Verify</span>
-                    </div>
+        <div className="min-h-screen bg-gray-50 pb-12">
+            {/* HERO SECTION */}
+            <div className="bg-gradient-to-b from-green-600 to-green-500 text-white p-8 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12">
+                    <ShieldCheck size={200} />
                 </div>
-                <LanguageSwitcher />
-            </header>
-
-            <main className="pb-32">
-                {/* Hero Status Section - High Impact */}
-                <div className={`relative overflow-hidden flex flex-col items-center justify-center p-12 text-center transition-all duration-700 ${isVerified ? 'bg-emerald-500/5' : 'bg-destructive/5'}`}>
-                    <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]"></div>
-                    
-                    <div className="relative z-10 animate-in fade-in zoom-in duration-700">
-                        {isVerified ? (
-                            <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full scale-150 animate-pulse"></div>
-                                <div className="relative rounded-[2rem] bg-emerald-500 p-6 shadow-2xl shadow-emerald-500/30 ring-1 ring-white/20">
-                                    <ShieldCheck className="h-16 w-16 text-white" />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-destructive/20 blur-3xl rounded-full scale-150 animate-pulse"></div>
-                                <div className="relative rounded-[2rem] bg-destructive p-6 shadow-2xl shadow-destructive/30 ring-1 ring-white/20 text-white">
-                                    <AlertTriangle className="h-16 w-16" />
-                                </div>
-                            </div>
-                        )}
-
-                        <h1 className="text-4xl font-serif font-black text-foreground mb-3 tracking-tight italic">
-                            {isVerified ? t('Compliance.verified_badge') : 'CONSULT AUTHORITY'}
-                        </h1>
-                        <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-8 bg-muted/50 px-4 py-1 rounded-full border border-primary/5 inline-block">
-                            {t('Common.batch_id')} {batch.id.substring(0, 12)}
-                        </p>
-
-                        {blockchain.txHash && (
-                            <div className="flex justify-center">
-                                <a
-                                    href={`https://amoy.polygonscan.com/tx/${blockchain.txHash}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group flex items-center gap-2 px-6 py-3 bg-white hover:bg-primary hover:text-white transition-all rounded-2xl shadow-lg border border-primary/10 text-xs font-bold uppercase tracking-widest text-primary"
-                                >
-                                    {t('Batch.view_explorer_link')}
-                                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Modern Navigation Tabs */}
-                <div className="flex bg-muted/30 p-2 mx-6 mt-8 rounded-[1.5rem] border border-primary/5">
-                    <button
-                        onClick={() => setActiveTab('details')}
-                        className={`flex-1 py-3 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'details' ? 'bg-background shadow-lg text-primary scale-[1.02]' : 'text-muted-foreground hover:bg-muted/50'}`}
+                <div className="max-w-md mx-auto text-center space-y-4 relative z-10">
+                    <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="bg-white/20 backdrop-blur-md rounded-full p-2 w-fit mx-auto border border-white/30"
                     >
-                        {t('Batch.product_details_tab')}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('process')}
-                        className={`flex-1 py-3 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'process' ? 'bg-background shadow-lg text-primary scale-[1.02]' : 'text-muted-foreground hover:bg-muted/50'}`}
-                    >
-                        {t('Batch.provenance_tab')}
-                    </button>
+                        <div className="bg-white text-green-600 rounded-full p-3 shadow-lg">
+                            <CheckCircle className="h-10 w-10" />
+                        </div>
+                    </motion.div>
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight">Authentic Product</h1>
+                        <p className="opacity-90 font-medium text-lg mt-1">Global FoodTech Bridge Verified</p>
+                    </div>
+                    <div className="flex justify-center gap-2 text-sm font-mono opacity-75">
+                        <span>ID: {batch.id.substring(0, 8)}...</span>
+                        <span>•</span>
+                        <span>Polygon Mainnet</span>
+                    </div>
                 </div>
+            </div>
 
-                {/* Content Area */}
-                <div className="px-6 mt-10">
-                    {activeTab === 'details' && (
-                        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Product Info Card */}
-                            <div className="glass border-primary/5 p-8 rounded-[2.5rem] shadow-sm">
-                                <h2 className="text-3xl font-serif font-black text-foreground mb-2 leading-tight italic">{batch.product_type.replace(/_/g, ' ')}</h2>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-tighter">
-                                        {batch.batch_size} {t(`Batch.unit_${batch.unit_of_measure}` as any) || batch.unit_of_measure}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                                        <MapPin className="h-4 w-4 text-primary/40" />
-                                        <span>{batch.origin_country}</span>
-                                        <ChevronRight className="h-3 w-3 text-muted-foreground/30" />
-                                        <span>{batch.destination_country}</span>
-                                    </div>
-                                </div>
+            <div className="max-w-md mx-auto px-4 -mt-8 space-y-6 relative z-20">
+                {/* 1. PRODUCT CARD */}
+                <Card className="shadow-lg border-0 overflow-hidden rounded-[2rem] bg-white">
+                    <div className="h-1.5 w-full bg-gradient-to-r from-green-400 to-emerald-600" />
+                    <CardContent className="p-8 space-y-6">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Digital Passport</p>
+                                <h2 className="text-2xl font-serif font-black italic text-gray-900 tracking-tighter">{batch.product_type?.replace(/_/g, ' ') || 'Food Product'}</h2>
+                                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">#{batch.id.substring(0, 12)}</p>
                             </div>
+                            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-[9px] font-black italic tracking-tighter">
+                                PREMIUM GRADE
+                            </div>
+                        </div>
 
-                            {/* Compliance Badge - Premium Card */}
-                            <div className="relative overflow-hidden group rounded-[2.5rem] border border-emerald-500/20 bg-emerald-500/[0.03] p-8 transition-all hover:bg-emerald-500/[0.05]">
-                                <div className="absolute right-0 top-0 -mr-6 -mt-6 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl transition-all group-hover:scale-150" />
-                                <div className="relative z-10 flex items-center gap-6">
-                                    <div className="h-16 w-16 rounded-3xl bg-emerald-500 flex items-center justify-center text-white font-serif font-black text-2xl shadow-xl shadow-emerald-500/20">
-                                        حلال
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                            {displayMetrics.slice(0, 2).map((metric: any, i: number) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className={`${metric.color || 'bg-gray-100 text-gray-600'} p-2.5 rounded-xl shadow-inner`}>
+                                        {metric.icon || <ShieldCheck className="h-5 w-5" />}
                                     </div>
                                     <div>
-                                        <div className="text-xl font-black text-emerald-900 tracking-tight italic underline decoration-emerald-500/30 underline-offset-4">{t('Compliance.halal_cert_label')}</div>
-                                        <div className="text-sm font-bold text-emerald-700/70 mt-1 uppercase tracking-widest">Global Halal Trust • UAE Gvt Certified</div>
+                                        <p className="text-[9px] uppercase text-gray-400 font-black tracking-wider">{metric.label}</p>
+                                        <p className="font-serif font-black italic text-sm text-gray-800">{metric.value}</p>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Technical Specs: Ingredients & Nutrition */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="glass border-primary/5 p-8 rounded-[2rem]">
-                                    <h3 className="flex items-center font-black text-xs uppercase tracking-[0.2em] text-primary mb-6">
-                                        <FileText className="mr-3 h-5 w-5 text-primary/40" />
-                                        {t('Batch.ingredients')}
-                                    </h3>
-                                    <p className="text-lg font-medium text-foreground italic leading-relaxed">
-                                        {typeof batch.ingredients === 'string'
-                                            ? batch.ingredients
-                                            : (batch.ingredients?.[locale as 'en' | 'ru' | 'ar' | 'vi'] || batch.ingredients?.['en'])
-                                        }
-                                    </p>
-                                </div>
-
-                                <div className="glass border-primary/5 p-8 rounded-[2rem]">
-                                    <h3 className="flex items-center font-black text-xs uppercase tracking-[0.2em] text-primary mb-6">
-                                        <Activity className="mr-3 h-5 w-5 text-primary/40" />
-                                        {t('Batch.nutrition_label')}
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[
-                                            { label: 'Energy', val: batch.nutrition?.calories, unit: 'kcal' },
-                                            { label: 'Prot.', val: batch.nutrition?.protein, unit: 'g' },
-                                            { label: 'Fat', val: batch.nutrition?.fat, unit: 'g' },
-                                            { label: 'Carbs', val: batch.nutrition?.carbs, unit: 'g' }
-                                        ].map(item => (
-                                            <div key={item.label} className="bg-background/50 rounded-2xl p-4 border border-primary/5 text-center">
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">{item.label}</div>
-                                                <div className="text-xl font-serif font-black">{item.val}<span className="text-[10px] font-bold text-primary/60 ml-0.5">{item.unit}</span></div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-                    )}
+                    </CardContent>
+                </Card>
 
-                    {activeTab === 'process' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="relative pl-12 before:absolute before:left-0 before:top-4 before:bottom-0 before:w-0.5 before:bg-primary/10">
-                                {/* Step 1: Production */}
-                                <div className="relative mb-12">
-                                    <div className="absolute -left-[60px] top-0 h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg ring-8 ring-background">
-                                        <Activity className="h-5 w-5" />
-                                    </div>
-                                    <h4 className="text-xl font-black text-foreground italic tracking-tight">{t('Batch.step_production')}</h4>
-                                    <p className="text-sm font-bold text-muted-foreground/60 mt-1 uppercase tracking-widest">Phase 01 • Immutable Record</p>
-                                    <div className="mt-4 p-4 glass rounded-2xl border border-primary/5 inline-flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <MapPin className="h-4 w-4 text-primary" />
-                                        </div>
-                                        <span className="text-sm font-black uppercase tracking-tight">{batch.origin_country || 'Vietnam'} Production Plant</span>
-                                    </div>
-                                </div>
+                {/* 1.5 SUSTAINABILITY & QUALITY */}
+                <SustainabilitySection 
+                    marketingStory={marketingStory} 
+                    certificates={batch.certificates}
+                    productType={batch.product_type}
+                />
 
-                                {/* Step 2: Logistics */}
-                                <div className="relative">
-                                    <div className="absolute -left-[60px] top-0 h-10 w-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg ring-8 ring-background animate-pulse">
-                                        <Truck className="h-5 w-5" />
-                                    </div>
-                                    <h4 className="text-xl font-black text-foreground italic tracking-tight">{t('Batch.step_logistics')}</h4>
-                                    <p className="text-sm font-bold text-emerald-600/60 mt-1 uppercase tracking-widest">Phase 02 • Live IoT monitoring</p>
-                                    
-                                    <div className="mt-6 flex flex-col gap-3">
-                                        <div className="p-5 glass border-emerald-500/20 bg-emerald-500/[0.02] rounded-[1.5rem] flex items-center gap-4">
-                                            <div className="relative">
-                                                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping absolute" />
-                                                <div className="h-3 w-3 rounded-full bg-emerald-500 relative" />
-                                            </div>
-                                            <span className="text-sm font-bold text-emerald-900">{t('Tracking.live_tracking_active')}</span>
-                                        </div>
-                                        <p className="text-xs font-bold text-muted-foreground/40 pl-2 leading-relaxed italic uppercase tracking-wider">
-                                            {t('Tracking.iot_monitoring')} via GFTB-Bridge-V2 Protocol
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* B2B Merchant Sales Funnel */}
-                {isVerified && (
-                    <div className="px-6 mb-10">
-                        <MerchantFunnelCTA 
-                            merchantName={batch.manufacturer_name || "Global Alliance Partner"}
-                            redirectUrl={batch.partner_redirect_url || "https://globalfoodtech.com/shop"}
-                            productType={batch.product_type.replace(/_/g, ' ')}
-                        />
-                    </div>
+                {/* 1.6 PURCHASE CTA */}
+                {batch.partner_redirect_url && (
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <button 
+                            onClick={() => window.open(batch.partner_redirect_url || '#', '_blank')}
+                            className="w-full bg-slate-900 text-white h-20 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-4 transition-all"
+                        >
+                            <ShoppingCart size={22} className="text-primary" />
+                            Order Now in US Store
+                        </button>
+                    </motion.div>
                 )}
 
-                {/* Footer Action - Floating Premium Bar */}
-                <div className="fixed bottom-6 left-6 right-6 z-50">
-                    <div className="max-w-2xl mx-auto glass dark:bg-slate-900/90 border-primary/10 p-4 rounded-[2rem] shadow-2xl shadow-primary/20 backdrop-blur-2xl">
-                        {isVerified ? (
-                            <button
-                                onClick={() => window.open(batch.partner_redirect_url || "https://globalfoodtech.com/shop", '_blank')}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] h-14 flex items-center justify-center gap-3 font-black uppercase tracking-widest text-sm shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            >
-                                <ShoppingCart className="h-5 w-5" />
-                                Purchase Verified Quality
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => alert("Global FoodTech Security Protocol: Issue reporting system is being migrated to automated smart contracts. Please use the dashboard for active disputes.")}
-                                className="w-full bg-primary text-white rounded-[1.5rem] h-14 flex items-center justify-center gap-2 font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            >
-                                <AlertTriangle className="h-4 w-4" />
-                                {t('Common.report_issue')}
-                            </button>
-                        )}
-                        <div className="mt-3 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                            <ShieldCheck className="h-3 w-3" />
-                            Global FoodTech Bridge Protocol ID: {batch.id.substring(0, 16)}...
-                        </div>
-                    </div>
+                {/* 2. BLOCKCHAIN JOURNEY */}
+                <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] px-2 italic">Immutable Timeline</h3>
+                    <BlockchainHistory history={bcHistory} />
                 </div>
-            </main>
+
+                {/* 3. TEMPERATURE PROOF */}
+                <Card className="shadow-lg border-0 bg-white rounded-[2.5rem] overflow-hidden">
+                    <CardContent className="p-8">
+                        <h3 className="font-serif font-black italic text-gray-900 mb-6 flex items-center justify-between">
+                            <span className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
+                                    <Thermometer size={20} />
+                                </div>
+                                Cold Chain Proof
+                            </span>
+                            <span className="flex items-center gap-1.5 text-[9px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-black uppercase tracking-widest">
+                                <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                LIVE IOT
+                            </span>
+                        </h3>
+                        <div className="h-48 w-full">
+                            <TelemetryChart data={telemetry} />
+                        </div>
+                        <p className="text-[9px] text-gray-400 mt-6 text-center font-black uppercase tracking-widest opacity-40">
+                            Verified by Tive™ IoT Sensors & Polygon Blockchain
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* 4. BLOCKCHAIN PROOF & TRANSPARENCY */}
+                <BlockchainProof 
+                    batchId={batchId}
+                    txHash={status.txHash}
+                    dataHash={batch.token_uri?.replace('ipfs://', '')}
+                    issuer={batch.manufacturer_id}
+                    timestamp={new Date(batch.created_at).toLocaleString()}
+                    violation={status.violation || undefined}
+                />
+
+                <div className="text-center pb-20 pt-8 space-y-4">
+                    <div className="flex justify-center gap-8 opacity-20 grayscale grayscale-100 scale-90">
+                         <ShieldCheck className="h-8 w-8" />
+                         <Leaf className="h-8 w-8" />
+                         <CheckCircle className="h-8 w-8" />
+                    </div>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-[0.4em] font-black italic">
+                        Powered by Global FoodTech Bridge
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }
-

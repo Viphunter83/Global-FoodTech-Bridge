@@ -1,75 +1,62 @@
-# MCP Infrastructure Guide
-
-This document describes how to set up and manage the Model Context Protocol (MCP) integrations for the Global FoodTech Bridge platform. These integrations allow AI assistants to directly interact with Vercel (Frontend), Railway (Backend), and Firebase (Auth/DB).
-
-## Active MCP Servers
-
-### 1. Vercel (Management API)
-Allows managing deployments, environment variables, and project settings for the frontend portal.
+# MCP Infrastructure Guide & Project Identity
 
 > [!IMPORTANT]
-> **Custom Bridge Required**: Due to environment restrictions, we use a custom bridge script instead of the default `npx` command.
+> **This is the Source of Truth for Project Connectivity.** Any AI agent starting a new session MUST read this to establish cloud connections.
 
-- **Command**: `/opt/homebrew/bin/node`
-- **Args**: `["/Users/apple/.gemini/antigravity/mcp-servers/vercel/index.js"]`
-- **Bridge Path**: `/Users/apple/.gemini/antigravity/mcp-servers/vercel/index.js`
-- **Auth**: Requires `VERCEL_TOKEN` in the `env` section.
+## 🔑 Project Identity & Auth Mapping
 
-### 2. Railway (Backend & Infrastructure)
-Used for monitoring microservices, checking deployment logs, and managing backend variables.
+To prevent integration difficulties, use these absolute paths and identifiers:
 
-> [!NOTE]
-> We use a direct path to the `@railway/mcp-server` package to bypass `npx` pathing issues on macOS.
+| Service | Project ID / Scope | Credential Source | Path / Key |
+| :--- | :--- | :--- | :--- |
+| **Firebase (Prod)** | `global-foodtech-bridge-prod` | Admin SDK JSON | `/Users/apple/Documents/global-foodtech-bridge-prod-firebase-adminsdk-fbsvc-70d33782fb.json` |
+| **Vercel** | `global-food-tech-bridge` | Personal Access Token | Required in `env.VERCEL_TOKEN` |
+| **Railway** | `Global FoodTech Bridge` | Railway Token | Required in `env.RAILWAY_TOKEN` |
+| **PostgreSQL** | `passport-db` | Railway Managed | Managed via Railway MCP |
+| **Blockchain** | Polygon Mainnet | Internal API Key | `INTERNAL_API_KEY` (Sync between Vercel/Railway) |
 
-- **Command**: `/opt/homebrew/bin/node`
-- **Args**: `["/Users/apple/.gemini/antigravity/mcp-servers/railway/node_modules/@railway/mcp-server/dist/index.js"]`
-- **Dependencies**: Installed in `/Users/apple/.gemini/antigravity/mcp-servers/railway/`
+---
 
-### 3. Firebase (Identity & Storage)
-Provides tools for user management and Firestore/Storage administration.
+## 🛠 Active MCP Servers
 
-- **Command**: `/opt/homebrew/bin/npx`
-- **Args**: `["-y", "firebase-tools@latest", "mcp"]`
+### 1. Vercel (Custom Bridge)
+Used for frontend deployments and environment sync.
+- **Path**: `/Users/apple/.gemini/antigravity/mcp-servers/vercel/index.js`
+- **Requirement**: Must have `VERCEL_TOKEN` to list/deploy projects.
+
+### 2. Railway (Infrastructure Control)
+Used for backend logs, service health, and variable management.
+- **Path**: `/Users/apple/.gemini/antigravity/mcp-servers/railway/node_modules/@railway/mcp-server/dist/index.js`
+
+### 3. Firebase (Admin Control)
+Used for user role management and database overrides.
+- **Method**: `npx -y firebase-tools@latest mcp`
+- **Auth**: Always use the **Admin SDK JSON** path from the table above for `admin.initializeApp()`.
 
 ---
 
 ## 🛠 Administrative & Troubleshooting Procedures
- 
- ### 1. User Role Management (Firestore)
- If a user encounters a `403 Forbidden` error when creating a batch, verify their role in Firestore.
- - **Collection**: `users`
- - **Document ID**: User's Firebase UID.
- - **Required Fields**: `role` (must be `MANUFACTURER` or `ADMIN`).
-- **Fix Tool**: Use a Node.js script with the **Firebase Admin SDK** (stored in `/Users/apple/Documents/`).
- 
- ### 2. Debugging IPFS / Certificate Uploads
- Certificate uploads pass through a proxy: `Portal (Vercel) -> Blockchain Service (Railway) -> Pinata (IPFS)`.
- - **Common Failure**: Forcing `application/json` in the proxy breaks `multipart/form-data`. 
- - **Verification**: Ensure `apps/frontend/portal/src/app/api/blockchain/[...path]/route.ts` correctly detects and forwards the `Content-Type`.
- 
- ### 3. Internal Security (`INTERNAL_API_KEY`)
- All cross-service requests must include the `x-api-key` header.
- - **Frontend**: The proxy route automatically injects this from `process.env.INTERNAL_API_KEY`.
- - **Backend**: Services verify this key using `ApiKeyGuard` (NestJS) or custom middleware (Go).
- 
- ---
- 
- ## Configuration Template (`mcp_config.json`)
- 
- ... (previous config) ...
- 
- ## Maintenance & Recovery
- 
- ### Connection Test
- If a server appears offline, run the following verification commands:
- - **Firebase**: `mcp_firebase-mcp-server_firebase_get_project`
- - **Railway**: `mcp_railway_check-railway-status`
- - **Vercel**: `mcp_vercel_list_projects` (custom tool from bridge)
- 
- ### Troubleshooting Bridge
- If the Vercel bridge fails, verify that the `@modelcontextprotocol/sdk` and `zod` are installed in the bridge directory:
- ```bash
- cd /Users/apple/.gemini/antigravity/mcp-servers/vercel
- npm install @modelcontextprotocol/sdk zod
- ```
+
+### 1. Fixing User Roles (The "403 Forbidden" Fix)
+If a user is `PENDING` and needs to be `MANUFACTURER`:
+1. Use the script in `apps/frontend/portal/fix-role.js`.
+2. Ensure it points to the JSON key in `/Users/apple/Documents/`.
+3. Run: `cd apps/frontend/portal && node fix-role.js`.
+
+### 2. IPFS Multipart Fix
+If certificate uploads fail, check the Vercel Proxy:
+- **File**: `apps/frontend/portal/src/app/api/blockchain/[...path]/route.ts`.
+- **Logic**: It must NOT override `Content-Type` to `application/json` for multipart requests.
+
+### 3. Syncing Internal API Keys
+If you see `401 Unauthorized` between services:
+1. Check `INTERNAL_API_KEY` in Railway (Passport/Blockchain services).
+2. Check `INTERNAL_API_KEY` in Vercel (Environment Variables).
+3. They MUST be identical.
+
+---
+
+## ⚡ Quick Verification Command
+`mcp_railway_check-railway-status` && `mcp_firebase-mcp-server_firebase_get_project`
+
 

@@ -71,4 +71,23 @@ Manufacturers can monitor the status of their notarizations via:
 
 ---
 
+## 5. Frontend Proxy & Security
+
+When using the Frontend Portal (`portal`), all requests to `/api/blockchain/*` are proxied to the Blockchain Service. 
+
+- **Authorization**: The frontend must fetch a valid **Firebase ID Token** and include it as a Bearer token.
+- **Proxy Logic**: The Vercel proxy validates the token and injects the `INTERNAL_API_KEY` before forwarding the request to Railway.
+
+```javascript
+// Example from useBlockchainOperations.ts
+const token = await auth.currentUser?.getIdToken();
+const response = await fetch('/api/blockchain/notarize', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+```
+
+---
+
 © 2026 Global FoodTech Bridge | Advanced Compliance & Trust

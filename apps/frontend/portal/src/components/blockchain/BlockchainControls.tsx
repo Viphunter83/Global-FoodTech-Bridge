@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '../providers/AuthProvider';
 import { useDemoState } from '../providers/DemoStateProvider';
 import { useBlockchainOperations } from '@/hooks/useBlockchainOperations';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import { CheckCircle, Package, RefreshCcw } from 'lucide-react';
 import { MANUFACTURER_ADDR, LOGISTICS_ADDR, RETAILER_ADDR } from '@/lib/constants';
 import { PairSensorModal } from '../iot/PairSensorModal';

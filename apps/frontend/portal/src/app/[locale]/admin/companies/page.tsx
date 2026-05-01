@@ -23,11 +23,19 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Plus, Building2, Truck, ShoppingCart, Loader2, CheckCircle2, LogIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth, UserRole } from '@/components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function AdminCompaniesPage() {
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -35,6 +43,7 @@ export default function AdminCompaniesPage() {
     const [isCreating, setIsCreating] = useState(false);
     const [approvingId, setApprovingId] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
+    const [formData, setFormData] = useState({ name: '', type: 'MANUFACTURER', production_location: '' });
     const { setCompanyId, setRole } = useAuth();
     const router = useRouter();
 
@@ -50,6 +59,7 @@ export default function AdminCompaniesPage() {
             setCompanies(data);
         } catch (error) {
             console.error('Failed to load companies:', error);
+            toast.error('Failed to load companies list');
         } finally {
             setIsLoading(false);
         }
@@ -58,28 +68,28 @@ export default function AdminCompaniesPage() {
     const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsCreating(true);
-        const formData = new FormData(e.currentTarget);
         const token = await auth.currentUser?.getIdToken();
 
-        const newCompany = await createCompany({
-            name: formData.get('name') as string,
-            type: formData.get('type') as 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER',
-            production_location: formData.get('production_location') as string || '',
-        }, token);
+        try {
+            const newCompany = await createCompany({
+                name: formData.name,
+                type: formData.type as 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER',
+                production_location: formData.production_location,
+            }, token);
 
-        if (newCompany) {
-            console.log(`[GFTB-ADMIN] Registered company: ${newCompany.name}. Auto-switching context.`);
-            setCompanyId(newCompany.id);
-            setRole(newCompany.type as UserRole);
-            
-            // Optional: Provide a slight delay or just redirect
+            if (newCompany) {
+                toast.success(`Company ${newCompany.name} registered successfully`);
+                setFormData({ name: '', type: 'MANUFACTURER', production_location: '' });
+                setOpen(false);
+                loadCompanies();
+            } else {
+                toast.error('Failed to register company. Please check your inputs.');
+            }
+        } catch (err) {
+            console.error('Error creating company:', err);
+            toast.error('An unexpected error occurred during registration.');
+        } finally {
             setIsCreating(false);
-            setOpen(false);
-            router.push('/batches/new');
-        } else {
-            setIsCreating(false);
-            setOpen(false);
-            loadCompanies();
         }
     };
 
@@ -88,11 +98,20 @@ export default function AdminCompaniesPage() {
     const handleApprove = async (company: Company) => {
         setApprovingId(company.id);
         const token = await auth.currentUser?.getIdToken();
-        const success = await approveCompany(company.id, token);
-        if (success) {
-            setCompanies(companies.map(c => c.id === company.id ? { ...c, is_active: true } : c));
+        try {
+            const success = await approveCompany(company.id, token);
+            if (success) {
+                setCompanies(companies.map(c => c.id === company.id ? { ...c, is_active: true } : c));
+                toast.success(`${company.name} has been approved.`);
+            } else {
+                toast.error(`Failed to approve ${company.name}.`);
+            }
+        } catch (err) {
+            console.error('Error approving company:', err);
+            toast.error('An error occurred during approval.');
+        } finally {
+            setApprovingId(null);
         }
-        setApprovingId(null);
     };
 
     const handleLoginAs = (company: Company) => {
@@ -135,24 +154,42 @@ export default function AdminCompaniesPage() {
                             <div className="grid gap-4 py-4">
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="name" className="text-right">Name</Label>
-                                    <Input id="name" name="name" className="col-span-3" required placeholder="Organization Name" />
+                                    <Input 
+                                        id="name" 
+                                        value={formData.name} 
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                                        className="col-span-3" 
+                                        required 
+                                        placeholder="Organization Name" 
+                                    />
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="type" className="text-right">Type</Label>
-                                    <select
-                                        id="type"
-                                        name="type"
-                                        className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                                        required
-                                    >
-                                        <option value="MANUFACTURER">Manufacturer</option>
-                                        <option value="LOGISTICS">Logistics Provider</option>
-                                        <option value="RETAILER">Retailer</option>
-                                    </select>
+                                    <div className="col-span-3">
+                                        <Select 
+                                            value={formData.type} 
+                                            onValueChange={(value) => setFormData({ ...formData, type: value })}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="MANUFACTURER">Manufacturer</SelectItem>
+                                                <SelectItem value="LOGISTICS">Logistics Provider</SelectItem>
+                                                <SelectItem value="RETAILER">Retailer</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="location" className="text-right">Location</Label>
-                                    <Input id="location" name="production_location" className="col-span-3" placeholder="City, Country" />
+                                    <Input 
+                                        id="location" 
+                                        value={formData.production_location} 
+                                        onChange={(e) => setFormData({ ...formData, production_location: e.target.value })} 
+                                        className="col-span-3" 
+                                        placeholder="City, Country" 
+                                    />
                                 </div>
                             </div>
                             <DialogFooter>

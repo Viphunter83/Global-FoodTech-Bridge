@@ -116,6 +116,17 @@ export interface TemplateStep {
     required_cert?: string;
 }
 
+export interface Device {
+    id: string;
+    serial_number: string;
+    model: string;
+    status: 'ACTIVE' | 'IDLE' | 'FAULTY';
+    battery_level: number;
+    assigned_company_id?: string;
+    assigned_company_name?: string;
+    last_ping?: string;
+}
+
 import { MANUFACTURER_ADDR } from './constants';
 
 const isServer = typeof window === 'undefined';
@@ -579,3 +590,18 @@ export async function deleteAdminTemplate(id: string, token?: string): Promise<b
         return false;
     }
 }
+
+export async function getDevices(token?: string): Promise<Device[]> {
+    try {
+        const res = await fetch(`${IOT_URL}/devices`, { 
+            headers: getHeaders(false, token),
+            cache: 'no-store' 
+        });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to fetch devices:', e);
+        return [];
+    }
+}
+

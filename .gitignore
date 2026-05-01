@@ -56,3 +56,5 @@ scratch/
 *-adminsdk-*.json
 fix-role.js
 *.tmp
+.vercel
+.env*.local

@@ -3,7 +3,7 @@
 import { Link } from '@/navigation';
 import { PackageSearch, LayoutDashboard, Menu, X, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { Button } from './ui/button';
-import { LanguageSwitcher } from './ui/LanguageSwitcher';
+import { LanguageSwitcher } from './layout/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useNotifications } from '@/components/providers/NotificationProvider';
