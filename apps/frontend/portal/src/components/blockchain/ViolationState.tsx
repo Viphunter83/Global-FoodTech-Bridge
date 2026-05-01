@@ -24,7 +24,7 @@ export function ViolationState({ violation, txHash, children }: ViolationStatePr
                 <div className="flex items-center gap-3 p-4 bg-background/50 border border-destructive/10 rounded-2xl mb-6 shadow-sm overflow-hidden group">
                     <Fingerprint className="h-5 w-5 text-destructive/40 shrink-0" />
                     <div className="flex flex-col min-w-0">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">Audit Signature</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">{t('audit_signature')}</span>
                         <span className="text-[10px] font-mono font-bold text-destructive/60 truncate group-hover:text-destructive transition-colors">
                             {txHash}
                         </span>

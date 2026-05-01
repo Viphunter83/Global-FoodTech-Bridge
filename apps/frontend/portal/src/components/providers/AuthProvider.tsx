@@ -14,6 +14,7 @@ interface AuthContextType {
     companyId: string | null;
     loading: boolean;
     logout: () => Promise<void>;
+    getToken: () => Promise<string | null>;
     setRole: (role: UserRole) => void;
     setCompanyId: (id: string | null) => void;
 }
@@ -125,8 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const getToken = async () => {
+        if (!user) return null;
+        return await user.getIdToken();
+    };
+
     return (
-        <AuthContext.Provider value={{ user, role, companyId, loading, logout, setRole, setCompanyId }}>
+        <AuthContext.Provider value={{ user, role, companyId, loading, logout, getToken, setRole, setCompanyId }}>
             {loading ? <LoadingScreen /> : children}
         </AuthContext.Provider>
     );

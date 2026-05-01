@@ -247,7 +247,10 @@
     "route_completed": "Завершено",
     "route_active": "Активно",
     "route_pending": "Ожидание",
-    "map_loading": "Инициализация карты маршрута..."
+    "audit_signature": "Цифровая подпись аудита",
+    "provenance_secured": "Происхождение подтверждено",
+    "violation_logistics": "Нарушение логистического протокола",
+    "violation_retail": "Угроза безопасности в ритейле"
   },
   "Auth": {
     "login_title": "Безопасный доступ",
@@ -309,7 +312,28 @@
     "admin_sensor_status": "Текущее состояние",
     "admin_sensor_battery": "Заряд",
     "admin_sensor_assignment": "Привязка к партнеру",
-    "confirm_delete": "Вы уверены, что хотите удалить этот протокол? Это повлияет на новые партии."
+    "confirm_delete": "Вы уверены, что хотите удалить этот протокол? Это повлияет на новые партии.",
+    "protocol_engine": "Ядро протокола v5.0 (Edge)",
+    "reset_state": "Сбросить состояние",
+    "stage_wizard_title": "Симулятор этапов",
+    "stage_wizard_subtitle": "Обход ограничений реального мира для симуляции сквозных переходов в цепочке поставок.",
+    "target_selection": "Выбор цели",
+    "select_active_batch": "Выберите активную партию",
+    "lifecycle_state": "Текущее состояние жизненного цикла",
+    "notarized_progress": "Прогресс нотариального заверения",
+    "violation_detected": "ОБНАРУЖЕНО НАРУШЕНИЕ",
+    "live_sync": "СИНХРОНИЗАЦИЯ",
+    "blockchain_alert": "Сигнал блокчейна",
+    "notarize_product": "Заверить продукт в блокчейне",
+    "initiate_logistics": "Начать передачу в логистику",
+    "confirm_acceptance": "Подтвердить приемку ({role})",
+    "initiate_distributor": "Начать передачу дистрибьютору",
+    "emergency_reset": "Экстренный сброс состояния симуляции",
+    "chaos_engineering": "Chaos Engineering",
+    "simulate_sla_breach": "Симуляция критического нарушения SLA",
+    "trigger_violation": "Вызвать нарушение",
+    "view_digital_passport": "Открыть цифровой паспорт (Вид потребителя)",
+    "admin_simulation_env": "Среда админ-симуляции"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",

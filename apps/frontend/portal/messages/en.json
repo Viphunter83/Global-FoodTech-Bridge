@@ -248,7 +248,11 @@
     "route_completed": "Completed",
     "route_active": "Active",
     "route_pending": "Pending",
-    "map_loading": "Initializing route map..."
+    "map_loading": "Initializing route map...",
+    "audit_signature": "Audit Signature",
+    "provenance_secured": "Provenance Secured",
+    "violation_logistics": "Logistics Compliance Violation",
+    "violation_retail": "Retailer Health Safety Alert"
   },
   "Auth": {
     "login_title": "Secure Access",
@@ -310,7 +314,9 @@
     "admin_sensor_status": "Current State",
     "admin_sensor_battery": "Charge",
     "admin_sensor_assignment": "Partner Assignment",
-    "confirm_delete": "Are you sure you want to deprovision this protocol? New batches will no longer be able to use it."
+    "confirm_delete": "Are you sure you want to deprovision this protocol? New batches will no longer be able to use it.",
+    "protocol_engine": "Protocol Engine v5.0 (Edge)",
+    "reset_state": "Reset State"
   },
   "HowItWorks": {
     "how_title": "How GFTB Bridge Works",

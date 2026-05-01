@@ -29,6 +29,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { useTranslations } from 'next-intl';
 
 interface StageWizardProps {
     batches: BatchDetails[];
@@ -36,6 +38,9 @@ interface StageWizardProps {
 
 export function StageWizard({ batches }: StageWizardProps) {
     const router = useRouter();
+    const { getToken } = useAuth();
+    const tAdmin = useTranslations('Admin');
+    const tTracking = useTranslations('Tracking');
     const [selectedBatchId, setSelectedBatchId] = useState<string>(batches[0]?.id || '');
     const [loading, setLoading] = useState<string | null>(null);
     const [adminStatus, setAdminStatus] = useState<any>(null);
@@ -61,8 +66,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('notarize');
         try {
-            // Relying on session cookie instead of manual token
-            const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`);
+            const token = await getToken();
+            const res = await notarizeBatch(selectedBatchId, `ipfs://metadata-${selectedBatchId}`, token ?? undefined);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Notarization failed');
@@ -99,8 +104,8 @@ export function StageWizard({ batches }: StageWizardProps) {
                 throw new Error(`Target address for ${targetRole} not found in admin wallets`);
             }
 
-            // Relying on session cookie
-            const res = await initiateHandover(selectedBatchId, targetAddress);
+            const token = await getToken();
+            const res = await initiateHandover(selectedBatchId, targetAddress, token ?? undefined);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Initiation failed');
@@ -124,8 +129,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('accept');
         try {
-            // Relying on session cookie
-            const res = await acceptHandover(selectedBatchId);
+            const token = await getToken();
+            const res = await acceptHandover(selectedBatchId, token ?? undefined);
             
             if (res.status === 'error' || res.error) {
                 throw new Error(res.error || 'Acceptance failed');
@@ -149,8 +154,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         if (!selectedBatchId) return;
         setLoading('reset');
         try {
-            // Relying on session cookie
-            const promise = resetBatchDemo(selectedBatchId);
+            const token = await getToken();
+            const promise = resetBatchDemo(selectedBatchId, token ?? undefined);
             toast.promise(promise, {
                 loading: 'Resetting simulation state...',
                 success: () => {
@@ -174,8 +179,8 @@ export function StageWizard({ batches }: StageWizardProps) {
         setLoading('violation');
         
         try {
-            // Relying on session cookie
-            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)");
+            const token = await getToken();
+            const promise = reportViolation(selectedBatchId, "Demo Violation: Critical temperature threshold exceeded (+12°C above limit)", token ?? undefined);
 
             toast.promise(promise, {
                 loading: 'Notarizing violation on blockchain...',
@@ -217,10 +222,10 @@ export function StageWizard({ batches }: StageWizardProps) {
     };
 
     const stages = [
-        { name: 'Производство (Manufacturer)', icon: Package, role: 'MANUFACTURER', status: getStageStatus(0) },
-        { name: 'Логистика (Transit)', icon: Truck, role: 'LOGISTICS', status: getStageStatus(1) },
-        { name: 'Дистрибьютор (Importer)', icon: Warehouse, role: 'RETAILER', status: getStageStatus(2) },
-        { name: 'Конечный потребитель', icon: CheckCircle, role: 'END_USER', status: getStageStatus(3) },
+        { name: tTracking('stage_produced'), icon: Package, role: 'MANUFACTURER', status: getStageStatus(0) },
+        { name: tTracking('in_transit'), icon: Truck, role: 'LOGISTICS', status: getStageStatus(1) },
+        { name: tTracking('stage_quality'), icon: Warehouse, role: 'RETAILER', status: getStageStatus(2) },
+        { name: tTracking('timeline_arrived_destination'), icon: CheckCircle, role: 'END_USER', status: getStageStatus(3) },
     ];
 
     return (
@@ -229,20 +234,20 @@ export function StageWizard({ batches }: StageWizardProps) {
             <div className="text-center space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-[10px] font-black uppercase tracking-widest">
                     <Zap size={14} className="animate-pulse" />
-                    Admin Simulation Environment
+                    {tAdmin('admin_simulation_env')}
                 </div>
                 <h1 className="text-5xl font-serif font-black italic tracking-tighter uppercase">
-                    Stage Wizard
+                    {tAdmin('stage_wizard_title')}
                 </h1>
                 <p className="text-muted-foreground/60 text-sm max-w-lg mx-auto">
-                    Bypass physical world constraints and simulate end-to-end supply chain transitions for partners and clients.
+                    {tAdmin('stage_wizard_subtitle')}
                 </p>
                 <div className="pt-4">
                     {selectedBatchId && (
                         <a href={`/en/batches/${selectedBatchId}`} target="_blank">
                             <Button variant="outline" className="rounded-full px-8 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5">
                                 <Search className="mr-2" size={14} />
-                                View Digital Passport (Consumer View)
+                                {tAdmin('view_digital_passport')}
                             </Button>
                         </a>
                     )}
@@ -253,11 +258,11 @@ export function StageWizard({ batches }: StageWizardProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
                 <Card className="rounded-[2.5rem] border-primary/5 glass p-8 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">1. Target Selection</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">{tAdmin('target_selection')}</h3>
                         {!adminStatus && <Loader2 className="animate-spin text-blue-500" size={14} />}
                     </div>
                     <div className="space-y-4">
-                        <p className="text-xs font-bold">Select Active Batch</p>
+                        <p className="text-xs font-bold">{tAdmin('select_active_batch')}</p>
                         <div className="space-y-2 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
                             {batches.map(batch => (
                                 <button
@@ -292,19 +297,19 @@ export function StageWizard({ batches }: StageWizardProps) {
                         <CardHeader className="p-10 border-b border-primary/5 bg-slate-900 text-white">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <CardTitle className="text-2xl font-serif font-black italic tracking-tighter">Current Lifecycle State</CardTitle>
+                                    <CardTitle className="text-2xl font-serif font-black italic tracking-tighter">{tAdmin('lifecycle_state')}</CardTitle>
                                     <CardDescription className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                                        Blockchain Notarized Progress
+                                        {tAdmin('notarized_progress')}
                                     </CardDescription>
                                 </div>
                                 <div className="flex gap-2">
                                     {bcStatus?.violation && (
                                         <Badge className="bg-rose-500 text-white border-0 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-bounce">
-                                            VIOLATION DETECTED
+                                            {tAdmin('violation_detected')}
                                         </Badge>
                                     )}
                                     <Badge className="bg-emerald-500 text-white border-0 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                        LIVE SYNC
+                                        {tAdmin('live_sync')}
                                     </Badge>
                                 </div>
                             </div>
@@ -314,7 +319,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                 <div className="mb-8 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-start gap-3">
                                     <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-1">Blockchain Alert</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-1">{tAdmin('blockchain_alert')}</p>
                                         <p className="text-xs text-rose-600/80 font-medium">{bcStatus.violation}</p>
                                     </div>
                                 </div>
@@ -354,7 +359,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         disabled={loading !== null}
                                         className="col-span-2 h-16 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
                                     >
-                                        {loading === 'notarize' ? <Loader2 className="animate-spin" /> : 'Notarize Product on Blockchain'}
+                                        {loading === 'notarize' ? <Loader2 className="animate-spin" /> : tAdmin('notarize_product')}
                                     </Button>
                                 )}
 
@@ -366,7 +371,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     >
                                         {loading === 'initiate-LOGISTICS' ? <Loader2 className="animate-spin" /> : (
                                             <>
-                                                Initiate Transfer to Logistics
+                                                {tAdmin('initiate_logistics')}
                                                 <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
                                             </>
                                         )}
@@ -379,7 +384,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         disabled={loading !== null}
                                         className="col-span-2 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl"
                                     >
-                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : `Confirm Acceptance (${bcStatus.pendingOwnerRole})`}
+                                        {loading === 'accept' ? <Loader2 className="animate-spin" /> : tAdmin('confirm_acceptance', { role: bcStatus.pendingOwnerRole })}
                                     </Button>
                                 )}
 
@@ -391,7 +396,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     >
                                         {loading === 'initiate-RETAILER' ? <Loader2 className="animate-spin" /> : (
                                             <>
-                                                Initiate Transfer to Distributor
+                                                {tAdmin('initiate_distributor')}
                                                 <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" size={16} />
                                             </>
                                         )}
@@ -404,7 +409,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                     variant="ghost"
                                     className="col-span-2 mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
                                 >
-                                    {loading === 'reset' ? <Loader2 className="animate-spin" /> : 'Emergency Reset Simulation State'}
+                                    {loading === 'reset' ? <Loader2 className="animate-spin" /> : tAdmin('emergency_reset')}
                                 </Button>
                             </div>
 
@@ -415,8 +420,8 @@ export function StageWizard({ batches }: StageWizardProps) {
                                             <AlertCircle size={24} />
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-black uppercase tracking-widest text-rose-600">Chaos Engineering</h4>
-                                            <p className="text-[10px] font-medium text-rose-600/60 uppercase tracking-widest">Simulate critical SLA breach</p>
+                                            <h4 className="text-sm font-black uppercase tracking-widest text-rose-600">{tAdmin('chaos_engineering')}</h4>
+                                            <p className="text-[10px] font-medium text-rose-600/60 uppercase tracking-widest">{tAdmin('simulate_sla_breach')}</p>
                                         </div>
                                     </div>
                                     <Button 
@@ -425,7 +430,7 @@ export function StageWizard({ batches }: StageWizardProps) {
                                         variant="outline" 
                                         className="h-12 border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest px-8 transition-all"
                                     >
-                                        {loading === 'violation' ? <Loader2 className="animate-spin" /> : 'Trigger Violation'}
+                                        {loading === 'violation' ? <Loader2 className="animate-spin" /> : tAdmin('trigger_violation')}
                                     </Button>
                                 </div>
                             </div>

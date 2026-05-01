@@ -8,7 +8,7 @@ import { notarizeBatch } from '@/lib/api';
 import { useRouter } from '@/navigation';
 
 export function NotarizeButton({ batchId }: { batchId: string }) {
-    const { role } = useAuth();
+    const { role, getToken } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
@@ -22,8 +22,11 @@ export function NotarizeButton({ batchId }: { batchId: string }) {
 
         setIsLoading(true);
         try {
+            const token = await getToken();
+            if (!token) throw new Error('No auth token available');
+
             // For MVP, we use the Batch ID itself as the hash payload, or a placeholder
-            const res = await notarizeBatch(batchId, `hash-${batchId.slice(0, 8)}`);
+            const res = await notarizeBatch(batchId, `hash-${batchId.slice(0, 8)}`, token);
             if (res.status === 'success') {
                 alert(`Notarization started! TX: ${res.txHash}`);
                 router.refresh(); // Refresh to show "Secured" status (once confirmed)

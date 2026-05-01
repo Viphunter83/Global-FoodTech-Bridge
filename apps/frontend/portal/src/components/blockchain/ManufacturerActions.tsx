@@ -99,7 +99,7 @@ export function ManufacturerActions({
                             {t('bc_handover_title')}
                         </div>
                         <div className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">
-                            Provenance Secured
+                            {t('provenance_secured')}
                         </div>
                     </div>
                 </div>

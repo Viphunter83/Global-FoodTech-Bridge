@@ -4,7 +4,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { useDemoState } from '../providers/DemoStateProvider';
 import { useBlockchainOperations } from '@/hooks/useBlockchainOperations';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Package, RefreshCcw } from 'lucide-react';
+import { CheckCircle, Package, RefreshCcw, Loader2 } from 'lucide-react';
 import { MANUFACTURER_ADDR, LOGISTICS_ADDR, RETAILER_ADDR } from '@/lib/constants';
 import { PairSensorModal } from '../iot/PairSensorModal';
 
@@ -24,6 +24,7 @@ interface BlockchainControlsProps {
 export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: BlockchainControlsProps) {
     const { role } = useAuth();
     const t = useTranslations('Tracking');
+    const tAdmin = useTranslations('Admin');
     const { getBatchState, updateBatchState, resetBatchState } = useDemoState();
     const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
     
@@ -40,19 +41,22 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
                     <span className="flex items-center gap-2">
                         <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
-                        <span className="leading-tight">Protocol Engine v5.0 (Edge)</span>
+                        <span className="leading-tight">{tAdmin('protocol_engine')}</span>
                     </span>
                     <Button
                         variant="ghost"
                         size="sm"
+                        disabled={ops.loading}
                         className="h-8 text-[9px] font-black uppercase tracking-widest hover:text-destructive hover:bg-destructive/5 px-4 rounded-full border border-destructive/10 sm:border-transparent transition-all self-start sm:self-auto w-full sm:w-auto"
-                        onClick={() => {
-                            resetBatchState(batchId);
-                            window.location.reload();
+                        onClick={async () => {
+                            const res = await ops.reset();
+                            if (res.success) {
+                                window.location.reload();
+                            }
                         }}
                     >
-                        <RefreshCcw className="h-3 w-3 mr-2" />
-                        Reset State
+                        {ops.loading ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <RefreshCcw className="h-3 w-3 mr-2" />}
+                        {tAdmin('reset_state')}
                     </Button>
                 </div>
             </div>
@@ -116,7 +120,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         status={status}
                         onAccept={() => ops.acceptTransfer(LOGISTICS_ADDR)}
                         onTransfer={() => ops.initiateTransfer(RETAILER_ADDR)}
-                        onReport={() => ops.report("Logistics Compliance Violation")}
+                        onReport={() => ops.report(t('violation_logistics'))}
                         onStatusUpdate={(id, label) => updateBatchState(batchId, { shippingStatus: id, shippingStatusLabel: label })}
                         loading={ops.loading}
                     />
@@ -126,7 +130,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                     <RetailerActions
                         status={status}
                         onAccept={() => ops.acceptTransfer(RETAILER_ADDR)}
-                        onReport={() => ops.report("Retailer Health Safety Alert")}
+                        onReport={() => ops.report(t('violation_retail'))}
                         loading={ops.loading}
                     />
                 )}

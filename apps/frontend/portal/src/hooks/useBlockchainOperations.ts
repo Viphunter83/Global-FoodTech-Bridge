@@ -6,7 +6,8 @@ import {
     initiateHandover, 
     acceptHandover, 
     reportViolation, 
-    updateBatchBlockchainHash 
+    updateBatchBlockchainHash,
+    resetBatchDemo
 } from '@/lib/api';
 import { MANUFACTURER_ADDR } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -97,12 +98,33 @@ export function useBlockchainOperations(batchId: string) {
         (txHash) => ({ violation: details, txHash })
     );
 
+    const reset = () => handleAction(
+        async (token) => {
+            const res = await resetBatchDemo(batchId, token);
+            return { status: 'success' };
+        },
+        null,
+        () => {
+            // After successful backend reset, we reset the local demo state
+            return {
+                status: 'Initial',
+                verified: false,
+                owner: null,
+                pendingOwner: null,
+                txHash: null,
+                violation: null,
+                shippingStatus: null
+            };
+        }
+    );
+
     return {
         loading,
         error,
         notarize,
         initiateTransfer,
         acceptTransfer,
-        report
+        report,
+        reset
     };
 }
