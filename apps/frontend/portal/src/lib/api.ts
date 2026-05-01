@@ -336,6 +336,7 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
                 status: 'New',
                 verified: false,
                 owner: MANUFACTURER_ADDR,
+                ownerRole: 'MANUFACTURER',
                 pendingOwner: null,
                 violation: null,
                 handover: false
@@ -359,7 +360,8 @@ export async function getBlockchainStatus(id: string): Promise<BlockchainStatus>
         return {
             status: 'Offline',
             verified: false,
-            owner: MANUFACTURER_ADDR
+            owner: MANUFACTURER_ADDR,
+            ownerRole: 'MANUFACTURER'
         };
     }
 }
@@ -656,7 +658,14 @@ export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
             cache: 'no-store'
         });
         if (!res.ok) return [];
-        return await res.json();
+        const rawBatches: BatchDetails[] = await res.json();
+        
+        // Decorate top 10 batches with full details/history for the Stage Wizard
+        const decoratedBatches = await Promise.all(
+            rawBatches.slice(0, 10).map(b => getBatchDetails(b.id))
+        );
+
+        return decoratedBatches.filter((b): b is BatchDetails => b !== null);
     } catch (e) {
         console.error('Admin API Error (getAdminBatches):', e);
         return [];
