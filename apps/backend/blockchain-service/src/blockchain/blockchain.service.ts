@@ -283,8 +283,6 @@ export class BlockchainService implements OnModuleInit {
                 pendingOwner: pendingOwner,
                 pendingOwnerRole: pendingOwnerRole
             };
-                pendingOwnerRole: pendingOwner ? resolveRole(pendingOwner) : null
-            };
         } catch (error) {
             this.logger.error(`Failed to get batch data for ${batchId}`, error);
             return { exists: false };
