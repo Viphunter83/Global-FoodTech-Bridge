@@ -354,7 +354,7 @@ export class BlockchainService implements OnModuleInit {
             const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
             const filter = {
                 address: await this.contract.getAddress(),
-                fromBlock: 0,
+                fromBlock: 85000000,
                 toBlock: 'latest',
             };
 
