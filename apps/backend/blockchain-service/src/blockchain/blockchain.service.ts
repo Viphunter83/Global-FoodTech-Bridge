@@ -457,23 +457,31 @@ export class BlockchainService implements OnModuleInit {
             return { txHash: `0xMOCK_RESET_${Date.now()}` };
         }
 
-        // For Live Mode, if the batch is in a stuck state (e.g. pending owner is someone wrong),
-        // we can't easily "reset" it on-chain without many transactions.
-        // But we can try to "Advance" it to Manufacturer if it's not already.
         try {
             const bcData = await this.getBatchPublicData(batchId);
-            if (bcData.exists && bcData.ownerRole !== 'MANUFACTURER') {
-                this.logger.log(`Demo: Batch owned by ${bcData.ownerRole}. Attempting to return to Manufacturer.`);
-                // This would require current owner to initiate transfer back.
-                // Since this is a custodial admin demo, we can do it!
+            if (!bcData.exists) return { txHash: '0xNOT_NOTARIZED' };
+
+            // 1. If there's a pending transfer, accept it to clear the state
+            if (bcData.pendingOwner) {
+                this.logger.log(`Demo: Pending transfer found for ${batchId}. Clearing it...`);
+                await this.acceptTransfer(batchId);
+            }
+
+            // 2. Re-fetch status after clearing pending
+            const updatedData = await this.getBatchPublicData(batchId);
+
+            // 3. If owner is not Manufacturer, bring it back
+            if (updatedData.ownerRole !== 'MANUFACTURER') {
+                this.logger.log(`Demo: Batch owned by ${updatedData.ownerRole}. Returning to Manufacturer.`);
                 await this.initiateTransfer(batchId, this.manufacturerWallet.address);
                 const txHash = await this.acceptTransfer(batchId);
                 return { txHash };
             }
-        } catch (err) {
-            this.logger.warn(`Demo: On-chain reset partial failure: ${err.message}`);
-        }
 
-        return { txHash: '0xDEMO_RESET_COMPLETED' };
+            return { txHash: '0xDEMO_RESET_SUCCESS' };
+        } catch (err) {
+            this.logger.error(`Demo: Reset failure: ${err.message}`);
+            throw new Error(`Reset failed: ${err.message}`);
+        }
     }
 }
