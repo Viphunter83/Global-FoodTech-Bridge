@@ -181,11 +181,11 @@ export default function Home() {
                                         <div className="h-3 w-3 rounded-full bg-yellow-500/50" />
                                         <div className="h-3 w-3 rounded-full bg-green-500/50" />
                                     </div>
-                                    <p className="opacity-50"># GFTB-BRIDGE PROTOCOL v4.2</p>
-                                    <p>&gt; Initializing Immutable Ledger Sequence...</p>
-                                    <p className="text-blue-400">&gt; VERIFYING BATCH: 2cbade92-e88e-48a8-a682-94ae0a0205e8</p>
-                                    <p className="text-purple-400">&gt; IOT_SENSOR_SYNC: EMERSON_492 (ACTIVE)</p>
-                                    <p className="text-emerald-500">&gt; STATUS: [100% SECURE] NOTARIZED ON POLYGON MAINNET</p>
+                                    <p className="opacity-50"># {t('Terminal.header')}</p>
+                                    <p>&gt; {t('Terminal.initializing')}</p>
+                                    <p className="text-blue-400">&gt; {t('Terminal.verifying', { id: '2cbade92-e88e-48a8-a682-94ae0a0205e8' })}</p>
+                                    <p className="text-purple-400">&gt; {t('Terminal.iot_sync', { sensor: 'EMERSON_492' })}</p>
+                                    <p className="text-emerald-500">&gt; {t('Terminal.status')}</p>
                                     <div className="h-40 flex items-end gap-1 pt-8">
                                         {[40, 70, 45, 90, 65, 80, 50, 95, 30, 85, 60, 75].map((h, i) => (
                                             <motion.div 
@@ -409,9 +409,9 @@ export default function Home() {
                             <span>{t('Marketing.blockchain_badge')}</span>
                         </div>
                         <div className="flex gap-8">
-                            <Link href="/contact?subject=privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                            <Link href="/contact?subject=terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-                            <Link href="https://github.com/Viphunter83/Global-FoodTech-Bridge/blob/main/docs/COMPLIANCE.md" className="hover:text-primary transition-colors" target="_blank">Compliance / ESG</Link>
+                            <Link href="/contact?subject=privacy" className="hover:text-primary transition-colors">{t('Footer.privacy')}</Link>
+                            <Link href="/contact?subject=terms" className="hover:text-primary transition-colors">{t('Footer.terms')}</Link>
+                            <Link href="https://github.com/Viphunter83/Global-FoodTech-Bridge/blob/main/docs/COMPLIANCE.md" className="hover:text-primary transition-colors" target="_blank">{t('Footer.compliance')}</Link>
                         </div>
                         <div className="flex items-center gap-2">
                              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />

@@ -33,9 +33,10 @@ Global FoodTech Bridge — это универсальная экосистем�
 
 ## 📚 Документация
 - **[Эталонный Сценарий: Вьетнамское Манго 🥭](./docs/SCENARIO_VIETNAM_MANGO.md)**: Наш маркер качества E2E.
-- **[Техническая Инфраструктура](./docs/MCP_INFRASTRUCTURE.md)**: Настройка и управление через MCP.
-- **[База Знаний (Knowledge Items)](./.gemini/knowledge/)**: Подробные гайды по миграциям и API.
-- **[Бизнес-логика](./BUSINESS_LOGIC_BLUEPRINT.md)**: Описание процессов от фермы до полки.
+- **[Техническая Архитектура (V3)](./docs/ARCHITECTURE_V2.md)**: Подробное описание Redis-кэширования и Event-Driven модели.
+- **[Бизнес-логика и TaaS](./docs/BUSINESS_LOGIC.md)**: Описание процессов от фермы до полки (English).
+- **[Базовый план бизнес-логики (RU)](./BUSINESS_LOGIC_BLUEPRINT.md)**: Концептуальное описание на русском языке.
+- **[API Integration Guide](./docs/API_INTEGRATION.md)**: Руководство по интеграции для партнеров и IoT-вендоров.
 
 ---
 *Global FoodTech Bridge: Переход от веры к доказательствам.*

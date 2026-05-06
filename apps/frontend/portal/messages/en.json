@@ -8,6 +8,18 @@
     "login": "Login",
     "language": "Language"
   },
+  "Branding": {
+    "name": "GFTB Bridge",
+    "name_accent": "Bridge",
+    "tagline": "Sovereign Trust"
+  },
+  "Terminal": {
+    "header": "GFTB-BRIDGE PROTOCOL v4.2",
+    "initializing": "> Initializing Immutable Ledger Sequence...",
+    "verifying": "> VERIFYING BATCH: {id}",
+    "iot_sync": "> IOT_SENSOR_SYNC: {sensor} (ACTIVE)",
+    "status": "> STATUS: [100% SECURE] NOTARIZED ON POLYGON MAINNET"
+  },
   "Common": {
     "app_title_suffix": "Supply Chain Manager",
     "loading": "Loading",
@@ -383,7 +395,11 @@
     "consumer_desc": "The final consumer scans the batch passport to verify the entire journey, environmental compliance records, and government-cleared authenticity.",
     "try_live_demo": "Live Verification Terminal",
     "prev_step": "Return to Previous",
-    "next_step": "Advance Protocol"
+    "next_step": "Advance Protocol",
+    "notarized_label": "Blockchain Notarized: #49281",
+    "active_transit": "Active Transit",
+    "dual_sig_consensus": "Dual-Signature Consensus",
+    "handoff_validation": "Handoff Validation Protocol Successful"
   },
   "NotFound": {
     "title": "Page Not Found",
@@ -415,5 +431,10 @@
     "infra_alert": "Infrastructure Alert",
     "infra_service_changed": "Service {name} state changed to {status}.",
     "violation_detected": "Violation Detected"
+  },
+  "Footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "compliance": "Compliance / ESG"
   }
 }

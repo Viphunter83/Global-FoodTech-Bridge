@@ -8,6 +8,18 @@
     "login": "Войти",
     "language": "Язык"
   },
+  "Branding": {
+    "name": "GFTB Bridge",
+    "name_accent": "Bridge",
+    "tagline": "Sovereign Trust"
+  },
+  "Terminal": {
+    "header": "GFTB-BRIDGE ПРОТОКОЛ v4.2",
+    "initializing": "> Инициализация последовательности реестра...",
+    "verifying": "> ПРОВЕРКА ПАРТИИ: {id}",
+    "iot_sync": "> IOT_SENSOR_SYNC: {sensor} (АКТИВЕН)",
+    "status": "> СТАТУС: [100% ЗАЩИЩЕНО] ЗАВЕРЕНО В POLYGON MAINNET"
+  },
   "Common": {
     "app_title_suffix": "Supply Chain Manager",
     "loading": "Загрузка",
@@ -381,7 +393,11 @@
     "consumer_desc": "Конечный потребитель сканирует паспорт партии, чтобы проверить весь путь, записи о соответствии условиям среды и подтвержденную государством аутентичность.",
     "try_live_demo": "Терминал проверки в реальном времени",
     "prev_step": "Вернуться назад",
-    "next_step": "Следующий этап"
+    "next_step": "Следующий этап",
+    "notarized_label": "Заверено в блокчейне: #49281",
+    "active_transit": "В пути",
+    "dual_sig_consensus": "Двойной консенсус подписи",
+    "handoff_validation": "Протокол передачи успешно подтвержден"
   },
   "NotFound": {
     "title": "Страница не найдена",
@@ -413,5 +429,10 @@
     "infra_alert": "Сбой инфраструктуры",
     "infra_service_changed": "Статус сервиса {name} изменен на {status}.",
     "violation_detected": "Нарушение зафиксировано"
+  },
+  "Footer": {
+    "privacy": "Политика конфиденциальности",
+    "terms": "Условия использования",
+    "compliance": "Комплаенс / ESG"
   }
 }

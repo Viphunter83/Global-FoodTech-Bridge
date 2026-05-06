@@ -179,7 +179,7 @@ export default function HowItWorksPage() {
                                                     <p className="text-purple-400">&gt; CID: QmXoyp... (IPFS Primary Cluster)</p>
                                                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
                                                         <Fingerprint size={14} className="text-primary animate-pulse" />
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">Blockchain Notarized: #49281</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">{t('notarized_label')}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -220,7 +220,7 @@ export default function HowItWorksPage() {
                                                         <Globe size={18} />
                                                     </div>
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-2">{tt('location_updated_iot')}</span>
-                                                    <span className="text-xl font-serif font-black italic text-foreground tracking-tight">Active Transit</span>
+                                                    <span className="text-xl font-serif font-black italic text-foreground tracking-tight">{t('active_transit')}</span>
                                                 </div>
                                             </div>
 
@@ -275,8 +275,8 @@ export default function HowItWorksPage() {
                                             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 max-w-sm mx-auto flex items-center gap-4">
                                                 <Cpu className="text-primary" size={20} />
                                                 <div className="text-left">
-                                                    <p className="text-[8px] font-black uppercase tracking-widest text-primary/40 leading-none mb-1">Dual-Signature Consensus</p>
-                                                    <p className="text-[10px] font-bold text-foreground">Handoff Validation Protocol Successful</p>
+                                                    <p className="text-[8px] font-black uppercase tracking-widest text-primary/40 leading-none mb-1">{t('dual_sig_consensus')}</p>
+                                                    <p className="text-[10px] font-bold text-foreground">{t('handoff_validation')}</p>
                                                 </div>
                                             </div>
                                         </div>

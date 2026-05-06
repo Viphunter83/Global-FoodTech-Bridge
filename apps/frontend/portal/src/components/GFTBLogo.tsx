@@ -1,8 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 export function GFTBLogo({ className = "h-8 w-auto" }: { className?: string }) {
+    const t = useTranslations('Branding');
     return (
         <div className={`flex items-center gap-2 ${className}`}>
             <svg
@@ -67,10 +69,10 @@ export function GFTBLogo({ className = "h-8 w-auto" }: { className?: string }) {
             </svg>
             <div className="flex flex-col leading-none">
                 <span className="font-black text-xl tracking-tighter text-foreground">
-                    GFTB <span className="text-primary">Bridge</span>
+                    GFTB <span className="text-primary">{t('name_accent')}</span>
                 </span>
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70">
-                    Sovereign Trust
+                    {t('tagline')}
                 </span>
             </div>
         </div>
