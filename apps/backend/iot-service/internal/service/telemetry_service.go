@@ -118,6 +118,18 @@ type passportBatchResponse struct {
 }
 
 func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchResponse, error) {
+	ctx := context.Background()
+	cacheKey := fmt.Sprintf("limits:%s", batchID)
+
+	// 1. Try Cache
+	if val, err := s.rdb.Get(ctx, cacheKey).Result(); err == nil {
+		var data passportBatchResponse
+		if err := json.Unmarshal([]byte(val), &data); err == nil {
+			return &data, nil
+		}
+	}
+
+	// 2. Fetch from Passport Service
 	passportURL := os.Getenv("PASSPORT_SERVICE_URL")
 	if passportURL == "" {
 		passportURL = "http://passport-service:8080/api/v1"
@@ -149,6 +161,10 @@ func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchRespons
 		return nil, err
 	}
 	
+	// 3. Store in Cache (Expires in 1 hour)
+	payload, _ := json.Marshal(data)
+	s.rdb.Set(ctx, cacheKey, string(payload), time.Hour)
+
 	return &data, nil
 }
 

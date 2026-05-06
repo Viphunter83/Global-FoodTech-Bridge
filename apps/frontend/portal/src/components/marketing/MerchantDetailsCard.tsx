@@ -9,9 +9,10 @@ interface MerchantDetailsCardProps {
     merchantName: string;
     redirectUrl?: string;
     description?: string;
+    badges?: Array<{ label: string; color?: string }>;
 }
 
-export function MerchantDetailsCard({ merchantName, redirectUrl, description }: MerchantDetailsCardProps) {
+export function MerchantDetailsCard({ merchantName, redirectUrl, description, badges }: MerchantDetailsCardProps) {
     const t = useTranslations('Compliance');
 
     return (
@@ -48,13 +49,29 @@ export function MerchantDetailsCard({ merchantName, redirectUrl, description }: 
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/10 text-[10px] font-black uppercase tracking-widest text-secondary">
-                            <Heart size={10} className="fill-secondary" />
-                            Eco-Friendly
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/10 text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                             Premium Quality
-                        </div>
+                        {badges && badges.length > 0 ? (
+                            badges.map((badge, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${
+                                        badge.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/10 text-emerald-600' : 'bg-secondary/10 border-secondary/10 text-secondary'
+                                    }`}
+                                >
+                                    <Heart size={10} className={badge.color === 'emerald' ? 'fill-emerald-500' : 'fill-secondary'} />
+                                    {badge.label}
+                                </div>
+                            ))
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/10 text-[10px] font-black uppercase tracking-widest text-secondary">
+                                    <Heart size={10} className="fill-secondary" />
+                                    Eco-Friendly
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/10 text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                                     Premium Quality
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 

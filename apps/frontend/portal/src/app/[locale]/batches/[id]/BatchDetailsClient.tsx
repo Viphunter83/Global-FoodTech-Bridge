@@ -14,9 +14,11 @@ import { Link } from '@/navigation';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle, RefreshCw, Search, Box, Fingerprint } from 'lucide-react';
 import { DashboardQR } from '@/components/shared/DashboardQR';
 import { BlockchainControls } from '@/components/blockchain/BlockchainControls';
+import { AuditReportModal } from '@/components/passport/AuditReportModal';
 import { ProductHero } from '@/components/passport/ProductHero';
 import { useTranslations, useLocale } from 'next-intl';
 import { useDemoState } from '@/components/providers/DemoStateProvider';
+import { SustainabilitySection } from '@/components/passport/SustainabilitySection';
 import { useState, useEffect, useCallback } from 'react';
 import { 
     Dialog,
@@ -156,9 +158,23 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                 {/* Merchant Sales Funnel */}
                 <div className="mb-12">
                     <MerchantDetailsCard 
-                        merchantName={batch.manufacturer_id.toUpperCase()}
+                        merchantName={batch.manufacturer_id?.toUpperCase() || 'PRODUCER'}
                         redirectUrl={batch.partner_redirect_url}
                         description={batch.marketing_story?.[locale] || batch.marketing_story?.en}
+                        badges={[
+                            { label: 'Blockchain Verified', color: 'emerald' },
+                            { label: batch.product_type?.toUpperCase() || 'Premium', color: 'secondary' },
+                            ...(batch.certificates?.map((c: string) => ({ label: c, color: 'secondary' })) || [])
+                        ]}
+                    />
+                </div>
+
+                {/* Sustainability & Quality Proof Section - NEW */}
+                <div className="mb-12">
+                    <SustainabilitySection 
+                        marketingStory={batch.marketing_story?.[locale] || batch.marketing_story?.en}
+                        certificates={batch.certificates}
+                        productType={batch.product_type}
                     />
                 </div>
 
@@ -305,6 +321,29 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         </div>
                     </div>
 
+                    {/* Integrity Vault - Moved out for better layout */}
+                    <div className="col-span-3 rounded-[3rem] border border-primary/10 glass p-10 md:p-14 shadow-2xl shadow-primary/5 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:rotate-6 transition-transform duration-1000">
+                            <ShieldCheck size={240} />
+                        </div>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 text-primary mb-2">
+                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('Blockchain.real_time_notary')}</span>
+                                </div>
+                                <h2 className="text-5xl font-serif font-black italic tracking-tighter">{t('Blockchain.integrity_vault')}</h2>
+                            </div>
+                            
+                            <AuditReportModal 
+                                batch={batch}
+                                bcHistory={bcHistory}
+                                telemetry={telemetry}
+                                alerts={alerts}
+                            />
+                        </div>
+                    </div>
+
                     {/* Sidebar components */}
                     <div className="col-span-3 md:col-span-1 space-y-10">
                         {/* Map Interface */}
@@ -336,25 +375,6 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                         <p className="break-all font-mono text-[11px] font-bold text-primary bg-primary/[0.03] p-5 rounded-2xl border border-primary/10 shadow-inner leading-relaxed overflow-hidden">
                                             {effectiveBlockchain.txHash || t('Tracking.pending_consensus')}
                                         </p>
-                                        
-                                        {effectiveBlockchain.txHash && (
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="w-full h-14 rounded-2xl gap-3 text-primary border-primary/20 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-lg shadow-primary/5 text-xs font-black uppercase tracking-widest">
-                                                        <Search size={16} /> {t('Tracking.full_protocol_audit')}
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-2xl p-0 border-0 bg-transparent shadow-none">
-                                                    <BlockchainProof 
-                                                        batchId={batch.id}
-                                                        txHash={effectiveBlockchain.txHash}
-                                                        dataHash={batch.token_uri}
-                                                        issuer={batch.manufacturer_id}
-                                                        violation={effectiveBlockchain.violation}
-                                                    />
-                                                </DialogContent>
-                                            </Dialog>
-                                        )}
                                     </div>
                                 </div>
                                 
@@ -377,8 +397,8 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         </div>
                     </div>
 
-                    {/* Shipping Timeline */}
-                    {effectiveBlockchain.shippingStatus && (
+                    {/* Shipping Timeline - Dynamic from Blockchain History */}
+                    {bcHistory && bcHistory.length > 0 && (
                         <div className="col-span-3 rounded-[3rem] border border-primary/10 glass p-10 md:p-14 shadow-2xl shadow-primary/5 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:rotate-6 transition-transform duration-1000">
                                 <MapPin size={240} />
@@ -393,56 +413,40 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                 <div className="absolute left-[20px] top-[28px] bottom-0 w-[2px] bg-primary/5 md:hidden" />
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-8">
-                                    {[
-                                        { id: 'DEPARTED_ORIGIN', label: t('Tracking.timeline_departed_origin'), date: 'Oct 24, 08:30' },
-                                        { id: 'ARRIVED_PORT', label: t('Tracking.timeline_arrived_port'), date: 'Oct 25, 14:15' },
-                                        { id: 'LOADED_VESSEL', label: t('Tracking.timeline_loaded_vessel'), date: 'Oct 26, 09:00' },
-                                        { id: 'CUSTOMS_CLEARANCE', label: t('Tracking.timeline_customs_clearance'), date: 'Oct 28, 11:45' },
-                                        { id: 'ARRIVED_DESTINATION', label: t('Tracking.timeline_arrived_destination'), date: 'Oct 29, 16:30' }
-                                    ].map((step, index) => {
-                                        const statusOrder = ['DEPARTED_ORIGIN', 'ARRIVED_PORT', 'LOADED_VESSEL', 'CUSTOMS_CLEARANCE', 'ARRIVED_DESTINATION'];
-                                        const currentIndex = statusOrder.indexOf(effectiveBlockchain.shippingStatus);
-                                        const stepIndex = statusOrder.indexOf(step.id);
-                                        const isActive = stepIndex <= currentIndex;
-                                        const isCurrent = stepIndex === currentIndex;
- 
-                                        return (
-                                            <div key={step.id} className="relative flex flex-col md:items-center text-left md:text-center pl-12 md:pl-0 group/step">
-                                                {/* Dot */}
-                                                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 w-10 h-10 rounded-2xl border-2 flex items-center justify-center z-10 transition-all duration-700 ${
-                                                    isActive 
-                                                        ? 'bg-primary border-primary shadow-xl shadow-primary/20 scale-110' 
-                                                        : 'bg-background border-primary/10'
-                                                }`}>
-                                                    {isActive ? (
-                                                        <ShieldCheck className="h-5 w-5 text-white" />
-                                                    ) : (
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/20 group-hover/step:bg-primary/40" />
-                                                    )}
-                                                </div>
- 
-                                                <div className="mt-2 md:mt-16 space-y-2">
-                                                    <h3 className={`text-xs font-black uppercase tracking-widest transition-colors duration-500 ${isActive ? 'text-primary' : 'text-muted-foreground/30'}`}>
-                                                        {step.label}
-                                                    </h3>
-                                                    {isActive && (
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <span className="text-[8px] font-black uppercase tracking-widest text-primary/30">Verified Timestamp</span>
-                                                            <p className="font-mono text-[10px] font-bold text-primary/60 italic leading-none">
-                                                                {step.date}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
- 
-                                                {isCurrent && (
-                                                    <div className="mt-4 px-4 py-1.5 bg-primary text-white text-[8px] font-black rounded-full uppercase tracking-[0.2em] shadow-lg shadow-primary/20 animate-pulse">
-                                                        {t('Tracking.active_step')}
-                                                    </div>
-                                                )}
+                                    {bcHistory.map((step, index) => (
+                                        <div key={index} className="relative flex flex-col md:items-center text-left md:text-center pl-12 md:pl-0 group/step">
+                                            {/* Dot */}
+                                            <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 w-10 h-10 rounded-2xl border-2 flex items-center justify-center z-10 transition-all duration-700 bg-primary border-primary shadow-xl shadow-primary/20 scale-110">
+                                                <ShieldCheck className="h-5 w-5 text-white" />
                                             </div>
-                                        );
-                                    })}
+
+                                            <div className="mt-2 md:mt-16 space-y-2">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-primary">
+                                                    {step.stage}
+                                                </h3>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-primary/30">Verified Timestamp</span>
+                                                    <p className="font-mono text-[10px] font-bold text-primary/60 italic leading-none">
+                                                        {new Date(step.timestamp).toLocaleString()}
+                                                    </p>
+                                                    <p className="text-[9px] text-muted-foreground/60 mt-1 max-w-[150px] mx-auto">
+                                                        {step.details}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {/* Placeholder for future steps if only few history events exist */}
+                                    {bcHistory.length < 3 && (
+                                        <div className="relative flex flex-col md:items-center text-left md:text-center pl-12 md:pl-0 opacity-30">
+                                            <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 w-10 h-10 rounded-2xl border-2 border-primary/10 flex items-center justify-center z-10">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
+                                            </div>
+                                            <div className="mt-2 md:mt-16">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">{t('Tracking.timeline_arrived_destination')}</h3>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
