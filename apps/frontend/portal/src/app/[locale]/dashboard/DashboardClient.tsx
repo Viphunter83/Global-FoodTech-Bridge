@@ -239,8 +239,8 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                 <LayoutDashboard size={24} />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-serif font-black italic tracking-tighter text-slate-900">Operations</h1>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{selectedBatch?.product_type?.replace(/_/g, ' ')} • Current Session</p>
+                                <h1 className="text-4xl font-serif font-black italic tracking-tighter text-slate-900">{t('Dashboard.operations_title')}</h1>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{selectedBatch?.product_type?.replace(/_/g, ' ')} • {t('Dashboard.current_session')}</p>
                             </div>
                         </div>
                         <Button 
@@ -250,7 +250,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                             className="h-12 rounded-2xl border-slate-100 text-[10px] font-black uppercase tracking-widest px-6 shadow-sm hover:shadow-md transition-all"
                         >
                             {isRefreshing ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-3 h-4 w-4 text-primary/40" />}
-                            Sync Live Data
+                            {t('Dashboard.sync_live_data')}
                         </Button>
                     </div>
 
@@ -260,13 +260,13 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                             title={t('Dashboard.status_blockchain')}
                             docTooltip={<InUIDocTooltip titleKey="status_blockchain_title" descriptionKey="status_blockchain_desc" />}
                             value={loadingStatus ? '...' : (blockchainStatus?.violation ? t('Compliance.violation_title') : (blockchainStatus?.verified ? t('Dashboard.status_connection_secured') : t('Dashboard.status_connection_pending')))}
-                            subText={blockchainStatus?.txHash ? `Tx: ${blockchainStatus.txHash.substring(0, 12)}...` : 'Unverified Ledger'}
+                            subText={blockchainStatus?.txHash ? `Tx: ${blockchainStatus.txHash.substring(0, 12)}...` : t('Dashboard.unverified_ledger')}
                             isAlert={!!blockchainStatus?.violation}
                         />
                         <StatusMetric 
                             icon={<MapPin className="h-5 w-5 text-primary" />}
                             title={t('Tracking.location_current')}
-                            value={selectedBatch?.location || 'Awaiting Link'}
+                            value={selectedBatch?.location || t('Dashboard.awaiting_link')}
                             subText={t('Tracking.location_updated_iot')}
                         />
                         <StatusMetric 
@@ -318,7 +318,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                     </div>
                                     <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-primary/5 border border-primary/10 text-[9px] font-black uppercase tracking-widest text-primary shadow-inner">
                                         <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                                        Satellite Link Active
+                                        {t('Dashboard.satellite_link_active')}
                                     </div>
                                 </div>
                             </CardHeader>
@@ -335,7 +335,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                         <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">{t('Tracking.iot_monitoring')}</h4>
                                         <InUIDocTooltip titleKey="telemetry_title" descriptionKey="telemetry_desc" />
                                     </div>
-                                    <span className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/40">GFTB-Live-Data-Stream-Verified</span>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/40">{t('Dashboard.verified_stream_badge')}</span>
                                 </div>
                                 <div className="h-64">
                                     <TelemetryChart data={telemetryData} />
@@ -360,7 +360,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                             />
                                         </div>
                                         <div className="pt-10 border-t border-slate-100">
-                                            <Button
+                                                <Button
                                                 variant="outline"
                                                 className="w-full h-24 rounded-[2.5rem] border-slate-200 bg-white text-slate-900 hover:bg-slate-50 font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-4"
                                                 onClick={() => window.open(`/${locale}/verify/${selectedId}`, '_blank')}
@@ -368,7 +368,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                                 <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
                                                     <Search className="h-6 w-6" />
                                                 </div>
-                                                View Digital Twin
+                                                {t('Dashboard.view_digital_twin')}
                                             </Button>
                                         </div>
                                     </>
@@ -377,7 +377,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                         <div className="h-24 w-24 rounded-[2.5rem] bg-slate-100 flex items-center justify-center mb-8">
                                             <Box className="h-12 w-12 text-slate-400" />
                                         </div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">Select a batch to initialize trust controls</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">{t('Dashboard.select_batch_prompt')}</p>
                                     </div>
                                 )}
                             </CardContent>

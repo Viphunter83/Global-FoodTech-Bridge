@@ -97,7 +97,17 @@
     "status_connection_secured": "Secured",
     "status_connection_pending": "Pending",
     "action_center": "Bridge Control Center",
-    "action_desc": "Smart contract interactions & digital twins."
+    "action_desc": "Smart contract interactions & digital twins.",
+    "operations_title": "Operations",
+    "current_session": "Current Session",
+    "sync_live_data": "Sync Live Data",
+    "unverified_ledger": "Unverified Ledger",
+    "awaiting_link": "Awaiting Link",
+    "satellite_link_active": "Satellite Link Active",
+    "verified_stream_badge": "GFTB-Live-Data-Stream-Verified",
+    "view_digital_twin": "View Digital Twin",
+    "select_batch_prompt": "Select a batch to initialize trust controls",
+    "pending_verification_warning": "Your account is PENDING administrative verification. Restricted mode active."
   },
   "Batch": {
     "create_title": "Create New Batch",
@@ -172,7 +182,22 @@
     "optional_docs": "Additional Documents",
     "upload_type": "Document Type",
     "halal_cert_label": "Halal Compliance Certified",
-    "verified_badge": "Authenticity Secured"
+    "verified_badge": "Authenticity Secured",
+    "verified_by_notary": "Verified by Global FoodTech Bridge Notary",
+    "integrity_verified": "VERIFIED",
+    "blockchain_records": "Blockchain Records",
+    "events_count": "{count} Events",
+    "warnings_count": "{count} Warnings",
+    "ledger_stage": "Stage",
+    "ledger_details": "Details",
+    "ledger_timestamp": "Timestamp",
+    "ledger_hash": "Hash",
+    "avg_temp": "Avg Temp:",
+    "range": "Range:",
+    "env_monitoring_desc": "The environmental monitoring system has recorded continuous telemetry for Batch {id}. All readings have been cross-referenced with the blockchain-notarized SLA thresholds.",
+    "env_status_label": "Status:",
+    "env_status_compliant": "Compliant",
+    "env_status_non_compliant": "Non-Compliant (Requires Manual Audit)"
   },
   "IoT": {
     "pair_sensor_title": "Initialize hardware link",
@@ -281,7 +306,14 @@
     "sus_premium_story": "The Premium Story",
     "sus_verified_origin": "Verified Origin & Technology",
     "sus_low_carbon": "Low-Carbon Processing",
-    "sus_traceable": "100% Traceable"
+    "sus_traceable": "100% Traceable",
+    "source_blockchain": "Blockchain",
+    "source_iot": "IoT",
+    "source_lab_report": "Lab Report",
+    "verified_lab_report_badge": "VERIFIED LAB REPORT",
+    "status_pending": "AWAITING VERIFICATION",
+    "fallback_producer": "PRODUCER",
+    "fallback_premium": "PREMIUM"
   },
   "Auth": {
     "login_title": "Secure Access",

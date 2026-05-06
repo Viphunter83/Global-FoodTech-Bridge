@@ -39,7 +39,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 </div>
                                 <div>
                                     <DialogTitle className="text-4xl font-serif font-black italic tracking-tighter">{t('audit_report_title')}</DialogTitle>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">Verified by Global FoodTech Bridge Notary</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">{t('verified_by_notary')}</p>
                                 </div>
                             </div>
                             <Button variant="ghost" className="h-14 w-14 rounded-2xl bg-muted/50">
@@ -55,21 +55,21 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-600/60 mb-2">{t('audit_integrity_status')}</h4>
                                 <div className="flex items-center gap-3">
                                     <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                                    <span className="text-xl font-black italic">VERIFIED</span>
+                                    <span className="text-xl font-black italic">{t('integrity_verified')}</span>
                                 </div>
                             </div>
                             <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-2">Blockchain Records</h4>
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-2">{t('blockchain_records')}</h4>
                                 <div className="flex items-center gap-3">
                                     <Clock className="h-6 w-6 text-primary" />
-                                    <span className="text-xl font-black italic">{bcHistory.length} Events</span>
+                                    <span className="text-xl font-black italic">{t('events_count', { count: bcHistory.length })}</span>
                                 </div>
                             </div>
                             <div className="p-8 rounded-3xl bg-amber-500/5 border border-amber-500/10">
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-600/60 mb-2">{t('audit_active_warnings')}</h4>
                                 <div className="flex items-center gap-3">
                                     <AlertCircle className="h-6 w-6 text-amber-500" />
-                                    <span className="text-xl font-black italic">{alerts.length} Warnings</span>
+                                    <span className="text-xl font-black italic">{t('warnings_count', { count: alerts.length })}</span>
                                 </div>
                             </div>
                         </div>
@@ -81,10 +81,10 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-primary/5">
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">Stage</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">Details</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">Timestamp</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">Hash</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_stage')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_details')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_timestamp')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_hash')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-primary/5">
@@ -112,15 +112,15 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 <div className="flex items-center gap-8 mb-8">
                                     <div className="flex items-center gap-3">
                                         <Thermometer className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-black italic">Avg Temp: {telemetry.length > 0 ? (telemetry.reduce((acc, r) => acc + r.temperature_celsius, 0) / telemetry.length).toFixed(1) : 'N/A'}°C</span>
+                                        <span className="text-sm font-black italic">{t('avg_temp')} {telemetry.length > 0 ? (telemetry.reduce((acc, r) => acc + r.temperature_celsius, 0) / telemetry.length).toFixed(1) : 'N/A'}°C</span>
                                     </div>
                                     <div className="h-6 w-px bg-primary/10" />
-                                    <div className="text-sm font-black italic">Range: {batch.min_temp}°C to {batch.max_temp}°C</div>
+                                    <div className="text-sm font-black italic">{t('range')} {batch.min_temp}°C to {batch.max_temp}°C</div>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    The environmental monitoring system has recorded continuous telemetry for Batch {batch.id}. 
-                                    All readings have been cross-referenced with the blockchain-notarized SLA thresholds. 
-                                    Status: {alerts.length === 0 ? 'Compliant' : 'Non-Compliant (Requires Manual Audit)'}.
+                                    {t('env_monitoring_desc', { id: batch.id })}
+                                    <br />
+                                    {t('env_status_label')} {alerts.length === 0 ? t('env_status_compliant') : t('env_status_non_compliant')}.
                                 </p>
                             </div>
                         </section>

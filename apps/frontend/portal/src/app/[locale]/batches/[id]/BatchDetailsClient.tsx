@@ -161,13 +161,13 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                 {/* Merchant Sales Funnel */}
                 <div className="mb-12">
                     <MerchantDetailsCard 
-                        merchantName={batch.manufacturer_id?.toUpperCase() || 'PRODUCER'}
+                        merchantName={batch.manufacturer_id?.toUpperCase() || t('Tracking.fallback_producer')}
                         redirectUrl={batch.partner_redirect_url}
                         description={batch.marketing_story?.[locale] || batch.marketing_story?.en}
                         badges={[
                             { label: t('Tracking.bc_secured_badge'), color: 'emerald' },
                             { label: t('Tracking.badge_fda_compliance'), color: 'emerald' },
-                            { label: batch.product_type?.toUpperCase() || 'Premium', color: 'secondary' },
+                            { label: batch.product_type?.toUpperCase() || t('Tracking.fallback_premium'), color: 'secondary' },
                             ...(batch.certificates?.map((c: any) => ({ label: c.name || c, color: 'secondary' })) || [])
                         ]}
                     />

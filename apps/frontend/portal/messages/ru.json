@@ -97,7 +97,17 @@
     "status_connection_secured": "Защищено",
     "status_connection_pending": "Ожидание",
     "action_center": "Центр управления мостом",
-    "action_desc": "Взаимодействие со смарт-контрактами и цифровые двойники."
+    "action_desc": "Взаимодействие со смарт-контрактами и цифровые двойники.",
+    "operations_title": "Операции",
+    "current_session": "Текущая сессия",
+    "sync_live_data": "Синхронизация данных",
+    "unverified_ledger": "Непроверенный реестр",
+    "awaiting_link": "Ожидание привязки",
+    "satellite_link_active": "Спутниковая связь активна",
+    "verified_stream_badge": "GFTB-Live-Data-Stream-Verified",
+    "view_digital_twin": "Открыть цифровой двойник",
+    "select_batch_prompt": "Выберите партию для управления доверием",
+    "pending_verification_warning": "Ваш аккаунт ожидает административной проверки. Активен ограниченный режим."
   },
   "Batch": {
     "create_title": "Создать новую партию",
@@ -170,7 +180,22 @@
     "optional_docs": "Дополнительные документы",
     "upload_type": "Тип документа",
     "halal_cert_label": "Сертифицировано Halal",
-    "verified_badge": "Аутентичность подтверждена"
+    "verified_badge": "Аутентичность подтверждена",
+    "verified_by_notary": "Верифицировано нотариусом Global FoodTech Bridge",
+    "integrity_verified": "ПОДТВЕРЖДЕНО",
+    "blockchain_records": "Записи блокчейна",
+    "events_count": "Событий: {count}",
+    "warnings_count": "Предупреждений: {count}",
+    "ledger_stage": "Этап",
+    "ledger_details": "Детали",
+    "ledger_timestamp": "Временная метка",
+    "ledger_hash": "Хэш",
+    "avg_temp": "Ср. темп:",
+    "range": "Диапазон:",
+    "env_monitoring_desc": "Система экологического мониторинга зафиксировала непрерывную телеметрию для партии {id}. Все показания были сопоставлены с порогами SLA, заверено в блокчейне.",
+    "env_status_label": "Статус:",
+    "env_status_compliant": "Соответствует",
+    "env_status_non_compliant": "Не соответствует (требуется ручной аудит)"
   },
   "Tracking": {
     "live_tracking": "Отслеживание в реальном времени",
@@ -279,7 +304,14 @@
     "sus_premium_story": "Премиальная история",
     "sus_verified_origin": "Проверенное происхождение и технологии",
     "sus_low_carbon": "Низкоуглеродная обработка",
-    "sus_traceable": "Прослеживаемость 100%"
+    "sus_traceable": "Прослеживаемость 100%",
+    "source_blockchain": "Блокчейн",
+    "source_iot": "IoT",
+    "source_lab_report": "Лаб. отчет",
+    "verified_lab_report_badge": "ВЕРИФИЦИРОВАННЫЙ ЛАБОРАТОРНЫЙ ОТЧЕТ",
+    "status_pending": "ОЖИДАНИЕ ВЕРИФИКАЦИИ",
+    "fallback_producer": "ПРОИЗВОДИТЕЛЬ",
+    "fallback_premium": "ПРЕМИУМ"
   },
   "Auth": {
     "login_title": "Безопасный доступ",

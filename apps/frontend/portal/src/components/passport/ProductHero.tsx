@@ -41,6 +41,15 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
         }
     };
 
+    const getSourceLabel = (source: string) => {
+        switch (source) {
+            case 'Blockchain': return t('source_blockchain');
+            case 'IoT': return t('source_iot');
+            case 'Lab Report': return t('source_lab_report');
+            default: return source;
+        }
+    };
+
     // Fallback metrics if none provided
     const displayMetrics = trustMetrics || [
         { type: 'temperature', label: t('metric_cold_chain'), value: t('metric_optimal'), source: 'IoT' as const, status: 'verified' as const },
@@ -50,7 +59,7 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
     return (
         <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-gray-900 via-gray-800 to-slate-900 p-10 md:p-14 text-white shadow-2xl border border-white/5 group">
             {/* Dynamic Ambient Background */}
-            <div className={`absolute -right-20 -top-20 h-96 w-96 rounded-full blur-3xl filter transition-all duration-1000 ${status === 'Verified' ? 'bg-emerald-500/20 group-hover:scale-125' : 'bg-destructive/20 group-hover:scale-125'}`} />
+            <div className={`absolute -right-20 -top-20 h-96 w-96 rounded-full blur-3xl filter transition-all duration-1000 ${status === 'Verified' ? 'bg-emerald-500/20 group-hover:scale-125' : (status === 'Warning' ? 'bg-destructive/20 group-hover:scale-125' : 'bg-blue-500/20 group-hover:scale-125')}`} />
             <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl filter group-hover:scale-110 transition-transform duration-3000" />
 
             <div className="relative z-10 flex flex-col items-center text-center">
@@ -59,17 +68,21 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
-                    <Badge variant={status === 'Verified' ? 'default' : 'destructive'}
+                    <Badge variant={status === 'Verified' ? 'default' : (status === 'Warning' ? 'destructive' : 'secondary')}
                         className={`mb-10 px-6 py-2 text-[10px] font-black tracking-[0.3em] uppercase border-0 shadow-2xl ${
                             status === 'Verified' 
                                 ? 'bg-emerald-500 text-white shadow-emerald-500/40' 
-                                : 'bg-red-500 text-white shadow-red-500/40'
+                                : status === 'Warning'
+                                    ? 'bg-red-500 text-white shadow-red-500/40'
+                                    : 'bg-blue-500 text-white shadow-blue-500/40'
                         }`}>
                         <span className="flex items-center gap-3">
                             {status === 'Verified' ? (
                                 <><ShieldCheck size={16} /> {t('bc_secured_badge')}</>
-                            ) : (
+                            ) : status === 'Warning' ? (
                                 <><AlertTriangle size={16} /> {t('qc_rejected_title')}</>
+                            ) : (
+                                <><ShieldCheck size={16} className="animate-pulse" /> {t('status_pending')}</>
                             )}
                         </span>
                     </Badge>
@@ -103,7 +116,7 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
                                 <div className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
                                     {metric.label} 
                                     <div className="h-0.5 w-0.5 rounded-full bg-blue-400" />
-                                    <span className="text-blue-400">{metric.source}</span>
+                                    <span className="text-blue-400">{getSourceLabel(metric.source)}</span>
                                 </div>
                             </div>
                         </motion.div>

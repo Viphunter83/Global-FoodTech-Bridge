@@ -74,7 +74,7 @@ export function SustainabilitySection({ marketingStory, certificates, productTyp
                                 </div>
                                 <div>
                                     <h5 className="font-black text-gray-900 text-sm leading-tight uppercase tracking-tight">{cert.name}</h5>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{cert.type.replace(/_/g, ' ')} • VERIFIED LAB REPORT</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{cert.type.replace(/_/g, ' ')} • {t('verified_lab_report_badge')}</p>
                                 </div>
                             </div>
                             <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-emerald-500 group-hover:text-white transition-all">
