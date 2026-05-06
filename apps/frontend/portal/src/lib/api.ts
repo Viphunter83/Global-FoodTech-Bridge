@@ -165,9 +165,12 @@ const getHeaders = (isPost = false, token?: string, isJson = true) => {
 
 // --- API CLIENT ---
 
-export async function getBatchDetails(id: string): Promise<BatchDetails | null> {
+export async function getBatchDetails(id: string, token?: string): Promise<BatchDetails | null> {
     try {
-        const res = await fetch(`${PASSPORT_URL}/batches/${id}`, { cache: 'no-store' });
+        const res = await fetch(`${PASSPORT_URL}/batches/${id}`, { 
+            headers: getHeaders(false, token),
+            cache: 'no-store' 
+        });
         if (!res.ok) return null;
         const data = await res.json();
 
@@ -309,9 +312,12 @@ export async function getBatchDetails(id: string): Promise<BatchDetails | null> 
     }
 }
 
-export async function getTelemetry(id: string, minLimit: number = -22, maxLimit: number = -18): Promise<Telemetry[]> {
+export async function getTelemetry(id: string, minLimit: number = -22, maxLimit: number = -18, token?: string): Promise<Telemetry[]> {
     try {
-        const res = await fetch(`${IOT_URL}/telemetry/${id}`, { cache: 'no-store' });
+        const res = await fetch(`${IOT_URL}/telemetry/${id}`, { 
+            headers: getHeaders(false, token),
+            cache: 'no-store' 
+        });
 
         if (res.ok) {
             return await res.json();
@@ -408,9 +414,12 @@ export async function getBlockchainHistory(batchId: string): Promise<BlockchainE
     }
 }
 
-export async function getAlerts(id: string): Promise<Alert[]> {
+export async function getAlerts(id: string, token?: string): Promise<Alert[]> {
     try {
-        const res = await fetch(`${IOT_URL}/telemetry/${id}/alerts`, { cache: 'no-store' });
+        const res = await fetch(`${IOT_URL}/telemetry/${id}/alerts`, { 
+            headers: getHeaders(false, token),
+            cache: 'no-store' 
+        });
         if (res.ok) {
             return await res.json();
         }
@@ -680,7 +689,7 @@ export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
         
         // Decorate top 10 batches with full details/history for the Stage Wizard
         const decoratedBatches = await Promise.all(
-            rawBatches.slice(0, 10).map(b => getBatchDetails(b.id))
+            rawBatches.slice(0, 10).map(b => getBatchDetails(b.id, token))
         );
 
         return decoratedBatches.filter((b): b is BatchDetails => b !== null);
