@@ -14,8 +14,11 @@ import { Link } from '@/navigation';
 import { ArrowLeft, ShieldCheck, MapPin, Thermometer, AlertTriangle, RefreshCw, Search, Box, Fingerprint } from 'lucide-react';
 import { DashboardQR } from '@/components/shared/DashboardQR';
 import { BlockchainControls } from '@/components/blockchain/BlockchainControls';
+import { motion } from 'framer-motion';
 import { AuditReportModal } from '@/components/passport/AuditReportModal';
 import { ProductHero } from '@/components/passport/ProductHero';
+import { Image as ImageIcon, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { useDemoState } from '@/components/providers/DemoStateProvider';
 import { SustainabilitySection } from '@/components/passport/SustainabilitySection';
@@ -162,11 +165,47 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         redirectUrl={batch.partner_redirect_url}
                         description={batch.marketing_story?.[locale] || batch.marketing_story?.en}
                         badges={[
-                            { label: 'Blockchain Verified', color: 'emerald' },
+                            { label: t('Tracking.bc_secured_badge'), color: 'emerald' },
+                            { label: t('Tracking.badge_fda_compliance'), color: 'emerald' },
                             { label: batch.product_type?.toUpperCase() || 'Premium', color: 'secondary' },
-                            ...(batch.certificates?.map((c: string) => ({ label: c, color: 'secondary' })) || [])
+                            ...(batch.certificates?.map((c: any) => ({ label: c.name || c, color: 'secondary' })) || [])
                         ]}
                     />
+                </div>
+
+                {/* Manufacturing Insight Section - NEW */}
+                <div className="mb-12 rounded-[3rem] overflow-hidden border border-primary/10 glass bg-background/50 relative group">
+                    <div className="grid md:grid-cols-2 gap-0">
+                        <div className="relative aspect-video md:aspect-auto h-full overflow-hidden">
+                            <Image 
+                                src="/vietnam_mango_factory_premium_1778070839265.png" 
+                                alt="Vietnam Factory" 
+                                fill 
+                                className="object-cover group-hover:scale-105 transition-transform duration-[3000ms]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent md:hidden" />
+                        </div>
+                        <div className="p-10 md:p-14 flex flex-col justify-center space-y-6">
+                            <div className="flex items-center gap-3 text-primary mb-2">
+                                <ImageIcon size={16} />
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('Tracking.mfg_insight_title')}</span>
+                            </div>
+                            <h2 className="text-4xl font-serif font-black italic tracking-tighter leading-tight">{t('Tracking.mfg_dehydration_title')}</h2>
+                            <p className="text-muted-foreground leading-relaxed">
+                                {t('Tracking.mfg_dehydration_desc')}
+                            </p>
+                            <div className="flex items-center gap-4 pt-4">
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                                    <CheckCircle size={12} />
+                                    {t('Tracking.mfg_haccp_certified')}
+                                </div>
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/10 text-primary text-[10px] font-black uppercase tracking-widest">
+                                    <CheckCircle size={12} />
+                                    {t('Tracking.mfg_iso_certified')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Sustainability & Quality Proof Section - NEW */}
@@ -454,6 +493,30 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
 
                 </div>
             </div>
+
+            {/* Sticky Mobile/Desktop CTA - NEW */}
+            {batch.partner_redirect_url && (
+                <motion.div 
+                    initial={{ y: 100 }}
+                    animate={{ y: 0 }}
+                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-lg"
+                >
+                    <Button 
+                        asChild
+                        className="w-full h-20 rounded-[2.5rem] bg-foreground text-background hover:bg-foreground/90 font-black text-xl shadow-2xl shadow-black/20 group/sticky overflow-hidden"
+                    >
+                        <a href={batch.partner_redirect_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-10">
+                            <div className="flex flex-col items-start">
+                                <span className="text-[10px] uppercase tracking-[0.3em] opacity-50 leading-none mb-1">{t('Tracking.bc_secured_badge')}</span>
+                                <span>{t('Tracking.btn_buy_direct')}</span>
+                            </div>
+                            <div className="h-12 w-12 rounded-2xl bg-background/10 flex items-center justify-center group-hover/sticky:translate-x-2 transition-transform">
+                                <ArrowRight size={24} />
+                            </div>
+                        </a>
+                    </Button>
+                </motion.div>
+            )}
         </div>
     );
 }

@@ -38,7 +38,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                     <ShieldCheck size={32} />
                                 </div>
                                 <div>
-                                    <DialogTitle className="text-4xl font-serif font-black italic tracking-tighter">Compliance Audit Report</DialogTitle>
+                                    <DialogTitle className="text-4xl font-serif font-black italic tracking-tighter">{t('audit_report_title')}</DialogTitle>
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">Verified by Global FoodTech Bridge Notary</p>
                                 </div>
                             </div>
@@ -52,7 +52,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                         {/* Summary Header */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="p-8 rounded-3xl bg-emerald-500/5 border border-emerald-500/10">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-600/60 mb-2">Integrity Status</h4>
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-600/60 mb-2">{t('audit_integrity_status')}</h4>
                                 <div className="flex items-center gap-3">
                                     <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                                     <span className="text-xl font-black italic">VERIFIED</span>
@@ -66,7 +66,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 </div>
                             </div>
                             <div className="p-8 rounded-3xl bg-amber-500/5 border border-amber-500/10">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-600/60 mb-2">Active Alerts</h4>
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-600/60 mb-2">{t('audit_active_warnings')}</h4>
                                 <div className="flex items-center gap-3">
                                     <AlertCircle className="h-6 w-6 text-amber-500" />
                                     <span className="text-xl font-black italic">{alerts.length} Warnings</span>
@@ -76,7 +76,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
 
                         {/* Blockchain Ledger Table */}
                         <section>
-                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 px-2">Immutable Transaction Ledger</h3>
+                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 px-2">{t('audit_ledger_title')}</h3>
                             <div className="rounded-[2rem] border border-primary/10 overflow-hidden shadow-inner">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
@@ -107,7 +107,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
 
                         {/* SLA / Sensor Audit */}
                         <section>
-                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 px-2">Environmental Compliance (SLA)</h3>
+                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 px-2">{t('audit_environmental_compliance')}</h3>
                             <div className="p-10 rounded-[2.5rem] bg-muted/30 border border-primary/5">
                                 <div className="flex items-center gap-8 mb-8">
                                     <div className="flex items-center gap-3">

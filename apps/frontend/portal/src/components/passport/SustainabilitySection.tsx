@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, ExternalLink, Leaf, Zap, ShieldCheck, Award } from 'lucide-react';
 import { BatchCertificate } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 interface SustainabilitySectionProps {
     marketingStory?: string;
@@ -12,6 +13,7 @@ interface SustainabilitySectionProps {
 }
 
 export function SustainabilitySection({ marketingStory, certificates, productType }: SustainabilitySectionProps) {
+    const t = useTranslations('Tracking');
     if (!marketingStory && (!certificates || certificates.length === 0)) return null;
 
     return (
@@ -23,7 +25,7 @@ export function SustainabilitySection({ marketingStory, certificates, productTyp
         >
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
                 <Leaf className="h-3 w-3 text-emerald-500" />
-                Sustainability & Quality Proof
+                {t('sus_section_title')}
             </h3>
 
             {marketingStory && (
@@ -35,8 +37,8 @@ export function SustainabilitySection({ marketingStory, certificates, productTyp
                                 <Award size={24} />
                             </div>
                             <div>
-                                <h4 className="font-serif font-black italic text-gray-900 text-lg">The Premium Story</h4>
-                                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none mt-1">Verified Origin & Technology</p>
+                                <h4 className="font-serif font-black italic text-gray-900 text-lg">{t('sus_premium_story')}</h4>
+                                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none mt-1">{t('sus_verified_origin')}</p>
                             </div>
                         </div>
                         <p className="text-gray-600 leading-relaxed font-medium italic text-lg leading-[1.6]">
@@ -45,11 +47,11 @@ export function SustainabilitySection({ marketingStory, certificates, productTyp
                         <div className="mt-8 flex items-center gap-6">
                             <div className="flex items-center gap-2">
                                 <Zap className="h-4 w-4 text-amber-500" />
-                                <span className="text-[10px] font-black uppercase text-gray-400">Low-Carbon Processing</span>
+                                <span className="text-[10px] font-black uppercase text-gray-400">{t('sus_low_carbon')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <ShieldCheck className="h-4 w-4 text-blue-500" />
-                                <span className="text-[10px] font-black uppercase text-gray-400">100% Traceable</span>
+                                <span className="text-[10px] font-black uppercase text-gray-400">{t('sus_traceable')}</span>
                             </div>
                         </div>
                     </CardContent>
