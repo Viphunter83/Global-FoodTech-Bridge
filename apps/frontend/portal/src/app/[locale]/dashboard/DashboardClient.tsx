@@ -10,6 +10,7 @@ import {
     getBlockchainStatus, 
     getTelemetry, 
     getAlerts, 
+    listBatches,
     BatchDetails, 
     BlockchainStatus, 
     Telemetry, 
@@ -49,7 +50,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
     const t = useTranslations();
     const locale = useLocale();
     const router = useRouter();
-    const { role } = useAuth();
+    const { user, role, companyId, getToken } = useAuth();
     
     const [batches, setBatches] = useState<any[]>(initialBatches);
     const [selectedId, setSelectedId] = useState<string>(initialBatches[0]?.id || '');
@@ -93,33 +94,28 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
     };
 
     useEffect(() => {
-        const stored = localStorage.getItem('recent_batches');
-        if (stored) {
+        if (!user) return;
+        
+        const loadBatches = async () => {
+            setLoadingStatus(true);
             try {
-                const ids = JSON.parse(stored);
-                if (Array.isArray(ids) && ids.length > 0) {
-                    Promise.all(ids.map(id => getBatchDetails(id))).then(results => {
-                        const valid = results.filter(b => b !== null) as BatchDetails[];
-                        const realBatches = valid.map(b => ({
-                            id: b.id,
-                            product_type: b.product_type || 'Unknown Product',
-                            status: 'Tracked',
-                            location: b.origin_country || 'Unknown Location',
-                            temperature: b.min_temp || -18.0,
-                            last_updated: b.created_at || new Date().toISOString()
-                        }));
-                        setBatches(realBatches);
-                        if (realBatches.length > 0 && !selectedId) {
-                            setSelectedId(realBatches[0].id);
-                        }
-                    });
+                const token = await getToken();
+                // Fetch ONLY batches authorized for this user/role
+                const data = await listBatches(token || undefined, role, companyId || undefined);
+                setBatches(data);
+                if (data.length > 0 && !selectedId) {
+                    setSelectedId(data[0].id);
                 }
             } catch (e) {
-                console.error('Failed to load recent batches', e);
+                console.error('Failed to load batches from backend', e);
+                toast.error('Failed to sync batches');
+            } finally {
+                setLoadingStatus(false);
             }
-        }
-    }, []);
+        };
 
+        loadBatches();
+    }, [user, role, companyId]);
     useEffect(() => {
         if (selectedId) {
             fetchData(selectedId);

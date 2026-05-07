@@ -150,6 +150,26 @@ export class BlockchainService implements OnModuleInit {
             const tx = await this.executeTransaction(this.manufacturerWallet, () => 
                 this.contract.reportViolation(batchId, details)
             );
+
+            // Sync with Passport Service (Business Logic state)
+            const passportUrl = this.configService.get<string>('PASSPORT_SERVICE_URL');
+            const apiKey = this.configService.get<string>('INTERNAL_API_KEY');
+            if (passportUrl && apiKey) {
+                try {
+                    await fetch(`${passportUrl}/api/v1/batches/${batchId}/violation`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey 
+                        },
+                        body: JSON.stringify({ details })
+                    });
+                    this.logger.log(`[SYNC] Violation synced to Passport for ${batchId}`);
+                } catch (syncErr) {
+                    this.logger.warn(`[SYNC] Failed to sync violation to Passport: ${syncErr.message}`);
+                }
+            }
+
             return tx.hash;
         } catch (error) {
             this.logger.error('Failed to report violation', error);

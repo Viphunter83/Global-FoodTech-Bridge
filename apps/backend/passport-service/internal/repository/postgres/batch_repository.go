@@ -110,6 +110,16 @@ func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID
 	return err
 }
 
+func (r *BatchRepository) ReportViolation(ctx context.Context, id uuid.UUID, details string) error {
+	query := `
+		UPDATE product_batches
+		SET usf_status = 'VIOLATED'
+		WHERE id = $1
+	`
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
 func (r *BatchRepository) Reset(ctx context.Context, id uuid.UUID) error {
 	query := `
 		UPDATE product_batches
@@ -120,18 +130,48 @@ func (r *BatchRepository) Reset(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-func (r *BatchRepository) ListAll(ctx context.Context) ([]domain.Batch, error) {
-	query := `
-		SELECT 
-			id, manufacturer_id, product_type, batch_size, unit_of_measure,
-			origin_country, destination_country, usf_status, blockchain_hash, 
-			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-			marketing_story, partner_redirect_url, ingredients, nutrition
-		FROM product_batches
-		ORDER BY created_at DESC
-	`
+func (r *BatchRepository) ListAll(ctx context.Context, companyID string, role string) ([]domain.Batch, error) {
+	var query string
+	var args []interface{}
 
-	rows, err := r.db.Query(ctx, query)
+	if role == "ADMIN" {
+		query = `
+			SELECT 
+				id, manufacturer_id, product_type, batch_size, unit_of_measure,
+				origin_country, destination_country, usf_status, blockchain_hash, 
+				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+				marketing_story, partner_redirect_url, ingredients, nutrition
+			FROM product_batches
+			ORDER BY created_at DESC
+		`
+	} else if role == "MANUFACTURER" {
+		query = `
+			SELECT 
+				id, manufacturer_id, product_type, batch_size, unit_of_measure,
+				origin_country, destination_country, usf_status, blockchain_hash, 
+				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+				marketing_story, partner_redirect_url, ingredients, nutrition
+			FROM product_batches
+			WHERE manufacturer_id = $1
+			ORDER BY created_at DESC
+		`
+		args = append(args, companyID)
+	} else {
+		// Logistics or Retailer see batches where they are the assigned partner
+		query = `
+			SELECT 
+				id, manufacturer_id, product_type, batch_size, unit_of_measure,
+				origin_country, destination_country, usf_status, blockchain_hash, 
+				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
+				marketing_story, partner_redirect_url, ingredients, nutrition
+			FROM product_batches
+			WHERE partner_id = $1
+			ORDER BY created_at DESC
+		`
+		args = append(args, companyID)
+	}
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list batches: %w", err)
 	}

@@ -19,12 +19,12 @@ To ensure the highest level of trust in a global supply chain, every entity on t
 
 1.  **Legal Identity (NAT/VAT)**: National tax identifiers used for government-level verification and customs clearance.
 2.  **Global Supply Chain Identity (GS1 GLN)**: The **Global Location Number** (13 digits) serves as a unique "digital address" for physical facilities. This allows cross-referencing with the GS1 Global Registry.
-3.  **Digital Cryptographic Identity (Blockchain Wallet)**: Every registered enterprise possesses a unique non-custodial wallet. All actions (batch creation, handovers) are cryptographically signed by this identity.
+3.  **Digital Cryptographic Identity (System-Custodial Wallet)**: To minimize onboarding friction, the platform operates as a **Managed Notary**. The system manages secure custodial wallets for participants. All actions (batch creation, handovers) are notarized on-chain by the platform's trusted relayer on behalf of the registered identity.
 
 ### Registration Flow:
 *   **Initialization**: Admin or self-service portal creates a `Company` record with GLN and VAT details.
-*   **Wallet Binding**: The system generates a wallet and stores it alongside the legal IDs.
-*   **Role Authorization**: A smart contract transaction grants the `MANUFACTURER`, `LOGISTICS`, or `RETAILER` role to the wallet address only after legal verification is complete.
+*   **Platform Binding**: The system assigns a managed cryptographic identity to the company.
+*   **Role Authorization**: The platform's administrator grants roles (`MANUFACTURER`, `LOGISTICS`, `RETAILER`) to the company's identity in the `SupplyChainRegistry` smart contract.
 
 ---
 
@@ -52,10 +52,11 @@ To ensure the highest level of trust in a global supply chain, every entity on t
 
 ## 🤝 Phase 3: Financial & Legal Handover (Reception)
 ### Workflow:
-1. **Ownership Transfer (Smart Contract)**:
-    *   The current owner (Logistics) initiates a `Transfer Request` in the Blockchain Service.
-    *   The pending owner (Retailer) reviews the IoT history (SLA Compliance).
-    *   **Acceptance**: If logs are clean, the Retailer clicks "Accept Handover".
+1. **Ownership Transfer (Smart Contract Notarization)**:
+    *   The platform's **Blockchain Service** acts as the trusted executor for the handover.
+    *   **Initiation**: The current role-holder (e.g., Logistics) triggers the transfer via the UI. The system signs the `initiateTransfer` transaction.
+    *   **Verification**: The pending owner (Retailer) reviews the IoT history (SLA Compliance) within the platform.
+    *   **Acceptance**: Upon clicking "Accept Handover", the platform signs the `acceptTransfer` transaction, completing the on-chain registry update.
 2. **Trust Index Verification**:
     *   A "Trust Index" score is generated for every batch based on sensor uptime and SLA compliance.
 3. **Compliance Audit Report**:

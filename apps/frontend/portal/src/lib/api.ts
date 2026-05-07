@@ -312,6 +312,24 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
     }
 }
 
+export async function listBatches(token?: string, role?: string, companyId?: string): Promise<BatchDetails[]> {
+    try {
+        const headers = getHeaders(false, token);
+        if (role) headers['X-User-Role'] = role;
+        if (companyId) headers['X-Company-ID'] = companyId;
+
+        const res = await fetch(`${PASSPORT_URL}/batches`, {
+            headers,
+            cache: 'no-store'
+        });
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error('Failed to list batches:', e);
+        return [];
+    }
+}
+
 export async function getTelemetry(id: string, minLimit: number = -22, maxLimit: number = -18, token?: string): Promise<Telemetry[]> {
     try {
         const res = await fetch(`${IOT_URL}/telemetry/${id}`, { 

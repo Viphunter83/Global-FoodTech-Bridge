@@ -20,12 +20,17 @@ async function run() {
     for (const user of users) {
         console.log(`Updating ${user.email} (${user.uid}) to ${user.role}...`);
         try {
+            // 1. Update Firestore for UI display and extra data
             await db.collection('users').doc(user.uid).set({
                 role: user.role,
                 companyId: user.role === 'ADMIN' ? null : '550e8400-e29b-41d4-a716-446655440000',
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-            console.log(`SUCCESS: ${user.email} is now ${user.role}`);
+
+            // 2. SET CUSTOM CLAIMS (Crucial for Proxy RBAC)
+            await admin.auth().setCustomUserClaims(user.uid, { role: user.role });
+            
+            console.log(`SUCCESS: ${user.email} is now ${user.role} (Firestore + Custom Claims)`);
         } catch (e) {
             console.error(`FAILED for ${user.email}:`, e.message);
         }

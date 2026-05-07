@@ -142,14 +142,21 @@ func (s *BatchService) GetBatch(ctx context.Context, idStr string) (*domain.Batc
 func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, hash string) error {
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return errors.New("invalid batch id")
+		return fmt.Errorf("invalid uuid: %w", err)
 	}
-
 	return s.repo.UpdateBlockchainHash(ctx, id, hash)
 }
 
-func (s *BatchService) ListAllBatches(ctx context.Context) ([]domain.Batch, error) {
-	return s.repo.ListAll(ctx)
+func (s *BatchService) ReportViolation(ctx context.Context, idStr string, details string) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return fmt.Errorf("invalid uuid: %w", err)
+	}
+	return s.repo.ReportViolation(ctx, id, details)
+}
+
+func (s *BatchService) ListAllBatches(ctx context.Context, companyID string, role string) ([]domain.Batch, error) {
+	return s.repo.ListAll(ctx, companyID, role)
 }
 
 func (s *BatchService) ResetBatch(ctx context.Context, idStr string) error {

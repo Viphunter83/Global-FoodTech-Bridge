@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedUser, verifySession } from '@/lib/auth-server';
 
+// Role-based access map for blockchain operations
+const ROLE_PERMISSIONS: Record<string, string[]> = {
+    'ADMIN': ['*'],
+    'MANUFACTURER': ['/notarize', '/transfer/initiate', '/violation'],
+    'LOGISTICS': ['/transfer/accept', '/transfer/initiate', '/violation'],
+    'RETAILER': ['/transfer/accept', '/violation'],
+};
+
 export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
@@ -24,7 +32,7 @@ export async function GET(request: NextRequest) {
         }
 
         const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
-        console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
+        console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}]`);
 
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
@@ -34,7 +42,6 @@ export async function GET(request: NextRequest) {
         }
 
         const response = await fetch(finalUrl, { headers });
-
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
@@ -45,41 +52,47 @@ export async function GET(request: NextRequest) {
 
 export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
     const targetPath = request.nextUrl.pathname.replace('/api/blockchain', '');
-    const BLOCKCHAIN_SERVICE_URL = process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL;
+    const userRole = user.role?.toUpperCase() || 'PENDING';
     
+    // 1. Strict RBAC Check
+    const allowedPaths = ROLE_PERMISSIONS[userRole] || [];
+    const isAllowed = allowedPaths.includes('*') || allowedPaths.some(p => targetPath.startsWith(p));
+
+    if (!isAllowed) {
+        console.warn(`[GFTB-SECURITY] Blocked unauthorized ${userRole} from accessing ${targetPath}`);
+        return NextResponse.json({ 
+            error: 'Access Denied', 
+            message: `Your role (${userRole}) is not authorized to perform this blockchain operation.` 
+        }, { status: 403 });
+    }
+
+    const BLOCKCHAIN_SERVICE_URL = process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL;
     if (!BLOCKCHAIN_SERVICE_URL) {
         return NextResponse.json({ error: 'Blockchain service URL is not configured' }, { status: 500 });
     }
 
     try {
         const apiKey = process.env.INTERNAL_API_KEY;
-        const userRole = user.role?.toUpperCase() || '';
 
-        // Standardize URL to include /api/v1 if not present
+        // Standardize URL
         let baseUrl = (BLOCKCHAIN_SERVICE_URL || '').trim().replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }
 
         const finalUrl = `${baseUrl}${targetPath}`;
-        console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}] [Key-Presence: ${!!apiKey}]`);
+        console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}] [Authorized: OK]`);
 
         const contentType = request.headers.get('content-type') || '';
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
+            'X-User-Role': userRole
         };
         
-        if (userRole) {
-            headers['X-User-Role'] = userRole;
-        }
-
         if (contentType) {
             headers['Content-Type'] = contentType;
         }
 
-        // Consume the entire request body into memory as an ArrayBuffer.
-        // This avoids Vercel Edge Serverless streaming limitations (duplex: half) 
-        // and FormData parsing issues in node-fetch.
         const arrayBuffer = await request.arrayBuffer();
 
         const response = await fetch(finalUrl, {
@@ -92,8 +105,7 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
         console.error('Blockchain Proxy POST Error:', error);
-        console.error(error.stack);
-        return NextResponse.json({ error: 'Failed to connect to blockchain service', message: error.message }, { status: 502 });
+        return NextResponse.json({ error: 'Failed to connect to blockchain service' }, { status: 502 });
     }
 });
 

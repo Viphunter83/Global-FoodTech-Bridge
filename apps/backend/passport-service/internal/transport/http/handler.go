@@ -65,6 +65,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 			})
 			
 			r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
+			r.Post("/batches/{id}/violation", h.reportViolation)
 
 			// Admin Routes (protected by ADMIN role)
 			r.Group(func(r chi.Router) {
@@ -217,6 +218,30 @@ func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
 }
 
+func (h *Handler) reportViolation(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Details string `json:"details"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.ReportViolation(r.Context(), id, req.Details); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "reported"})
+}
+
 func (h *Handler) createCompany(w http.ResponseWriter, r *http.Request) {
 	var req domain.CreateCompanyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -353,7 +378,10 @@ func (h *Handler) deleteTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listBatches(w http.ResponseWriter, r *http.Request) {
-	batches, err := h.service.ListAllBatches(r.Context())
+	companyID := r.Header.Get("X-Company-ID")
+	role := r.Header.Get("X-User-Role")
+
+	batches, err := h.service.ListAllBatches(r.Context(), companyID, role)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -77,3 +77,15 @@ The frontend has been migrated to a **Domain-Driven SSR** architecture to ensure
 ### Deployment
 - **Main URL**: [https://global-food-tech-bridge.vercel.app/en](https://global-food-tech-bridge.vercel.app/en)
 - **Automatic Deploys**: Push to `main` branch triggers auto-deploy to Vercel and Railway.
+
+---
+
+## 🛡 Security & Role-Based Access (RBAC)
+To prevent cross-participant interference, the **Next.js API Routes** act as a security proxy:
+- **Proxy Location**: `apps/frontend/portal/src/app/api/blockchain/[...path]/route.ts`
+- **Logic**: It verifies the user's role from the Firebase JWT and compares it against a `ROLE_PERMISSIONS` map before forwarding requests to the `blockchain-service`.
+- **Superadmin**: Users with the `ADMIN` role have full access (`*`) to all endpoints, including demo/reset controls.
+- **Enforcement Rules**:
+    - `MANUFACTURER`: Access to `/notarize`, `/transfer/initiate`, `/violation`.
+    - `LOGISTICS`: Access to `/transfer/accept`, `/transfer/initiate`, `/violation`.
+    - `RETAILER`: Access to `/transfer/accept`, `/violation`.
