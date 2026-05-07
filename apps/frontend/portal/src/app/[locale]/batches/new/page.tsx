@@ -266,13 +266,13 @@ export default function CreateBatchPage() {
 
                                 <div className="grid w-full grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
                                     <Link href={`/batches/${createdBatchId}`} className="w-full">
-                                        <Button className="w-full h-20 bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/20 rounded-3xl text-sm font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98]">
-                                            {t('msg_track_status')} <ChevronRight className="ml-3 h-5 w-5" />
+                                        <Button className="w-full h-auto min-h-[5rem] py-4 px-6 bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/20 rounded-3xl text-sm font-black uppercase tracking-[0.1em] transition-all active:scale-[0.98] whitespace-normal leading-tight">
+                                            {t('msg_track_status')} <ChevronRight className="ml-3 h-5 w-5 shrink-0" />
                                         </Button>
                                     </Link>
                                     <Button
                                         variant="outline"
-                                        className="w-full h-20 glass border-primary/10 hover:bg-primary/5 rounded-3xl text-sm font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
+                                        className="w-full h-auto min-h-[5rem] py-4 px-6 glass border-primary/10 hover:bg-primary/5 rounded-3xl text-sm font-black uppercase tracking-[0.1em] transition-all active:scale-[0.98] whitespace-normal leading-tight"
                                         onClick={() => setCreatedBatchId(null)}
                                     >
                                         {t('msg_create_another')}
@@ -436,12 +436,12 @@ export default function CreateBatchPage() {
                                     )}
 
                                     <Button 
-                                        className="w-full h-20 bg-foreground hover:bg-black text-background rounded-[1.5rem] text-sm font-black uppercase tracking-[0.3em] shadow-2xl shadow-foreground/20 transition-all hover:scale-[1.01] active:scale-[0.98] mt-10"
+                                        className="w-full h-auto min-h-[5rem] py-4 px-8 bg-foreground hover:bg-black text-background rounded-[1.5rem] text-sm font-black uppercase tracking-[0.15em] shadow-2xl shadow-foreground/20 transition-all hover:scale-[1.01] active:scale-[0.98] mt-10 whitespace-normal leading-tight"
                                         disabled={isLoading} 
                                         type="submit"
                                     >
-                                        {isLoading ? <Loader2 className="mr-3 animate-spin h-6 w-6" /> : <PackagePlus className="mr-3" size={24} />}
-                                        {t('create_batch_title')}
+                                        {isLoading ? <Loader2 className="mr-3 animate-spin h-6 w-6" /> : <PackagePlus className="mr-3 shrink-0" size={24} />}
+                                        <span className="flex-1">{t('create_batch_title')}</span>
                                     </Button>
                                 </form>
                             </Card>

@@ -356,15 +356,15 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                             />
                                         </div>
                                         <div className="pt-10 border-t border-slate-100">
-                                                <Button
+                                            <Button
                                                 variant="outline"
-                                                className="w-full h-24 rounded-[2.5rem] border-slate-200 bg-white text-slate-900 hover:bg-slate-50 font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-4"
+                                                className="w-full h-auto min-h-[6rem] py-4 rounded-[2.5rem] border-slate-200 bg-white text-slate-900 hover:bg-slate-50 font-black uppercase tracking-[0.15em] text-xs shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-4 whitespace-normal leading-tight px-6"
                                                 onClick={() => window.open(`/${locale}/verify/${selectedId}`, '_blank')}
                                             >
-                                                <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                                <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0">
                                                     <Search className="h-6 w-6" />
                                                 </div>
-                                                {t('Dashboard.view_digital_twin')}
+                                                <span className="flex-1 text-center">{t('Dashboard.view_digital_twin')}</span>
                                             </Button>
                                         </div>
                                     </>

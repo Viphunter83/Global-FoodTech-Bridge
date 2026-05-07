@@ -60,9 +60,9 @@ export function EmptyStateGuide() {
                     <div className="pt-10 w-full flex justify-center">
                         <Button 
                             onClick={() => router.push('/batches/new')}
-                            className="h-16 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                            className="h-auto min-h-[4rem] py-3 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all whitespace-normal leading-tight"
                         >
-                            <PlusCircle className="mr-3 h-6 w-6" />
+                            <PlusCircle className="mr-3 h-6 w-6 shrink-0" />
                             {btnText}
                         </Button>
                     </div>

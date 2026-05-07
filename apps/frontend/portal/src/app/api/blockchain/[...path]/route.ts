@@ -25,13 +25,16 @@ export async function GET(request: NextRequest) {
         const user = await verifySession(request);
         const userRole = user?.role?.toUpperCase() || '';
 
-        // Standardize URL to include /api/v1 if not present
+        // Standardize URL: ensure protocol and /api/v1
         let baseUrl = (BLOCKCHAIN_SERVICE_URL || '').trim().replace(/\/$/, '');
+        if (!baseUrl.startsWith('http')) {
+            baseUrl = `https://${baseUrl}`;
+        }
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }
-
-        const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
+        
+        const finalUrl = `${baseUrl}${targetPath}${searchParams ? `?${searchParams}` : ''}`;
         console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}]`);
 
         const headers: Record<string, string> = {
@@ -74,12 +77,15 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
     try {
         const apiKey = process.env.INTERNAL_API_KEY;
 
-        // Standardize URL
+        // Standardize URL: ensure protocol and /api/v1
         let baseUrl = (BLOCKCHAIN_SERVICE_URL || '').trim().replace(/\/$/, '');
+        if (!baseUrl.startsWith('http')) {
+            baseUrl = `https://${baseUrl}`;
+        }
         if (!baseUrl.endsWith('/api/v1')) {
             baseUrl = `${baseUrl}/api/v1`;
         }
-
+        
         const finalUrl = `${baseUrl}${targetPath}`;
         console.log(`[GFTB-PROXY] POST ${finalUrl} [Role: ${userRole}] [Authorized: OK]`);
 

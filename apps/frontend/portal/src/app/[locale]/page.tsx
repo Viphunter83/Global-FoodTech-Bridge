@@ -112,10 +112,10 @@ export default function Home() {
                             </motion.p>
 
                             <motion.div variants={fadeInUp} className="flex flex-wrap items-center justify-center gap-4 pt-4">
-                                <Button size="lg" onClick={() => document.getElementById('search-widget')?.scrollIntoView({ behavior: 'smooth' })} className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white shadow-2xl shadow-primary/20 hover:scale-105 transition-all">
+                                <Button size="lg" onClick={() => document.getElementById('search-widget')?.scrollIntoView({ behavior: 'smooth' })} className="h-auto min-h-[4rem] py-4 px-8 rounded-2xl text-lg font-bold premium-gradient text-white shadow-2xl shadow-primary/20 hover:scale-105 transition-all whitespace-normal leading-tight">
                                     {t('Hero.cta_track')}
                                 </Button>
-                                <Button size="lg" variant="outline" asChild className="h-16 px-8 rounded-2xl text-lg font-bold border-primary/20 glass hover:bg-white/5 transition-all">
+                                <Button size="lg" variant="outline" asChild className="h-auto min-h-[4rem] py-4 px-8 rounded-2xl text-lg font-bold border-primary/20 glass hover:bg-white/5 transition-all whitespace-normal leading-tight">
                                     <Link href="/dashboard">
                                         {t('Hero.cta_dashboard')}
                                     </Link>
@@ -297,7 +297,7 @@ export default function Home() {
                                     ))}
                                 </ul>
                                 <div className="pt-8">
-                                    <Button size="lg" asChild className="h-16 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all">
+                                    <Button size="lg" asChild className="h-auto min-h-[4rem] py-4 px-10 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-xl shadow-secondary/20 transition-all whitespace-normal leading-tight">
                                         <Link href="/contact?subject=partner">
                                             {t('Marketing.partner_btn')}
                                         </Link>
@@ -337,9 +337,9 @@ export default function Home() {
                                             onChange={(e) => setBatchId(e.target.value)}
                                         />
                                     </div>
-                                    <Button type="submit" size="lg" className="h-16 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
+                                    <Button type="submit" size="lg" className="h-auto min-h-[4rem] py-4 px-8 rounded-2xl text-lg font-bold premium-gradient text-white border-0 hover:shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group whitespace-normal leading-tight">
                                         {t('Hero.cta_track')}
-                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform shrink-0" />
                                     </Button>
                                 </form>
                             </div>
@@ -391,12 +391,12 @@ export default function Home() {
                 <div className="container px-4 md:px-6 mx-auto text-center space-y-10">
                     <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter">{t('Marketing.ready_title')}</h2>
                     <div className="flex flex-wrap justify-center gap-6">
-                        <Button size="lg" asChild className="h-16 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105">
+                        <Button size="lg" asChild className="h-auto min-h-[4rem] py-4 px-12 rounded-2xl bg-primary text-white text-lg font-bold shadow-2xl shadow-primary/30 transition-all hover:scale-105 whitespace-normal leading-tight">
                             <Link href="/contact?subject=sales">
                                 {t('Marketing.contact_sales')}
                             </Link>
                         </Button>
-                        <Button size="lg" variant="outline" asChild className="h-16 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all">
+                        <Button size="lg" variant="outline" asChild className="h-auto min-h-[4rem] py-4 px-12 rounded-2xl text-lg font-bold glass border-primary/20 hover:bg-white/5 transition-all whitespace-normal leading-tight">
                             <a href="https://github.com/Viphunter83/Global-FoodTech-Bridge/tree/main/docs" target="_blank" rel="noopener noreferrer">
                                 {t('Marketing.view_docs')}
                             </a>
