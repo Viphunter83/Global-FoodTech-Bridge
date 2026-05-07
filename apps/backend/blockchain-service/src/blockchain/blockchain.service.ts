@@ -372,18 +372,15 @@ export class BlockchainService implements OnModuleInit {
 
         try {
             const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
-            const filter = {
-                address: await this.contract.getAddress(),
-                fromBlock: 85000000,
-                toBlock: 'latest',
-            };
+            const latestBlock = await this.provider.getBlockNumber();
+            const fromBlock = Math.max(latestBlock - 9999, 85000000); // Don't go before contract deployment (approx 85M)
 
-            // Query events
+            // Query events within the allowed 10k range
             const [created, transfers, completed, violations] = await Promise.all([
-                this.contract.queryFilter(this.contract.filters.BatchCreated(tokenId)),
-                this.contract.queryFilter(this.contract.filters.TransferInitiated(tokenId)),
-                this.contract.queryFilter(this.contract.filters.TransferCompleted(tokenId)),
-                this.contract.queryFilter(this.contract.filters.ViolationReported(tokenId))
+                this.contract.queryFilter(this.contract.filters.BatchCreated(tokenId), fromBlock, 'latest'),
+                this.contract.queryFilter(this.contract.filters.TransferInitiated(tokenId), fromBlock, 'latest'),
+                this.contract.queryFilter(this.contract.filters.TransferCompleted(tokenId), fromBlock, 'latest'),
+                this.contract.queryFilter(this.contract.filters.ViolationReported(tokenId), fromBlock, 'latest')
             ]);
 
             const allEvents = [
