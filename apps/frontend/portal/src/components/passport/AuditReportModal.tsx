@@ -20,6 +20,7 @@ interface AuditReportModalProps {
 
 export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditReportModalProps) {
     const t = useTranslations('Tracking');
+    const tc = useTranslations('Compliance');
 
     return (
         <Dialog>
@@ -39,7 +40,7 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 </div>
                                 <div>
                                     <DialogTitle className="text-4xl font-serif font-black italic tracking-tighter">{t('audit_report_title')}</DialogTitle>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">{t('verified_by_notary')}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">{tc('verified_by_notary')}</p>
                                 </div>
                             </div>
                             <Button variant="ghost" className="h-14 w-14 rounded-2xl bg-muted/50">
@@ -55,21 +56,21 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-600/60 mb-2">{t('audit_integrity_status')}</h4>
                                 <div className="flex items-center gap-3">
                                     <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                                    <span className="text-xl font-black italic">{t('integrity_verified')}</span>
+                                    <span className="text-xl font-black italic">{tc('integrity_verified')}</span>
                                 </div>
                             </div>
                             <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10">
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-2">{t('blockchain_records')}</h4>
                                 <div className="flex items-center gap-3">
                                     <Clock className="h-6 w-6 text-primary" />
-                                    <span className="text-xl font-black italic">{t('events_count', { count: bcHistory.length })}</span>
+                                    <span className="text-xl font-black italic">{tc('events_count', { count: bcHistory?.length || 0 })}</span>
                                 </div>
                             </div>
                             <div className="p-8 rounded-3xl bg-amber-500/5 border border-amber-500/10">
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-600/60 mb-2">{t('audit_active_warnings')}</h4>
                                 <div className="flex items-center gap-3">
                                     <AlertCircle className="h-6 w-6 text-amber-500" />
-                                    <span className="text-xl font-black italic">{t('warnings_count', { count: alerts.length })}</span>
+                                    <span className="text-xl font-black italic">{tc('warnings_count', { count: alerts?.length || 0 })}</span>
                                 </div>
                             </div>
                         </div>
@@ -81,21 +82,21 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-primary/5">
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_stage')}</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_details')}</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_timestamp')}</th>
-                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{t('ledger_hash')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{tc('ledger_stage')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{tc('ledger_details')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{tc('ledger_timestamp')}</th>
+                                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary/60">{tc('ledger_hash')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-primary/5">
-                                        {bcHistory.map((event, idx) => (
+                                        {(bcHistory || []).map((event, idx) => (
                                             <tr key={idx} className="hover:bg-primary/[0.02] transition-colors">
-                                                <td className="p-6 font-black text-sm italic">{event.stage}</td>
-                                                <td className="p-6 text-xs text-muted-foreground">{event.details}</td>
-                                                <td className="p-6 text-[10px] font-mono text-muted-foreground/60">{new Date(event.timestamp).toLocaleString()}</td>
+                                                <td className="p-6 font-black text-sm italic">{typeof event.stage === 'string' ? event.stage : String(event.stage)}</td>
+                                                <td className="p-6 text-xs text-muted-foreground">{typeof event.details === 'string' ? event.details : JSON.stringify(event.details)}</td>
+                                                <td className="p-6 text-[10px] font-mono text-muted-foreground/60">{event.timestamp ? new Date(event.timestamp).toLocaleString() : '---'}</td>
                                                 <td className="p-6">
                                                     <code className="text-[9px] bg-muted px-3 py-1.5 rounded-lg font-bold">
-                                                        {event.transactionHash?.substring(0, 8)}...
+                                                        {event.transactionHash ? `${event.transactionHash.substring(0, 8)}...` : 'N/A'}
                                                     </code>
                                                 </td>
                                             </tr>
@@ -111,16 +112,29 @@ export function AuditReportModal({ batch, bcHistory, telemetry, alerts }: AuditR
                             <div className="p-10 rounded-[2.5rem] bg-muted/30 border border-primary/5">
                                 <div className="flex items-center gap-8 mb-8">
                                     <div className="flex items-center gap-3">
-                                        <Thermometer className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-black italic">{t('avg_temp')} {telemetry.length > 0 ? (telemetry.reduce((acc, r) => acc + r.temperature_celsius, 0) / telemetry.length).toFixed(1) : 'N/A'}°C</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{tc('avg_temp')}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Thermometer className="h-5 w-5 text-primary" />
+                                            <span className="text-sm font-black italic">
+                                                {telemetry?.length > 0 
+                                                    ? (telemetry.reduce((acc, r) => acc + (Number(r.temperature_celsius) || 0), 0) / telemetry.length).toFixed(1) 
+                                                    : '---'}°C
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="h-6 w-px bg-primary/10" />
-                                    <div className="text-sm font-black italic">{t('range')} {batch.min_temp}°C to {batch.max_temp}°C</div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{tc('range')}</span>
+                                        <span className="text-sm font-black italic">{batch?.min_temp || '---'}°C to {batch?.max_temp || '---'}°C</span>
+                                    </div>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    {t('env_monitoring_desc', { id: batch.id })}
+                                    {tc('env_monitoring_desc', { id: String(batch?.id || 'N/A') })}
                                     <br />
-                                    {t('env_status_label')} {alerts.length === 0 ? t('env_status_compliant') : t('env_status_non_compliant')}.
+                                    <span className="font-black uppercase tracking-tighter mr-2">{tc('env_status_label')}</span>
+                                    <span className={alerts?.length === 0 ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
+                                        {alerts?.length === 0 ? tc('env_status_compliant') : tc('env_status_non_compliant')}
+                                    </span>
                                 </p>
                             </div>
                         </section>

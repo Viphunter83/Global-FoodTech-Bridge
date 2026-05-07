@@ -167,8 +167,11 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         badges={[
                             { label: t('Tracking.bc_secured_badge'), color: 'emerald' },
                             { label: t('Tracking.badge_fda_compliance'), color: 'emerald' },
-                            { label: batch.product_type?.toUpperCase() || t('Tracking.fallback_premium'), color: 'secondary' },
-                            ...(batch.certificates?.map((c: any) => ({ label: c.name || c, color: 'secondary' })) || [])
+                            { label: batch.product_type?.toUpperCase().replace(/_/g, ' ') || t('Tracking.fallback_premium'), color: 'secondary' },
+                            ...(batch.certificates?.map((c: any) => ({ 
+                                label: typeof c === 'string' ? c : (c.name || c.type || c.id || t('Common.certificate')), 
+                                color: 'secondary' 
+                            })) || [])
                         ]}
                     />
                 </div>
@@ -178,7 +181,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                     <div className="grid md:grid-cols-2 gap-0">
                         <div className="relative aspect-video md:aspect-auto h-full overflow-hidden">
                             <Image 
-                                src="/vietnam_mango_factory_premium_1778070839265.png" 
+                                src="/vietnam_mango_factory_premium.png" 
                                 alt="Vietnam Factory" 
                                 fill 
                                 className="object-cover group-hover:scale-105 transition-transform duration-[3000ms]"
@@ -292,13 +295,13 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                             {batch.certificates.map((cert: any, idx: number) => (
                                                 <a
                                                     key={idx}
-                                                    href={cert.uri}
+                                                    href={cert.uri || '#'}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="group inline-flex items-center px-6 py-4 glass border border-primary/10 shadow-xl shadow-primary/5 text-xs font-black uppercase tracking-widest rounded-2xl text-primary hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95"
                                                 >
                                                     <Box size={14} className="mr-3 group-hover:rotate-12 transition-transform" />
-                                                    {cert.name}
+                                                    {typeof cert === 'string' ? cert : (cert.name || cert.type || cert.id || t('Common.certificate'))}
                                                 </a>
                                             ))}
                                         </div>

@@ -23,6 +23,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
 import { BlockchainProof } from '@/components/blockchain/BlockchainProof';
 import { BlockchainHistory } from '@/components/blockchain/BlockchainHistory';
+import { useTranslations, useLocale } from 'next-intl';
 import { SustainabilitySection } from '@/components/passport/SustainabilitySection';
 
 const TelemetryChart = dynamic<{ data: Telemetry[] }>(
@@ -45,6 +46,8 @@ export function VerifyClient({
     initialTelemetry, 
     initialHistory 
 }: VerifyClientProps) {
+    const t = useTranslations('Tracking');
+    const locale = useLocale();
     const [batch, setBatch] = useState<BatchDetails>(initialBatch);
     const [status, setStatus] = useState<BlockchainStatus>(initialStatus);
     const [telemetry, setTelemetry] = useState<Telemetry[]>(initialTelemetry);
@@ -73,18 +76,19 @@ export function VerifyClient({
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
                 <ShieldCheck className="h-20 w-20 text-gray-300 mb-4" />
-                <h1 className="text-2xl font-bold text-gray-800">Product Not Verified</h1>
-                <p className="text-gray-500">This product does not have a valid digital passport record.</p>
+                <h1 className="text-2xl font-bold text-gray-800">{t('not_verified_title')}</h1>
+                <p className="text-gray-500">{t('not_verified_desc')}</p>
             </div>
         );
     }
 
     const displayMetrics = batch.trust_metrics || [
-        { label: 'Carbon', value: '1.2 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
-        { label: 'Authenticity', value: 'Blockchain Secured', icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
+        { label: t('metric_carbon'), value: '1.2 kg', icon: <Leaf className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' },
+        { label: t('metric_authenticity'), value: t('bc_secured_value'), icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
     ];
 
-    const marketingStory = (batch as any).marketing_story?.en || (batch as any).marketing_story || "";
+    const marketingStoryRaw = (batch as any).marketing_story?.[locale] || (batch as any).marketing_story?.en || (batch as any).marketing_story || "";
+    const marketingStory = typeof marketingStoryRaw === 'string' ? marketingStoryRaw : "";
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
@@ -104,13 +108,13 @@ export function VerifyClient({
                         </div>
                     </motion.div>
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight">Authentic Product</h1>
-                        <p className="opacity-90 font-medium text-lg mt-1">Global FoodTech Bridge Verified</p>
+                        <h1 className="text-3xl font-extrabold tracking-tight">{t('authentic_product')}</h1>
+                        <p className="opacity-90 font-medium text-lg mt-1">{t('gftb_verified')}</p>
                     </div>
                     <div className="flex justify-center gap-2 text-sm font-mono opacity-75">
                         <span>ID: {batch.id.substring(0, 8)}...</span>
                         <span>•</span>
-                        <span>Polygon Mainnet</span>
+                        <span>{t('network_polygon')}</span>
                     </div>
                 </div>
             </div>
@@ -122,12 +126,12 @@ export function VerifyClient({
                     <CardContent className="p-8 space-y-6">
                         <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Digital Passport</p>
-                                <h2 className="text-2xl font-serif font-black italic text-gray-900 tracking-tighter">{batch.product_type?.replace(/_/g, ' ') || 'Food Product'}</h2>
+                                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{t('digital_passport_label')}</p>
+                                <h2 className="text-2xl font-serif font-black italic text-gray-900 tracking-tighter">{batch.product_type?.replace(/_/g, ' ') || t('fallback_food_product')}</h2>
                                 <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">#{batch.id.substring(0, 12)}</p>
                             </div>
                             <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-[9px] font-black italic tracking-tighter">
-                                PREMIUM GRADE
+                                {t('premium_grade_badge')}
                             </div>
                         </div>
 
@@ -138,8 +142,10 @@ export function VerifyClient({
                                         {metric.icon || <ShieldCheck className="h-5 w-5" />}
                                     </div>
                                     <div>
-                                        <p className="text-[9px] uppercase text-gray-400 font-black tracking-wider">{metric.label}</p>
-                                        <p className="font-serif font-black italic text-sm text-gray-800">{metric.value}</p>
+                                        <p className="text-[9px] uppercase text-gray-400 font-black tracking-wider">{String(metric.label)}</p>
+                                        <p className="font-serif font-black italic text-sm text-gray-800">
+                                            {typeof metric.value === 'string' ? metric.value : JSON.stringify(metric.value)}
+                                        </p>
                                     </div>
                                 </div>
                             ))}
@@ -165,14 +171,14 @@ export function VerifyClient({
                             className="w-full bg-slate-900 text-white h-20 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-4 transition-all"
                         >
                             <ShoppingCart size={22} className="text-primary" />
-                            Order Now in US Store
+                            {t('order_now_cta')}
                         </button>
                     </motion.div>
                 )}
 
                 {/* 2. BLOCKCHAIN JOURNEY */}
                 <div className="space-y-4">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] px-2 italic">Immutable Timeline</h3>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] px-2 italic">{t('immutable_timeline')}</h3>
                     <BlockchainHistory history={bcHistory} />
                 </div>
 
@@ -184,11 +190,11 @@ export function VerifyClient({
                                 <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
                                     <Thermometer size={20} />
                                 </div>
-                                Cold Chain Proof
+                                {t('cold_chain_proof')}
                             </span>
                             <span className="flex items-center gap-1.5 text-[9px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-black uppercase tracking-widest">
                                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                LIVE IOT
+                                {t('live_iot_label')}
                             </span>
                         </h3>
                         <div className="h-48 w-full">

@@ -88,7 +88,7 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                             <div className="space-y-2">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                                     <h4 className={`text-sm font-black uppercase tracking-widest ${item.event === 'ViolationReported' ? 'text-destructive' : 'text-gray-900'}`}>
-                                        {item.stage}
+                                        {String(item.stage)}
                                     </h4>
                                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 font-mono font-bold bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
                                         <Clock className="h-3 w-3" />
@@ -97,7 +97,7 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                                 </div>
                                 
                                 <p className="text-xs text-muted-foreground font-bold leading-relaxed italic bg-blue-50/30 p-3 rounded-2xl border border-blue-100/50">
-                                    {item.details}
+                                    {typeof item.details === 'string' ? item.details : JSON.stringify(item.details)}
                                 </p>
 
                                 <div className="pt-2 flex flex-wrap gap-3 items-center">
