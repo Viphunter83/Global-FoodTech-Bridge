@@ -60,7 +60,7 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 	}
 
 	// Check if we have limits and validate
-	if limits != nil {
+	if limits != nil && limits.TrackingStartedAt != nil {
 		violationType := ""
 		msg := ""
 
@@ -111,10 +111,11 @@ func (s *TelemetryService) IngestData(ctx context.Context, req domain.IngestTele
 }
 
 type passportBatchResponse struct {
-	MinTemp     float64 `json:"min_temp"`
-	MaxTemp     float64 `json:"max_temp"`
-	MinHumidity float64 `json:"min_humidity"`
-	MaxHumidity float64 `json:"max_humidity"`
+	MinTemp           float64    `json:"min_temp"`
+	MaxTemp           float64    `json:"max_temp"`
+	MinHumidity       float64    `json:"min_humidity"`
+	MaxHumidity       float64    `json:"max_humidity"`
+	TrackingStartedAt *time.Time `json:"tracking_started_at"`
 }
 
 func (s *TelemetryService) getBatchLimits(batchID string) (*passportBatchResponse, error) {

@@ -44,6 +44,8 @@ type Batch struct {
 	PartnerRedirectURL *string                `json:"partner_redirect_url,omitempty"`
 	Ingredients        interface{}            `json:"ingredients,omitempty"`
 	Nutrition          interface{}            `json:"nutrition,omitempty"`
+	SensorIDs          []string               `json:"sensor_ids,omitempty"`
+	TrackingStartedAt  *time.Time             `json:"tracking_started_at,omitempty"`
 }
 
 type CreateBatchRequest struct {
@@ -65,6 +67,7 @@ type CreateBatchRequest struct {
 	PartnerRedirectURL string                 `json:"partner_redirect_url,omitempty"`
 	Ingredients        interface{}            `json:"ingredients,omitempty"`
 	Nutrition          interface{}            `json:"nutrition,omitempty"`
+	SensorIDs          []string               `json:"sensor_ids,omitempty"`
 }
 
 type UpdateBlockchainRequest struct {

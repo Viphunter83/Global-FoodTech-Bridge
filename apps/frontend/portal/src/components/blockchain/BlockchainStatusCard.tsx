@@ -6,9 +6,10 @@ interface BlockchainStatusCardProps {
     owner?: string;
     pendingOwner?: string | null;
     sensorPaired?: boolean;
+    sensor_ids?: string[];
 }
 
-export function BlockchainStatusCard({ status, owner, pendingOwner, sensorPaired }: BlockchainStatusCardProps) {
+export function BlockchainStatusCard({ status, owner, pendingOwner, sensorPaired, sensor_ids }: BlockchainStatusCardProps) {
     const t = useTranslations('Tracking');
 
     return (
@@ -70,8 +71,18 @@ export function BlockchainStatusCard({ status, owner, pendingOwner, sensorPaired
                                     <div className="text-[10px] font-black text-emerald-900 uppercase tracking-widest italic">
                                         {t('iot_monitoring')}
                                     </div>
-                                    <div className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">
-                                        End-to-end Telemetry
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {sensor_ids && sensor_ids.length > 0 ? (
+                                            sensor_ids.map(id => (
+                                                <span key={id} className="text-[7px] font-mono font-bold bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded-md border border-emerald-500/10">
+                                                    {id}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <div className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest">
+                                                {t('telemetry_active')}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

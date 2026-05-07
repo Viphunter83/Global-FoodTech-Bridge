@@ -66,7 +66,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
         // Hardware Guard Simulation:
         // In a production environment, this would involve a cryptographic check 
         // against the global sensor registry to prevent double-pairing or reuse.
-        if (updates.sensor_id === 'GFTB-RESERVED-001') {
+        if (updates.sensor_ids?.includes('GFTB-RESERVED-001')) {
             console.error('CRITICAL GUARD: Sensor GFTB-RESERVED-001 is already assigned to a high-priority government cluster.');
             alert('SECURITY ALERT: This sensor unit is currently active in another cluster and cannot be re-paired.');
             return;

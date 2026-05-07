@@ -23,7 +23,8 @@ export interface BatchDetails {
     template_id?: string | null;
     partner_id?: string | null;
     partner_redirect_url?: string | null;
-    sensor_id?: string;
+    sensor_ids?: string[];
+    tracking_started_at?: string;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;
@@ -67,7 +68,8 @@ export interface BlockchainStatus {
     ownerRole?: string;
     pendingOwnerRole?: string | null;
     sensorPaired?: boolean;
-    sensor_id?: string;
+    sensor_ids?: string[];
+    tracking_started?: boolean;
     shippingStatus?: string;
     shippingStatusLabel?: string;
 }
@@ -483,6 +485,30 @@ export async function updateBatchBlockchainHash(batchId: string, blockchainHash:
     return response.json();
 }
 
+export async function updateBatchIOTConfig(
+    batchId: string, 
+    config: { sensor_ids: string[]; start_tracking: boolean }, 
+    token?: string
+): Promise<{ status: string; error?: string }> {
+    try {
+        const response = await fetch(`${PASSPORT_URL}/batches/${batchId}/sensor`, {
+            method: 'PATCH',
+            headers: getHeaders(true, token),
+            body: JSON.stringify(config),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            return { status: 'error', error: errData.message || 'Failed to update IOT configuration' };
+        }
+
+        return { status: 'success' };
+    } catch (e: any) {
+        return { status: 'error', error: e.message };
+    }
+}
+
+
 export async function initiateHandover(batchId: string, toAddress: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
@@ -756,3 +782,12 @@ export async function advanceBatchDemo(batchId: string, targetRole: 'LOGISTICS' 
     }
 }
 
+/**
+ * Unbinds all sensors from a batch.
+ */
+export async function unbindBatchSensors(batchId: string, token?: string): Promise<{ status: string; error?: string }> {
+    return updateBatchIOTConfig(batchId, {
+        sensor_ids: [],
+        start_tracking: false
+    }, token);
+}

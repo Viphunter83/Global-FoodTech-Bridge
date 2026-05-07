@@ -10,6 +10,7 @@ interface ManufacturerActionsProps {
     owner?: string;
     manufacturerAddr: string;
     onPairSensor: () => void;
+    onUnbindSensor: () => void;
     onTransfer: () => void;
     onNotarize: () => void;
     loading: boolean;
@@ -22,6 +23,7 @@ export function ManufacturerActions({
     owner,
     manufacturerAddr,
     onPairSensor,
+    onUnbindSensor,
     onTransfer,
     onNotarize,
     loading
@@ -34,10 +36,10 @@ export function ManufacturerActions({
                 <Button 
                     onClick={onNotarize} 
                     disabled={loading}
-                    className="w-full min-h-16 h-auto py-4 text-xs font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 text-white border-0 shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
+                    className="w-full min-h-16 h-auto py-4 text-[10px] font-black uppercase tracking-wider bg-primary hover:bg-primary/90 text-white border-0 shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight px-4"
                 >
                     {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5 shrink-0" /> : <ShieldCheck className="mr-3 h-5 w-5 shrink-0" />}
-                    <span className="block">{t('btn_notarize')}</span>
+                    <span className="block px-2">{t('btn_notarize')}</span>
                 </Button>
             </div>
         );
@@ -59,7 +61,7 @@ export function ManufacturerActions({
                         onClick={onPairSensor} 
                         variant="secondary" 
                         disabled={loading}
-                        className="w-full h-12 bg-white hover:bg-amber-50 border-amber-200 text-amber-700 font-black uppercase tracking-widest text-[10px] rounded-xl shadow-sm"
+                        className="w-full min-h-12 h-auto py-3 bg-white hover:bg-amber-50 border-amber-200 text-amber-700 font-black uppercase tracking-wider text-[9px] rounded-xl shadow-sm flex items-center justify-center text-center whitespace-normal leading-tight px-4"
                     >
                         {t('btn_pair_sensor')}
                     </Button>
@@ -67,15 +69,25 @@ export function ManufacturerActions({
             )}
 
             {isCurrentOwner && !pendingOwner && sensorPaired && (
-                <Button 
-                    onClick={onTransfer} 
-                    disabled={loading}
-                    variant="outline" 
-                    className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
-                >
-                    <Truck className="mr-3 h-5 w-5 shrink-0" />
-                    <span className="block">{t('btn_transfer_logistics')}</span>
-                </Button>
+                <div className="space-y-3">
+                    <Button 
+                        onClick={onTransfer} 
+                        disabled={loading}
+                        variant="outline" 
+                        className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-wider text-[10px] rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight px-4"
+                    >
+                        <Truck className="mr-3 h-5 w-5 shrink-0" />
+                        <span className="block px-2">{t('btn_transfer_logistics')}</span>
+                    </Button>
+                    <Button 
+                        onClick={onUnbindSensor} 
+                        disabled={loading}
+                        variant="ghost" 
+                        className="w-full h-10 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all"
+                    >
+                        {t('btn_unbind_sensors')}
+                    </Button>
+                </div>
             )}
 
             {pendingOwner && (

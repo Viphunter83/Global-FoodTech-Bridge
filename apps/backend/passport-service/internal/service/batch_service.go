@@ -91,6 +91,7 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		PartnerRedirectURL: &req.PartnerRedirectURL,
 		Ingredients:        req.Ingredients,
 		Nutrition:          req.Nutrition,
+		SensorIDs:          req.SensorIDs,
 	}
 
 	if req.TemplateID != "" {
@@ -145,6 +146,14 @@ func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, h
 		return fmt.Errorf("invalid uuid: %w", err)
 	}
 	return s.repo.UpdateBlockchainHash(ctx, id, hash)
+}
+
+func (s *BatchService) UpdateIOTConfig(ctx context.Context, idStr string, sensorIDs []string, startTracking bool) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return fmt.Errorf("invalid uuid: %w", err)
+	}
+	return s.repo.UpdateIOTConfig(ctx, id, sensorIDs, startTracking)
 }
 
 func (s *BatchService) ReportViolation(ctx context.Context, idStr string, details string) error {

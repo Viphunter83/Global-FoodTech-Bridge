@@ -7,7 +7,9 @@ import {
     acceptHandover, 
     reportViolation, 
     updateBatchBlockchainHash,
-    resetBatchDemo
+    resetBatchDemo,
+    updateBatchIOTConfig,
+    unbindBatchSensors
 } from '@/lib/api';
 import { MANUFACTURER_ADDR } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -118,6 +120,29 @@ export function useBlockchainOperations(batchId: string) {
         }
     );
 
+    const pairSensor = (sensorIds: string[], startTracking: boolean) => handleAction(
+        (token) => updateBatchIOTConfig(batchId, {
+            sensor_ids: sensorIds,
+            start_tracking: startTracking
+        }, token),
+        { 
+            sensorPaired: true, 
+            sensor_ids: sensorIds,
+            tracking_started: startTracking
+        },
+        () => ({ 
+            sensorPaired: true, 
+            sensor_ids: sensorIds,
+            tracking_started: startTracking
+        })
+    );
+
+    const unbindSensor = () => handleAction(
+        (token) => unbindBatchSensors(batchId, token),
+        { sensorPaired: false, sensor_ids: [] },
+        () => ({ sensorPaired: false, sensor_ids: [] })
+    );
+
     return {
         loading,
         error,
@@ -125,6 +150,8 @@ export function useBlockchainOperations(batchId: string) {
         initiateTransfer,
         acceptTransfer,
         report,
-        reset
+        reset,
+        pairSensor,
+        unbindSensor
     };
 }

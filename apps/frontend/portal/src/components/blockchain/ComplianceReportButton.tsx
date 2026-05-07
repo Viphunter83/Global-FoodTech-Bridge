@@ -136,9 +136,12 @@ export function ComplianceReportButton({ batch, telemetry, alerts, blockchain }:
     };
 
     return (
-        <Button onClick={generatePDF} className="h-16 px-8 bg-foreground hover:bg-black text-background rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-[0.98] gap-3">
-            <FileDown className="h-5 w-5" />
-            {t('btn_download_report')}
+        <Button 
+            onClick={generatePDF} 
+            className="w-full sm:w-auto min-h-16 h-auto px-8 py-4 bg-foreground hover:bg-black text-background rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-[0.98] gap-3 flex items-center justify-center text-center whitespace-normal leading-tight"
+        >
+            <FileDown className="h-5 w-5 shrink-0" />
+            <span className="block">{t('btn_download_report')}</span>
         </Button>
     );
 }

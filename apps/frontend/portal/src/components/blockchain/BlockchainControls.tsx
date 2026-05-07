@@ -96,6 +96,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 owner={status.owner}
                 pendingOwner={status.pendingOwner}
                 sensorPaired={status.sensorPaired}
+                sensor_ids={status.sensor_ids}
             />
 
             {/* Role-Specific Controls */}
@@ -110,6 +111,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         manufacturerAddr={MANUFACTURER_ADDR}
                         onNotarize={ops.notarize}
                         onPairSensor={() => setIsPairingModalOpen(true)}
+                        onUnbindSensor={ops.unbindSensor}
                         onTransfer={() => ops.initiateTransfer(LOGISTICS_ADDR)}
                         loading={ops.loading}
                     />
@@ -121,6 +123,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         onAccept={() => ops.acceptTransfer(LOGISTICS_ADDR)}
                         onTransfer={() => ops.initiateTransfer(RETAILER_ADDR)}
                         onReport={() => ops.report(t('violation_logistics'))}
+                        onUnbindSensor={ops.unbindSensor}
                         onStatusUpdate={(id, label) => updateBatchState(batchId, { shippingStatus: id, shippingStatusLabel: label })}
                         loading={ops.loading}
                     />
@@ -152,8 +155,8 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 isOpen={isPairingModalOpen}
                 onClose={() => setIsPairingModalOpen(false)}
                 batchId={batchId}
-                onPair={(sid) => {
-                    updateBatchState(batchId, { sensorPaired: true, sensor_id: sid });
+                onPair={(sids, startTracking) => {
+                    ops.pairSensor(sids, startTracking);
                 }}
             />
 

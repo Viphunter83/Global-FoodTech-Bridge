@@ -65,6 +65,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 			})
 			
 			r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
+			r.Patch("/batches/{id}/sensor", h.updateSensor)
 			r.Post("/batches/{id}/violation", h.reportViolation)
 
 			// Admin Routes (protected by ADMIN role)
@@ -216,6 +217,36 @@ func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+}
+
+func (h *Handler) updateSensor(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		SensorIDs     []string `json:"sensor_ids"`
+		StartTracking bool     `json:"start_tracking"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateIOTConfig(r.Context(), id, req.SensorIDs, req.StartTracking); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	status := "sensor_linked"
+	if req.StartTracking {
+		status = "monitoring_activated"
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": status})
 }
 
 func (h *Handler) reportViolation(w http.ResponseWriter, r *http.Request) {

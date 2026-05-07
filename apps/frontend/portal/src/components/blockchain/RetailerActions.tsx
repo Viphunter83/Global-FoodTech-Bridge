@@ -44,11 +44,11 @@ export function RetailerActions({ status, onAccept, onReport, loading }: Retaile
 
                 <Button 
                     variant="ghost"
-                    className="w-full h-12 text-destructive hover:text-destructive hover:bg-destructive/5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all" 
+                    className="w-full min-h-12 h-auto py-3 text-destructive hover:text-destructive hover:bg-destructive/5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center text-center whitespace-normal leading-tight" 
                     onClick={onReport} 
                     disabled={loading}
                 >
-                    <AlertTriangle className="mr-2 h-3 w-3" />
+                    <AlertTriangle className="mr-2 h-3 w-3 shrink-0" />
                     {t('btn_report')}
                 </Button>
             </div>

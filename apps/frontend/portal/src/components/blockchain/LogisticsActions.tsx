@@ -9,6 +9,7 @@ interface LogisticsActionsProps {
     onTransfer: () => void;
     onReport: () => void;
     onStatusUpdate: (id: string, label: string) => void;
+    onUnbindSensor?: () => void;
     loading: boolean;
 }
 
@@ -18,6 +19,7 @@ export function LogisticsActions({
     onTransfer,
     onReport,
     onStatusUpdate,
+    onUnbindSensor,
     loading
 }: LogisticsActionsProps) {
     const t = useTranslations('Tracking');
@@ -32,10 +34,10 @@ export function LogisticsActions({
                 <Button
                     onClick={onAccept}
                     disabled={loading}
-                    className="w-full min-h-16 h-auto py-4 bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/20 border-0 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
+                    className="w-full min-h-16 h-auto py-4 bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/20 border-0 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight px-4"
                 >
                     {loading ? <Loader2 className="animate-spin mr-3 h-5 w-5 shrink-0" /> : <PackageCheck className="mr-3 h-5 w-5 shrink-0" />}
-                    <span className="block">{t('btn_accept_custody')}</span>
+                    <span className="block px-2">{t('btn_accept_custody')}</span>
                 </Button>
             )}
 
@@ -82,21 +84,33 @@ export function LogisticsActions({
                     onClick={onTransfer} 
                     variant="outline" 
                     disabled={loading}
-                    className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight"
+                    className="w-full min-h-16 h-auto py-4 border-primary/20 hover:bg-primary/5 text-primary font-black uppercase tracking-wider text-[10px] rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center text-center whitespace-normal leading-tight px-4"
                 >
                     <PackageCheck className="mr-3 h-5 w-5 shrink-0" />
-                    <span className="block">{t('btn_transfer_retail')}</span>
+                    <span className="block px-2">{t('btn_transfer_retail')}</span>
                 </Button>
             )}
 
-            {/* D. Violation Report (Always available for Logistics) */}
+            {/* D. Unbind Sensors (If active) */}
+            {status.sensorPaired && onUnbindSensor && (
+                <Button 
+                    onClick={onUnbindSensor} 
+                    disabled={loading}
+                    variant="ghost" 
+                    className="w-full h-10 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all"
+                >
+                    {t('btn_unbind_sensors')}
+                </Button>
+            )}
+
+            {/* E. Violation Report (Always available for Logistics) */}
             <Button 
                 variant="ghost"
-                className="w-full h-12 text-destructive hover:text-destructive hover:bg-destructive/5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all" 
+                className="w-full min-h-12 h-auto py-3 text-destructive hover:text-destructive hover:bg-destructive/5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center text-center whitespace-normal leading-tight" 
                 onClick={onReport}
                 disabled={loading}
             >
-                <AlertTriangle className="mr-2 h-3 w-3" />
+                <AlertTriangle className="mr-2 h-3 w-3 shrink-0" />
                 {t('btn_report')}
             </Button>
         </div>

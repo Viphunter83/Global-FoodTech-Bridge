@@ -22,9 +22,9 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 			manufacturer_id, product_type, batch_size, unit_of_measure, 
 			origin_country, destination_country, usf_status, 
 			blockchain_hash, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-			marketing_story, partner_redirect_url, ingredients, nutrition
+			marketing_story, partner_redirect_url, ingredients, nutrition, sensor_ids, tracking_started_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 		RETURNING id
 	`
 
@@ -48,6 +48,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		batch.PartnerRedirectURL,
 		batch.Ingredients,
 		batch.Nutrition,
+		batch.SensorIDs,
+		batch.TrackingStartedAt,
 	).Scan(&id)
 
 	if err != nil {
@@ -63,7 +65,7 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 			id, manufacturer_id, product_type, batch_size, unit_of_measure,
 			origin_country, destination_country, usf_status, blockchain_hash, 
 			created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-			marketing_story, partner_redirect_url, ingredients, nutrition
+			marketing_story, partner_redirect_url, ingredients, nutrition, sensor_ids, tracking_started_at
 		FROM product_batches
 		WHERE id = $1
 	`
@@ -90,6 +92,8 @@ func NewBatchRepository(db *pgxpool.Pool) *BatchRepository {
 		&batch.PartnerRedirectURL,
 		&batch.Ingredients,
 		&batch.Nutrition,
+		&batch.SensorIDs,
+		&batch.TrackingStartedAt,
 	)
 
 	if err != nil {
@@ -107,6 +111,26 @@ func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID
 	`
 
 	_, err := r.db.Exec(ctx, query, hash, id)
+	return err
+}
+
+func (r *BatchRepository) UpdateIOTConfig(ctx context.Context, id uuid.UUID, sensorIDs []string, startTracking bool) error {
+	if startTracking {
+		query := `
+			UPDATE product_batches
+			SET sensor_ids = $1, tracking_started_at = NOW()
+			WHERE id = $2
+		`
+		_, err := r.db.Exec(ctx, query, sensorIDs, id)
+		return err
+	}
+
+	query := `
+		UPDATE product_batches
+		SET sensor_ids = $1
+		WHERE id = $2
+	`
+	_, err := r.db.Exec(ctx, query, sensorIDs, id)
 	return err
 }
 
@@ -140,7 +164,7 @@ func (r *BatchRepository) ListAll(ctx context.Context, companyID string, role st
 				id, manufacturer_id, product_type, batch_size, unit_of_measure,
 				origin_country, destination_country, usf_status, blockchain_hash, 
 				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-				marketing_story, partner_redirect_url, ingredients, nutrition
+				marketing_story, partner_redirect_url, ingredients, nutrition, sensor_ids, tracking_started_at
 			FROM product_batches
 			ORDER BY created_at DESC
 		`
@@ -150,7 +174,7 @@ func (r *BatchRepository) ListAll(ctx context.Context, companyID string, role st
 				id, manufacturer_id, product_type, batch_size, unit_of_measure,
 				origin_country, destination_country, usf_status, blockchain_hash, 
 				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-				marketing_story, partner_redirect_url, ingredients, nutrition
+				marketing_story, partner_redirect_url, ingredients, nutrition, sensor_ids, tracking_started_at
 			FROM product_batches
 			WHERE manufacturer_id = $1
 			ORDER BY created_at DESC
@@ -163,7 +187,7 @@ func (r *BatchRepository) ListAll(ctx context.Context, companyID string, role st
 				id, manufacturer_id, product_type, batch_size, unit_of_measure,
 				origin_country, destination_country, usf_status, blockchain_hash, 
 				created_at, min_temp, max_temp, token_uri, certificates_ipfs, template_id, partner_id,
-				marketing_story, partner_redirect_url, ingredients, nutrition
+				marketing_story, partner_redirect_url, ingredients, nutrition, sensor_ids, tracking_started_at
 			FROM product_batches
 			WHERE partner_id = $1
 			ORDER BY created_at DESC
@@ -201,6 +225,8 @@ func (r *BatchRepository) ListAll(ctx context.Context, companyID string, role st
 			&batch.PartnerRedirectURL,
 			&batch.Ingredients,
 			&batch.Nutrition,
+			&batch.SensorIDs,
+			&batch.TrackingStartedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan batch: %w", err)
