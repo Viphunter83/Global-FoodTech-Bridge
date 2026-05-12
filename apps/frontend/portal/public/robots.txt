@@ -1,0 +1,14 @@
+# Global FoodTech Bridge — Production robots.txt
+# https://gftb.app
+
+User-agent: *
+Allow: /
+
+# Disallow authenticated areas from indexing
+Disallow: /*/admin/
+Disallow: /*/dashboard/
+Disallow: /*/auth/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://gftb.app/sitemap.xml

@@ -153,7 +153,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
             {role === 'PENDING' && (
                 <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-700 dark:text-amber-500 p-4 flex items-center justify-center gap-3 shadow-inner">
                     <AlertTriangle className="h-5 w-5 shrink-0" />
-                    <span className="font-black uppercase tracking-widest text-[10px]">Your account is PENDING administrative verification. Restricted mode active.</span>
+                    <span className="font-black uppercase tracking-widest text-[10px]">{t('Dashboard.pending_verification_warning')}</span>
                 </div>
             )}
             
@@ -166,7 +166,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                     <div className="flex items-center justify-between px-2">
                         <div>
                             <h2 className="text-3xl font-serif font-black tracking-tighter italic">{t('Dashboard.active_batches')}</h2>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mt-1">Live Tracking Ledger</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mt-1">{t('Dashboard.live_tracking_ledger')}</p>
                         </div>
                         {role === 'MANUFACTURER' && (
                             <Button 

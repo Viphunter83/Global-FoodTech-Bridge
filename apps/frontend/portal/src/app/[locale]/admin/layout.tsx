@@ -14,7 +14,7 @@ function NavItems({ t, onNavigate }: { t: any; onNavigate?: () => void }) {
 
     return (
         <>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">Core Clusters</div>
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">{t('nav_core_clusters')}</div>
             
             <Link href="/admin/dashboard" onClick={onNavigate}>
                 <Button asChild variant="ghost" className={navItemClass}>
@@ -43,7 +43,7 @@ function NavItems({ t, onNavigate }: { t: any; onNavigate?: () => void }) {
                 </Button>
             </Link>
 
-            <div className="pt-8 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">Ledger Actions</div>
+            <div className="pt-8 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-4 px-4">{t('nav_ledger_actions')}</div>
             
             <Link href="/admin/protocols" onClick={onNavigate}>
                 <Button asChild variant="ghost" className={navItemClass}>
@@ -67,7 +67,7 @@ function NavItems({ t, onNavigate }: { t: any; onNavigate?: () => void }) {
                 <Button asChild variant="ghost" className={navItemClass}>
                     <span>
                         <Database className={iconClass} />
-                        <span className={labelClass}>Smart Contracts</span>
+                        <span className={labelClass}>{t('smart_contracts')}</span>
                     </span>
                 </Button>
             </Link>

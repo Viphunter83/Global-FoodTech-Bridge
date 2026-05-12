@@ -107,7 +107,8 @@
     "verified_stream_badge": "GFTB-Live-Data-Stream-Verified",
     "view_digital_twin": "Открыть цифровой двойник",
     "select_batch_prompt": "Выберите партию для управления доверием",
-    "pending_verification_warning": "Ваш аккаунт ожидает административной проверки. Активен ограниченный режим."
+    "pending_verification_warning": "Ваш аккаунт ожидает верификации администратором. Ограниченный режим.",
+    "live_tracking_ledger": "Реестр отслеживания (Live)"
   },
   "Batch": {
     "create_title": "Создать новую партию",
@@ -295,7 +296,7 @@
     "premium_grade_badge": "ПРЕМИУМ КЛАСС",
     "logistics_flow_integrity": "Целостность логистического потока",
     "active_step": "Активно",
-    "bc_secured_badge": "Защищено в Polygon",
+    "bc_secured_badge": "ЗАВЕРЕНО",
     "metric_cold_chain": "Холодовая цепь IoT",
     "metric_origin": "Происхождение в Блокчейн",
     "metric_optimal": "Оптимальный диапазон",
@@ -353,7 +354,6 @@
     "status_pending": "ОЖИДАНИЕ ВЕРИФИКАЦИИ",
     "fallback_producer": "ПРОИЗВОДИТЕЛЬ",
     "fallback_premium": "ПРЕМИУМ",
-    "bc_secured_badge": "ЗАВЕРЕНО",
     "bc_unverified_badge": "НЕ ВЕРИФИЦИРОВАНО"
   },
   "Auth": {
@@ -452,7 +452,35 @@
     "failed_to_initiate": "Не удалось инициировать передачу",
     "notarization_failed": "Ошибка нотариального заверения",
     "view_digital_passport": "Открыть цифровой паспорт (Вид потребителя)",
-    "admin_simulation_env": "Среда админ-симуляции"
+    "admin_simulation_env": "Среда админ-симуляции",
+    "command_center": "Центр Управления",
+    "global_ops_subtitle": "Глобальный операционный контроль и мониторинг доверия",
+    "create_global_batch": "Создать партию",
+    "total_value_secured": "Защищено (стоимость)",
+    "active_batches_kpi": "Активные партии",
+    "compliance_rate": "Рейт соответствия",
+    "live_violations": "Нарушения (live)",
+    "recent_ledger_activity": "Последние записи в реестре",
+    "view_all_operations": "Все операции",
+    "no_active_batches": "Активные партии не обнаружены в реестре",
+    "status_in_transit": "В пути",
+    "trust_label": "Доверие",
+    "status_label": "Статус",
+    "demo_engine_title": "Демо-движок",
+    "demo_engine_desc": "Симуляция полного жизненного цикла для партнёров",
+    "simulate_violation": "Симулировать нарушение",
+    "rapid_handover": "Быстрая передача",
+    "demo_custodial_note": "Демо-режим использует кастодиальные кошельки без затрат газа",
+    "launch_stage_wizard": "Запустить мастер этапов",
+    "network_pulse": "Сетевой пульс",
+    "polygon_active": "Polygon Mainnet активен",
+    "gas_level": "Уровень газа",
+    "block_explorer": "Обозреватель блоков",
+    "notarizing": "Нотаризация...",
+    "processing": "Обработка...",
+    "smart_contracts": "Смарт-контракты",
+    "nav_core_clusters": "Основные кластеры",
+    "nav_ledger_actions": "Действия реестра"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",
