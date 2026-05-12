@@ -5,6 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 	"fmt"
 
 	"github.com/global-foodtech-bridge/passport-service/internal/repository/postgres"
@@ -23,6 +26,11 @@ func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is not set")
+	}
+
+	// Validate critical env vars early
+	if os.Getenv("INTERNAL_API_KEY") == "" {
+		log.Fatal("FATAL: INTERNAL_API_KEY is not set. Refusing to start without authentication configured.")
 	}
 
 	// Connect to DB
@@ -49,7 +57,6 @@ func main() {
 	}
 
 	// Init Dependencies
-	// Init Dependencies
 	repo := postgres.NewBatchRepository(dbpool)
 	companyRepo := postgres.NewCompanyRepository(dbpool)
 	templateRepo := postgres.NewTemplateRepository(dbpool)
@@ -75,10 +82,38 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	if err := http.ListenAndServe(":"+port, router); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	// Graceful Shutdown
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	// Start server in a goroutine
+	go func() {
+		log.Printf("Passport Service starting on port %s", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-quit
+	log.Printf("Received signal %s. Shutting down gracefully...", sig)
+
+	// Give in-flight requests 10 seconds to complete
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Passport Service stopped cleanly.")
 }
 
 func runMigrations(dbURL string) error {

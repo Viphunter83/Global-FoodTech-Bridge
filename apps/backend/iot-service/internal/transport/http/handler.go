@@ -1,10 +1,14 @@
 package http
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,6 +28,9 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.RealIP)
+	r.Use(SecurityHeadersMiddleware)
+	r.Use(NewRateLimiter(200, time.Minute).Middleware) // 200 req/min per IP (higher for IoT)
 	
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -39,13 +46,25 @@ func (h *Handler) InitRoutes() *chi.Mux {
 			r.Post("/telemetry", h.ingestTelemetry)
 		})
 
-		// Public Routes (now protected by API Key)
+		// Read-only routes (protected by API Key)
 		r.Get("/telemetry/{batchId}", h.getReadings)
 		r.Get("/telemetry/{batchId}/alerts", h.getAlerts)
-		r.Post("/demo/reset/{batchId}", h.resetBatch)
+
+		// Demo routes (ADMIN only in production)
+		r.Group(func(r chi.Router) {
+			r.Use(h.RoleMiddleware("ADMIN"))
+			r.Post("/demo/reset/{batchId}", h.resetBatch)
+		})
 	})
 
 	return r
+}
+
+// secureCompare performs a constant-time comparison of two strings.
+func secureCompare(a, b string) bool {
+	hashedA := sha256.Sum256([]byte(a))
+	hashedB := sha256.Sum256([]byte(b))
+	return subtle.ConstantTimeCompare(hashedA[:], hashedB[:]) == 1
 }
 
 func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
@@ -53,7 +72,14 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		apiKey := r.Header.Get("x-api-key")
 		expectedKey := os.Getenv("INTERNAL_API_KEY")
 
-		if expectedKey != "" && apiKey != expectedKey {
+		// SECURITY: Fail closed — if no key is configured, deny all requests
+		if expectedKey == "" {
+			log.Print("[AUTH] CRITICAL: INTERNAL_API_KEY not set. Denying all requests.")
+			http.Error(w, "Service misconfigured", http.StatusServiceUnavailable)
+			return
+		}
+
+		if !secureCompare(apiKey, expectedKey) {
 			log.Printf("[AUTH] Denied access to %s %s from %s. Invalid API Key.", r.Method, r.URL.Path, r.RemoteAddr)
 			http.Error(w, "Unauthorized: Invalid API Key", http.StatusUnauthorized)
 			return
@@ -154,4 +180,91 @@ func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"success"}`))
+}
+
+// =============================================================================
+// Security Middleware
+// =============================================================================
+
+// SecurityHeadersMiddleware adds security-related HTTP headers to every response.
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// =============================================================================
+// Rate Limiter (in-memory, per-IP)
+// =============================================================================
+
+// RateLimiter implements a simple rate limiter per IP address.
+type RateLimiter struct {
+	mu       sync.Mutex
+	visitors map[string]*visitor
+	limit    int
+	window   time.Duration
+}
+
+type visitor struct {
+	count   int
+	resetAt time.Time
+}
+
+// NewRateLimiter creates a new rate limiter.
+func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
+	rl := &RateLimiter{
+		visitors: make(map[string]*visitor),
+		limit:    limit,
+		window:   window,
+	}
+	go func() {
+		for {
+			time.Sleep(5 * time.Minute)
+			rl.cleanup()
+		}
+	}()
+	return rl
+}
+
+func (rl *RateLimiter) cleanup() {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	now := time.Now()
+	for ip, v := range rl.visitors {
+		if now.After(v.resetAt) {
+			delete(rl.visitors, ip)
+		}
+	}
+}
+
+// Middleware enforces rate limiting.
+func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := r.RemoteAddr
+
+		rl.mu.Lock()
+		v, exists := rl.visitors[ip]
+		if !exists || time.Now().After(v.resetAt) {
+			rl.visitors[ip] = &visitor{count: 1, resetAt: time.Now().Add(rl.window)}
+			rl.mu.Unlock()
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		v.count++
+		if v.count > rl.limit {
+			rl.mu.Unlock()
+			log.Printf("[RATE-LIMIT] IP %s exceeded %d requests in %s", ip, rl.limit, rl.window)
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			return
+		}
+		rl.mu.Unlock()
+
+		next.ServeHTTP(w, r)
+	})
 }

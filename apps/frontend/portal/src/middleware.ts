@@ -9,6 +9,19 @@ const intlMiddleware = createMiddleware({
     defaultLocale: 'en'
 });
 
+/**
+ * Applies production security headers to a response object.
+ */
+function applySecurityHeaders(response: NextResponse): NextResponse {
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+    return response;
+}
+
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     
@@ -17,7 +30,7 @@ export function middleware(request: NextRequest) {
     
     // If intlMiddleware is performing a redirect, return it immediately
     if (response.status >= 300 && response.status < 400) {
-        return response;
+        return applySecurityHeaders(response as NextResponse);
     }
     
     // 2. Session verification logic
@@ -33,22 +46,21 @@ export function middleware(request: NextRequest) {
     const isAuthPath = matchesPath(pathname, '/auth/login');
 
     if (isProtectedPath && !sessionToken) {
-        // Redirect to login (preserving current locale set by intlMiddleware or using default)
         const locale = pathname.split('/')[1] || 'en';
         const loginUrl = new URL(`/${locale}/auth/login`, request.url);
-        return NextResponse.redirect(loginUrl);
+        return applySecurityHeaders(NextResponse.redirect(loginUrl));
     }
 
     if (isAuthPath && sessionToken) {
         const locale = pathname.split('/')[1] || 'en';
-        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+        return applySecurityHeaders(NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url)));
     }
 
-    return response;
+    return applySecurityHeaders(response as NextResponse);
 }
 
 export const config = {
     // Match all paths except API, static files, and icons
-    matcher: ['/((?!api|_next|.*\\..*).*)']
+    matcher: ['/((?!api|_next|.*\\..*).*)'
+]
 };
-

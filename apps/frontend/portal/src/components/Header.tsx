@@ -74,6 +74,8 @@ export function Header() {
                     <button 
                         className="md:hidden ml-auto p-2" 
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                        aria-expanded={isMenuOpen}
                     >
                         {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                     </button>
@@ -87,10 +89,10 @@ export function Header() {
                         {user && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center border border-primary/10 hover:bg-primary/5 transition-all">
-                                        <Bell className="h-5 w-5 text-foreground/70" />
+                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 flex items-center justify-center border border-primary/10 hover:bg-primary/5 transition-all" aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}>
+                                        <Bell className="h-5 w-5 text-foreground/70" aria-hidden="true" />
                                         {unreadCount > 0 && (
-                                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-white shadow-lg animate-pulse ring-2 ring-background">
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-white shadow-lg animate-pulse ring-2 ring-background" aria-hidden="true">
                                                 {unreadCount}
                                             </span>
                                         )}
@@ -144,9 +146,9 @@ export function Header() {
                         {user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-primary/10 hover:border-primary/30 transition-all">
+                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-primary/10 hover:border-primary/30 transition-all" aria-label="User account menu">
                                         <div className="bg-primary/5 w-full h-full flex items-center justify-center">
-                                            <UserIcon className="h-5 w-5 text-primary" />
+                                            <UserIcon className="h-5 w-5 text-primary" aria-hidden="true" />
                                         </div>
                                     </Button>
                                 </DropdownMenuTrigger>

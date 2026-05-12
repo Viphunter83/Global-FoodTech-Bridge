@@ -166,7 +166,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                     <div className="flex items-center justify-between px-2">
                         <div>
                             <h2 className="text-3xl font-serif font-black tracking-tighter italic">{t('Dashboard.active_batches')}</h2>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">Live Tracking Ledger</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mt-1">Live Tracking Ledger</p>
                         </div>
                         {role === 'MANUFACTURER' && (
                             <Button 
@@ -236,7 +236,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                             </div>
                             <div>
                                 <h1 className="text-4xl font-serif font-black italic tracking-tighter text-slate-900">{t('Dashboard.operations_title')}</h1>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{selectedBatch?.product_type?.replace(/_/g, ' ')} • {t('Dashboard.current_session')}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{selectedBatch?.product_type?.replace(/_/g, ' ')} • {t('Dashboard.current_session')}</p>
                             </div>
                         </div>
                         <Button 
@@ -402,7 +402,7 @@ function StatusMetric({ icon, title, value, subText, isAlert, docTooltip }: { ic
                 </div>
                 <div className="flex items-center gap-3 mt-4">
                     <div className={`h-1.5 w-1.5 rounded-full ${isAlert ? 'bg-destructive animate-pulse' : 'bg-emerald-500'}`} />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{subText}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{subText}</p>
                 </div>
             </CardContent>
         </Card>

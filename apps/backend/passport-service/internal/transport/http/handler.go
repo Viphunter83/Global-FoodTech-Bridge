@@ -1,8 +1,12 @@
 package http
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,6 +35,9 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.RealIP)
+	r.Use(SecurityHeadersMiddleware)
+	r.Use(NewRateLimiter(100, time.Minute).Middleware) // 100 req/min per IP
 
 	// Root Health Check (critical for Railway)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -45,12 +52,11 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
 
-		// Formerly Public Routes (now protected by API Key)
+		// Read-only routes (protected by API Key)
 		r.Get("/batches/{id}", h.getBatch)
 		r.Get("/partners/{id}", h.getPartner)
 		r.Get("/templates", h.listTemplates)
 		r.Get("/templates/{id}", h.getTemplate)
-		r.Post("/demo/reset/{id}", h.resetBatch)
 		
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -82,6 +88,9 @@ func (h *Handler) InitRoutes() *chi.Mux {
 				r.Post("/admin/templates", h.createTemplate)
 				r.Put("/admin/templates/{id}", h.updateTemplate)
 				r.Delete("/admin/templates/{id}", h.deleteTemplate)
+
+				// Demo routes (ADMIN only in production)
+				r.Post("/demo/reset/{id}", h.resetBatch)
 			})
 		})
 	})
@@ -89,16 +98,27 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	return r
 }
 
+// secureCompare performs a constant-time comparison of two strings
+// to prevent timing-based side-channel attacks.
+func secureCompare(a, b string) bool {
+	hashedA := sha256.Sum256([]byte(a))
+	hashedB := sha256.Sum256([]byte(b))
+	return subtle.ConstantTimeCompare(hashedA[:], hashedB[:]) == 1
+}
+
 func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		apiKey := r.Header.Get("x-api-key")
 		expectedKey := os.Getenv("INTERNAL_API_KEY")
 
+		// SECURITY: Fail closed — if no key is configured, deny all requests
 		if expectedKey == "" {
-			log.Print("[AUTH] WARNING: INTERNAL_API_KEY not set in environment. Backend is vulnerable.")
+			log.Print("[AUTH] CRITICAL: INTERNAL_API_KEY not set. Denying all requests.")
+			http.Error(w, "Service misconfigured", http.StatusServiceUnavailable)
+			return
 		}
 
-		if expectedKey != "" && apiKey != expectedKey {
+		if !secureCompare(apiKey, expectedKey) {
 			keyLen := len(apiKey)
 			maskedKey := "EMPTY"
 			if keyLen > 4 {
@@ -434,4 +454,92 @@ func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// =============================================================================
+// Security Middleware
+// =============================================================================
+
+// SecurityHeadersMiddleware adds security-related HTTP headers to every response.
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// =============================================================================
+// Rate Limiter (in-memory, per-IP)
+// =============================================================================
+
+// RateLimiter implements a simple sliding-window rate limiter per IP address.
+type RateLimiter struct {
+	mu       sync.Mutex
+	visitors map[string]*visitor
+	limit    int
+	window   time.Duration
+}
+
+type visitor struct {
+	count    int
+	resetAt  time.Time
+}
+
+// NewRateLimiter creates a new rate limiter with the given limit per time window.
+func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
+	rl := &RateLimiter{
+		visitors: make(map[string]*visitor),
+		limit:    limit,
+		window:   window,
+	}
+	// Background cleanup every 5 minutes
+	go func() {
+		for {
+			time.Sleep(5 * time.Minute)
+			rl.cleanup()
+		}
+	}()
+	return rl
+}
+
+func (rl *RateLimiter) cleanup() {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	now := time.Now()
+	for ip, v := range rl.visitors {
+		if now.After(v.resetAt) {
+			delete(rl.visitors, ip)
+		}
+	}
+}
+
+// Middleware returns a chi-compatible middleware that enforces rate limiting.
+func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := r.RemoteAddr
+
+		rl.mu.Lock()
+		v, exists := rl.visitors[ip]
+		if !exists || time.Now().After(v.resetAt) {
+			rl.visitors[ip] = &visitor{count: 1, resetAt: time.Now().Add(rl.window)}
+			rl.mu.Unlock()
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		v.count++
+		if v.count > rl.limit {
+			rl.mu.Unlock()
+			log.Printf("[RATE-LIMIT] IP %s exceeded %d requests in %s", ip, rl.limit, rl.window)
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			return
+		}
+		rl.mu.Unlock()
+
+		next.ServeHTTP(w, r)
+	})
 }

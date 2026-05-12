@@ -54,6 +54,12 @@ If you see `401 Unauthorized` between services:
 2. Check `INTERNAL_API_KEY` in Vercel (Environment Variables).
 3. They MUST be identical.
 
+### 4. Blockchain Block Range Optimization
+To avoid RPC 400 "block range too large" errors:
+- **Implementation**: The `blockchain-service` (and frontend proxy) now uses a dynamic block range logic.
+- **Default Range**: 10,000 blocks per request.
+- **Start Block**: Set `POLYGON_START_BLOCK` in environment variables to the contract deployment block (approx. `85000000` for Polygon) to skip empty historical data.
+
 ---
 
 ## ⚡ Quick Verification Command

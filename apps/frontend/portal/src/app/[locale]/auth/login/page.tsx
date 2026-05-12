@@ -189,12 +189,14 @@ export default function LoginPage() {
                                             <Input 
                                                 id="email" 
                                                 type="email" 
+                                                autoComplete="email"
                                                 placeholder="name@globalfood.trade" 
                                                 className="pl-12 h-14 rounded-2xl bg-muted/10 border-primary/5 focus:border-primary/20 focus:ring-0 transition-all text-sm font-bold placeholder:text-muted-foreground/20 placeholder:font-black placeholder:uppercase tracking-tight"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 disabled={loading}
+                                                aria-describedby={error ? 'login-error' : undefined}
                                             />
                                         </div>
                                     </div>
@@ -209,11 +211,13 @@ export default function LoginPage() {
                                             <Input 
                                                 id="password" 
                                                 type="password" 
+                                                autoComplete="current-password"
                                                 className="pl-12 h-14 rounded-2xl bg-muted/10 border-primary/5 focus:border-primary/20 focus:ring-0 transition-all text-sm font-bold"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={loading}
+                                                aria-describedby={error ? 'login-error' : undefined}
                                             />
                                         </div>
                                     </div>
@@ -221,10 +225,12 @@ export default function LoginPage() {
                                         <motion.div 
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
+                                            id="login-error"
+                                            role="alert"
                                             className="text-destructive text-[10px] font-black uppercase tracking-widest bg-destructive/5 border border-destructive/10 p-5 rounded-2xl italic leading-relaxed"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <AlertTriangle size={14} />
+                                                <AlertTriangle size={14} aria-hidden="true" />
                                                 {error}
                                             </div>
                                         </motion.div>

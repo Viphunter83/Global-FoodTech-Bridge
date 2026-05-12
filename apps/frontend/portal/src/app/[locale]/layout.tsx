@@ -9,6 +9,35 @@ import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 import { Header } from "@/components/Header";
 import { AlertSentinel } from "@/components/AlertSentinel";
 import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: {
+        default: 'Global FoodTech Bridge — Blockchain Food Traceability',
+        template: '%s | GFTB',
+    },
+    description: 'End-to-end food supply chain transparency powered by Polygon blockchain, IoT sensors, and AI-driven compliance. Verify product authenticity, cold chain integrity, and halal certification in real time.',
+    keywords: ['food traceability', 'blockchain', 'supply chain', 'cold chain monitoring', 'halal certification', 'IoT sensors', 'Polygon', 'food safety', 'digital passport'],
+    authors: [{ name: 'Global FoodTech Bridge' }],
+    creator: 'Global FoodTech Bridge',
+    openGraph: {
+        type: 'website',
+        siteName: 'Global FoodTech Bridge',
+        title: 'Global FoodTech Bridge — Blockchain Food Traceability',
+        description: 'Verify product authenticity and cold chain integrity. Blockchain-secured provenance from farm to fork.',
+        locale: 'en_US',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Global FoodTech Bridge',
+        description: 'Blockchain-powered food supply chain transparency. Real-time IoT monitoring & digital passports.',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gftb.app'),
+};
 
 const outfit = Outfit({ 
     subsets: ["latin", "latin-ext"],
