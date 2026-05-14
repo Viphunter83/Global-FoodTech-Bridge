@@ -71,10 +71,6 @@ export async function fetchInfrastructureStatus(): Promise<InfrastructureStatus[
                                                 status
                                                 createdAt
                                                 staticUrl
-                                                suggestedUsage {
-                                                    cpuMilli
-                                                    memoryMibi
-                                                }
                                             }
                                         }
                                     }
@@ -121,8 +117,6 @@ export async function fetchInfrastructureStatus(): Promise<InfrastructureStatus[
                     createdAt: latestDeployment?.createdAt || new Date().toISOString(),
                     url: latestDeployment?.staticUrl,
                     isReachable,
-                    cpuUsage: latestDeployment?.suggestedUsage?.cpuMilli ? latestDeployment.suggestedUsage.cpuMilli / 10 : undefined,
-                    memoryUsage: latestDeployment?.suggestedUsage?.memoryMibi || undefined,
                 };
             })),
         })));
