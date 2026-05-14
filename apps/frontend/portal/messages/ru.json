@@ -1,5 +1,9 @@
 {
   "Metadata": {
+    "title": "Global FoodTech Bridge | Цепочки поставок на блокчейне",
+    "description": "Самая надежная платформа для отслеживания цепочек поставок. Мониторинг IoT в реальном времени и неизменяемая нотариализация на блокчейне.",
+    "og_title": "Global FoodTech Bridge | Неизменяемое доверие",
+    "og_description": "Обеспечение глобальной продовольственной безопасности через блокчейн-нотариализацию и IoT-мониторинг холодовой цепи в реальном времени.",
     "home_title": "Global FoodTech Bridge | Цепочки поставок на блокчейне",
     "home_description": "Самая надежная платформа для отслеживания цепочек поставок. Мониторинг IoT в реальном времени и неизменяемая нотариализация на блокчейне.",
     "verify_title": "Проверка: {product} | Цифровой паспорт GFTB",
@@ -167,7 +171,9 @@
     "form_sensor_id": "ID датчика IoT",
     "form_sensor_placeholder": "Сканируйте ID TIVE / Emerson...",
     "btn_create_pair": "Создать и привязать протокол",
-    "error_insufficient_permissions": "Доступ запрещен: Только пользователи с ролью «Производитель» или «Администратор» могут инициализировать цифровые паспорта."
+    "error_insufficient_permissions": "Доступ запрещен: Только пользователи с ролью «Производитель» или «Администратор» могут инициализировать цифровые паспорта.",
+    "form_origin_country": "Origin Country",
+    "form_destination_country": "Destination Country"
   },
   "IPFS": {
     "section_title": "Цифровой паспорт продукта (IPFS)",
@@ -364,7 +370,8 @@
     "status_pending": "ОЖИДАНИЕ ВЕРИФИКАЦИИ",
     "fallback_producer": "ПРОИЗВОДИТЕЛЬ",
     "fallback_premium": "ПРЕМИУМ",
-    "bc_unverified_badge": "НЕ ВЕРИФИЦИРОВАНО"
+    "bc_unverified_badge": "НЕ ВЕРИФИЦИРОВАНО",
+    "bc_waiting_logistics": "Waiting for Logistics Confirmation"
   },
   "Auth": {
     "login_title": "Безопасный доступ",
@@ -517,7 +524,30 @@
     "processing": "Обработка...",
     "smart_contracts": "Смарт-контракты",
     "nav_core_clusters": "Основные кластеры",
-    "nav_ledger_actions": "Действия реестра"
+    "nav_ledger_actions": "Действия реестра",
+    "infrastructure_logs": "System Logs",
+    "demo_reporting_violation": "Reporting violation...",
+    "demo_violation_notarized": "Violation Notarized: {hash}...",
+    "demo_handover_processing": "Processing handover...",
+    "demo_handover_complete": "Handover complete: {hash}...",
+    "batch_label_prefix": "Batch #",
+    "gas_unit": "MATIC",
+    "actions_label": "ACTIONS",
+    "active_label": "ACTIVE",
+    "inactive_label": "INACTIVE",
+    "new_blueprint": "New Blueprint",
+    "system_update": "System Update",
+    "protocol_config_desc": "Configure granular compliance steps, mandatory certifications and validation rules for this trade protocol.",
+    "network_status": "Network Status",
+    "polygon_mainnet_ready": "Polygon Mainnet Ready",
+    "step_name_placeholder": "Step Name",
+    "cert_id_placeholder": "Certificate ID",
+    "protocol_name_placeholder": "e.g. Premium Angus Beef Protocol",
+    "protocol_desc_placeholder": "Enter detailed protocol logic...",
+    "add_step_btn": "Add Step",
+    "notarized_at": "Notarized at: {date}",
+    "view_on_ledger": "View on Ledger",
+    "trust_label_kpi": "Trust"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",
