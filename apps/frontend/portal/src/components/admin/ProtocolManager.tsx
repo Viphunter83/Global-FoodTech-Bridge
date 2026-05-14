@@ -43,7 +43,7 @@ export function ProtocolManager() {
             setTemplates(data);
         } catch (error) {
             console.error('Failed to load templates:', error);
-            toast.error('Failed to load protocols');
+            toast.error(t('failed_to_load_protocols'));
         } finally {
             setIsLoading(false);
         }
@@ -71,17 +71,17 @@ export function ProtocolManager() {
             const token = await auth.currentUser?.getIdToken();
             if (editingTemplate.id) {
                 await updateAdminTemplate(editingTemplate.id, editingTemplate, token);
-                toast.success('Protocol updated successfully');
+                toast.success(t('protocol_updated_success'));
             } else {
                 await createAdminTemplate(editingTemplate, token);
-                toast.success('Protocol created successfully');
+                toast.success(t('protocol_created_success'));
             }
             
             setIsDialogOpen(false);
             loadTemplates();
         } catch (error) {
             console.error('Failed to save template:', error);
-            toast.error('Failed to save protocol');
+            toast.error(t('failed_to_save_protocol'));
         }
     };
 
@@ -90,11 +90,11 @@ export function ProtocolManager() {
             try {
                 const token = await auth.currentUser?.getIdToken();
                 await deleteAdminTemplate(id, token);
-                toast.success('Protocol deleted successfully');
+                toast.success(t('protocol_deleted_success'));
                 loadTemplates();
             } catch (error) {
                 console.error('Failed to delete template:', error);
-                toast.error('Failed to delete protocol');
+                toast.error(t('failed_to_delete_protocol'));
             }
         }
     };
@@ -142,10 +142,10 @@ export function ProtocolManager() {
                 <Table>
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="hover:bg-transparent border-slate-100 h-16">
-                            <TableHead className="px-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</TableHead>
+                            <TableHead className="px-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('status_label')}</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_protocol_name')}</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_protocol_steps')}</TableHead>
-                            <TableHead className="px-8 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Actions</TableHead>
+                            <TableHead className="px-8 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('actions_label')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -159,9 +159,9 @@ export function ProtocolManager() {
                                 >
                                     <TableCell className="px-8">
                                         {template.is_active ? (
-                                            <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 rounded-lg px-3 py-1 font-black text-[9px] uppercase tracking-wider">Active</Badge>
+                                            <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 rounded-lg px-3 py-1 font-black text-[9px] uppercase tracking-wider">{t('active_label')}</Badge>
                                         ) : (
-                                            <Badge variant="outline" className="text-slate-400 border-slate-200 rounded-lg px-3 py-1 font-black text-[9px] uppercase tracking-wider">Inactive</Badge>
+                                            <Badge variant="outline" className="text-slate-400 border-slate-200 rounded-lg px-3 py-1 font-black text-[9px] uppercase tracking-wider">{t('inactive_label')}</Badge>
                                         )}
                                     </TableCell>
                                     <TableCell>
@@ -219,13 +219,13 @@ export function ProtocolManager() {
                             
                             <div className="relative z-10">
                                 <Badge className="bg-primary/20 text-primary border-primary/30 rounded-full px-4 mb-6 font-black text-[9px] tracking-widest uppercase">
-                                    {editingTemplate?.id ? 'System Update' : 'New Blueprint'}
+                                    {editingTemplate?.id ? t('system_update') : t('new_blueprint')}
                                 </Badge>
                                 <h2 className="text-3xl font-serif font-black italic mb-4 leading-tight">
                                     {editingTemplate?.id ? t('admin_edit_protocol') : t('admin_new_protocol')}
                                 </h2>
                                 <p className="text-white/40 text-sm font-medium leading-relaxed">
-                                    Configure granular compliance steps, mandatory certifications and validation rules for this trade protocol.
+                                    {t('protocol_config_desc')}
                                 </p>
                             </div>
 
@@ -234,10 +234,10 @@ export function ProtocolManager() {
                                     <ScrollText className="text-primary h-6 w-6" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Network Status</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('network_status')}</span>
                                     <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-2">
                                         <div className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
-                                        Polygon Mainnet Ready
+                                        {t('polygon_mainnet_ready')}
                                     </span>
                                 </div>
                             </div>
@@ -251,7 +251,7 @@ export function ProtocolManager() {
                                     <Input 
                                         value={editingTemplate?.name || ''} 
                                         onChange={(e) => setEditingTemplate(prev => ({ ...prev!, name: e.target.value }))}
-                                        placeholder="e.g. Premium Angus Beef Protocol"
+                                        placeholder={t('protocol_name_placeholder')}
                                         className="h-14 border-slate-100 bg-slate-50 rounded-2xl px-6 font-bold text-slate-900 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                 </div>
@@ -261,7 +261,7 @@ export function ProtocolManager() {
                                     <Textarea 
                                         value={editingTemplate?.description || ''} 
                                         onChange={(e) => setEditingTemplate(prev => ({ ...prev!, description: e.target.value }))}
-                                        placeholder="Enter detailed protocol logic..."
+                                        placeholder={t('protocol_desc_placeholder')}
                                         className="min-h-[100px] border-slate-100 bg-slate-50 rounded-2xl p-6 font-medium text-slate-600 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                 </div>
@@ -275,7 +275,7 @@ export function ProtocolManager() {
                                             onClick={addStep}
                                             className="h-8 rounded-lg text-[9px] font-black border-slate-200 hover:bg-primary/5 hover:text-primary transition-all uppercase tracking-wider px-3"
                                         >
-                                            <Plus className="h-3 w-3 mr-1" /> Add Step
+                                            <Plus className="h-3 w-3 mr-1" /> {t('add_step_btn')}
                                         </Button>
                                     </div>
 
@@ -292,13 +292,13 @@ export function ProtocolManager() {
                                                 </div>
                                                 <div className="flex-1 grid grid-cols-2 gap-3">
                                                     <Input 
-                                                        placeholder="Step Name"
+                                                        placeholder={t('step_name_placeholder')}
                                                         value={step.name}
                                                         onChange={(e) => updateStep(idx, 'name', e.target.value)}
                                                         className="h-10 border-none bg-transparent shadow-none font-bold text-slate-900 p-0"
                                                     />
                                                     <Input 
-                                                        placeholder="Required Certificate (ID)"
+                                                        placeholder={t('cert_id_placeholder')}
                                                         value={step.required_cert}
                                                         onChange={(e) => updateStep(idx, 'required_cert', e.target.value)}
                                                         className="h-10 border-none bg-transparent shadow-none font-medium text-primary text-[11px] p-0"

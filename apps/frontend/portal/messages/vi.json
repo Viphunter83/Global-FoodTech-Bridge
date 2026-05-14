@@ -1,4 +1,14 @@
 {
+  "Metadata": {
+    "home_title": "Global FoodTech Bridge | Chuỗi cung ứng Bảo mật Blockchain",
+    "home_description": "Nền tảng chuỗi cung ứng thực phẩm đáng tin cậy nhất thế giới. Giám sát IoT thời gian thực và công chứng blockchain cho thương mại toàn cầu.",
+    "verify_title": "{product} Đã xác minh | Hộ chiếu Tin cậy GFTB",
+    "verify_description": "Xác minh tính xác thực và tính toàn vẹn của chuỗi lạnh cho {product} từ {origin}. Nguồn gốc được bảo mật bằng blockchain.",
+    "how_it_works_title": "Cách thức hoạt động | Tính minh bạch Blockchain | GFTB",
+    "how_it_works_description": "Khám phá kỹ thuật đằng sau Cầu nối. Từ cảm biến IoT đến việc công chứng trên blockchain Polygon.",
+    "not_found_title": "Không tìm thấy Tài sản | GFTB Bridge",
+    "error_title": "Ngoại lệ Hệ thống | GFTB Bridge"
+  },
   "Menu": {
     "how_it_works": "Cách thức hoạt động",
     "create_batch": "Tạo lô hàng",
@@ -335,5 +345,21 @@
     "infra_alert": "Cảnh báo cơ sở hạ tầng",
     "infra_service_changed": "Trạng thái dịch vụ {name} đã thay đổi thành {status}.",
     "violation_detected": "Đã phát hiện vi phạm"
+  },
+  "Footer": {
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
+    "compliance": "Tuân thủ / ESG"
+  },
+  "Error": {
+    "title": "Đã xảy ra lỗi",
+    "description": "Đã xảy ra lỗi không mong muốn. Hệ thống của chúng tôi đã được thông báo và chúng tôi đang nỗ lực giải quyết.",
+    "try_again": "Thử lại",
+    "go_home": "Về trang chủ",
+    "error_id": "ID lỗi"
+  },
+  "Loading": {
+    "title": "Global FoodTech Bridge",
+    "subtitle": "Đang khởi tạo tầng tin cậy..."
   }
 }

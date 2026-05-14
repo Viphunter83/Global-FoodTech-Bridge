@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { ShieldAlert, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 /**
  * Global Error Boundary for the [locale] segment.
@@ -16,6 +17,8 @@ export default function Error({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    const t = useTranslations('Error');
+
     useEffect(() => {
         // Log to external monitoring (Sentry, etc.) when available
         console.error('[GFTB Error Boundary]', {
@@ -44,18 +47,17 @@ export default function Error({
                 {/* Message */}
                 <div className="space-y-3">
                     <h2 className="text-3xl font-serif font-black tracking-tight text-foreground">
-                        Something went wrong
+                        {t('title')}
                     </h2>
                     <p className="text-muted-foreground/80 text-sm leading-relaxed max-w-md mx-auto">
-                        An unexpected error occurred. Our systems have been notified and we're working to resolve it. 
-                        Please try again or return to the homepage.
+                        {t('description')}
                     </p>
                 </div>
 
                 {/* Error digest (production-safe) */}
                 {error.digest && (
                     <div className="inline-block px-4 py-2 rounded-xl bg-muted/50 text-xs font-mono text-muted-foreground">
-                        Error ID: {error.digest}
+                        {t('error_id')}: {error.digest}
                     </div>
                 )}
 
@@ -66,7 +68,7 @@ export default function Error({
                         className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
                     >
                         <RefreshCw className="mr-2 h-4 w-4" />
-                        Try Again
+                        {t('try_again')}
                     </Button>
                     <Button
                         variant="outline"
@@ -74,7 +76,7 @@ export default function Error({
                         className="h-12 px-6 rounded-xl border-primary/20 font-bold transition-all"
                     >
                         <Home className="mr-2 h-4 w-4" />
-                        Go Home
+                        {t('go_home')}
                     </Button>
                 </div>
             </div>

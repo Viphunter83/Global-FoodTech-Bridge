@@ -4,48 +4,52 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { DemoStateProvider } from "@/components/providers/DemoStateProvider";
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getTranslations, getMessages } from 'next-intl/server';
 import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 import { Header } from "@/components/Header";
 import { AlertSentinel } from "@/components/AlertSentinel";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: {
-        default: 'Global FoodTech Bridge — Blockchain Food Traceability',
-        template: '%s | GFTB',
-    },
-    description: 'End-to-end food supply chain transparency powered by Polygon blockchain, IoT sensors, and AI-driven compliance. Verify product authenticity, cold chain integrity, and halal certification in real time.',
-    keywords: ['food traceability', 'blockchain', 'supply chain', 'cold chain monitoring', 'halal certification', 'IoT sensors', 'Polygon', 'food safety', 'digital passport'],
-    authors: [{ name: 'Global FoodTech Bridge' }],
-    creator: 'Global FoodTech Bridge',
-    openGraph: {
-        type: 'website',
-        siteName: 'Global FoodTech Bridge',
-        title: 'Global FoodTech Bridge — Blockchain Food Traceability',
-        description: 'Verify product authenticity and cold chain integrity. Blockchain-secured provenance from farm to fork.',
-        locale: 'en_US',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: 'Global FoodTech Bridge',
-        description: 'Blockchain-powered food supply chain transparency. Real-time IoT monitoring & digital passports.',
-    },
-    robots: {
-        index: true,
-        follow: true,
-    },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gftb.app'),
-    icons: {
-        icon: [
-            { url: '/favicon.svg', type: 'image/svg+xml' },
-        ],
-        apple: [
-            { url: '/favicon.svg' },
-        ],
-    },
-};
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+    const t = await getTranslations({ locale, namespace: 'Metadata' });
+
+    return {
+        title: {
+            default: t('title'),
+            template: `%s | ${t('title')}`,
+        },
+        description: t('description'),
+        keywords: ['food traceability', 'blockchain', 'supply chain', 'cold chain monitoring', 'halal certification', 'IoT sensors', 'Polygon', 'food safety', 'digital passport'],
+        authors: [{ name: 'Global FoodTech Bridge' }],
+        creator: 'Global FoodTech Bridge',
+        openGraph: {
+            type: 'website',
+            siteName: 'Global FoodTech Bridge',
+            title: t('og_title'),
+            description: t('og_description'),
+            locale: locale === 'en' ? 'en_US' : locale,
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: t('title'),
+            description: t('description'),
+        },
+        robots: {
+            index: true,
+            follow: true,
+        },
+        metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gftb.app'),
+        icons: {
+            icon: [
+                { url: '/favicon.svg', type: 'image/svg+xml' },
+            ],
+            apple: [
+                { url: '/favicon.svg' },
+            ],
+        },
+    };
+}
 
 const outfit = Outfit({ 
     subsets: ["latin", "latin-ext"],

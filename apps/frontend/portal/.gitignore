@@ -4,3 +4,4 @@
 # Firebase Service Account Credentials (CRITICAL: Do Not Commit)
 firebase-service-account.json
 *-adminsdk-*.json
+fix-role.js

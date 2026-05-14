@@ -196,19 +196,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content Area */}
             <main className="flex-1 min-h-screen overflow-hidden flex flex-col" role="main">
                 {/* Mobile Header with Menu Button */}
-                <header className="h-20 border-b border-primary/5 bg-white/50 backdrop-blur-xl lg:hidden flex items-center px-6 justify-between sticky top-0 z-30">
-                    <div className="flex items-center gap-3">
+                <header className="h-24 border-b border-primary/5 bg-white/40 backdrop-blur-2xl lg:hidden flex items-center px-6 justify-between sticky top-0 z-30 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsMobileMenuOpen(true)}
-                            className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform"
+                            className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                             aria-label="Open admin navigation menu"
                             aria-expanded={isMobileMenuOpen}
                         >
-                            <Menu className="h-5 w-5" />
+                            <Menu className="h-6 w-6" />
                         </button>
-                        <div className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('admin_operator_title')}</span>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <Shield className="h-4 w-4 text-primary" aria-hidden="true" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">GFTB OS</span>
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">{t('admin_operator_title')}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary/20 to-emerald-500/20 border border-primary/10 flex items-center justify-center">
+                            <Users size={16} className="text-primary" />
                         </div>
                     </div>
                 </header>

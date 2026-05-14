@@ -1,4 +1,14 @@
 {
+  "Metadata": {
+    "home_title": "Global FoodTech Bridge | Цепочки поставок на блокчейне",
+    "home_description": "Самая надежная платформа для отслеживания цепочек поставок. Мониторинг IoT в реальном времени и неизменяемая нотариализация на блокчейне.",
+    "verify_title": "Проверка: {product} | Цифровой паспорт GFTB",
+    "verify_description": "Проверьте подлинность и соблюдение холодовой цепи для {product} из {origin}. Происхождение подтверждено в блокчейне.",
+    "how_it_works_title": "Как это работает | Прозрачность на Блокчейне | GFTB",
+    "how_it_works_description": "Узнайте о технологиях, стоящих за нашим Мостом. От датчиков IoT до нотариализации в сети Polygon.",
+    "not_found_title": "Актив не найден | GFTB Bridge",
+    "error_title": "Системное исключение | GFTB Bridge"
+  },
   "Menu": {
     "how_it_works": "Как это работает",
     "create_batch": "Создать партию",
@@ -388,11 +398,38 @@
     "monitoring_cpu_usage": "Загрузка CPU",
     "monitoring_memory_usage": "Память RAM",
     "monitoring_endpoint_link": "Открыть шлюз API",
+    "monitoring_status_live": "АКТИВЕН",
+    "monitoring_status_offline": "ОФФЛАЙН",
+    "monitoring_dns_timeout": "DNS ТАЙМАУТ",
+    "monitoring_endpoint_live": "УЗЕЛ АКТИВЕН",
     "monitoring_trust_index_title": "Индекс доверия инфраструктуры",
     "monitoring_trust_index_desc": "Агрегированные показатели здоровья всей глобальной сети.",
     "monitoring_avg_uptime": "Средний аптайм",
     "monitoring_active_services": "Активные узлы",
     "monitoring_railway_connected": "Контроллер облака подключен",
+    "monitoring_system_logs": "СИСТЕМНЫЕ ЛОГИ",
+    "monitoring_no_endpoint": "НЕТ ЭНДПОИНТА",
+    "monitoring_railway_v2": "Railway Global v2",
+    "blockchain_title": "Смарт-контракты",
+    "blockchain_subtitle": "Реестр прозрачности и инфраструктура кастодиальных кошельков",
+    "blockchain_protocol_active": "{mode} ПРОТОКОЛ АКТИВЕН",
+    "blockchain_registry_title": "Реестр контрактов",
+    "blockchain_registry_desc": "Развернуто в сети {network}",
+    "blockchain_address_label": "Адрес реестра Polygon",
+    "blockchain_gas_limit": "Лимит газа",
+    "blockchain_latency": "Задержка",
+    "blockchain_tx_success": "Успешность TX",
+    "blockchain_node_region": "Регион узла",
+    "blockchain_health_title": "Здоровье протокола",
+    "blockchain_stream_label": "Поток нотариализации",
+    "blockchain_oracle_label": "Оракул нарушений SLA",
+    "blockchain_relayer_label": "Релеер переводов",
+    "blockchain_propagation_label": "Распространение блоков",
+    "blockchain_wallets_title": "Кастодиальные операционные кошельки",
+    "blockchain_wallets_subtitle": "Управляемые кошельки для автоматизированного трансграничного исполнения",
+    "blockchain_wallet_status": "Статус",
+    "blockchain_wallet_operational": "ОПЕРАЦИОННЫЙ",
+    "blockchain_wallet_fuel": "Доступное топливо (Газ)",
     "admin_operator_title": "Управление операциями Bridge",
     "admin_dashboard": "Обзор кластера",
     "admin_companies": "Зарегистрированные лица",
@@ -537,5 +574,16 @@
     "privacy": "Политика конфиденциальности",
     "terms": "Условия использования",
     "compliance": "Комплаенс / ESG"
+  },
+  "Error": {
+    "title": "Что-то пошло не так",
+    "description": "Произошла непредвиденная ошибка. Наши системы уведомлены, и мы работаем над её устранением.",
+    "try_again": "Попробовать снова",
+    "go_home": "На главную",
+    "error_id": "ID ошибки"
+  },
+  "Loading": {
+    "title": "Global FoodTech Bridge",
+    "subtitle": "Инициализация уровня доверия..."
   }
 }

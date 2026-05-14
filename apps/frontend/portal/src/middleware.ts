@@ -13,12 +13,32 @@ const intlMiddleware = createMiddleware({
  * Applies production security headers to a response object.
  */
 function applySecurityHeaders(response: NextResponse): NextResponse {
+    // 1. Basic Security Headers
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-XSS-Protection', '1; mode=block');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+
+    // 2. Content Security Policy (CSP)
+    // Using Content-Security-Policy-Report-Only for initial phase to avoid accidental breakage.
+    const cspHeader = `
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.firebaseapp.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        img-src 'self' blob: data: https://*.googleapis.com https://*.firebasestorage.app https://images.unsplash.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.google.com https://polygon-rpc.com https://*.vercel.app;
+        frame-src 'self' https://*.firebaseapp.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    response.headers.set('Content-Security-Policy-Report-Only', cspHeader);
+    
     return response;
 }
 

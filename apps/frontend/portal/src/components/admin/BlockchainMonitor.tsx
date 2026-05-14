@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface WalletStatus {
     name: string;
@@ -38,6 +39,7 @@ interface BlockchainMonitorProps {
 
 export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const t = useTranslations('Admin');
 
     const handleRefresh = () => {
         setIsRefreshing(true);
@@ -54,17 +56,17 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
                             <Database size={24} />
                         </div>
                         <h1 className="text-4xl font-serif font-black italic tracking-tighter text-foreground uppercase">
-                            Smart Contracts
+                            {t('blockchain_title')}
                         </h1>
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 italic">
-                        Transparency Ledger & Custodial Wallet Infrastructure
+                        {t('blockchain_subtitle')}
                     </p>
                 </div>
                 
                 <div className="flex items-center gap-4">
                     <Badge className={`h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-widest ${status.mode === 'LIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
-                        {status.mode} PROTOCOL ACTIVE
+                        {t('blockchain_protocol_active', { mode: status.mode })}
                     </Badge>
                     <Button 
                         onClick={handleRefresh}
@@ -81,22 +83,22 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Node Card */}
                 <Card className="lg:col-span-2 rounded-[3rem] border-primary/5 glass overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-100 transition-opacity">
                         <Globe size={240} />
                     </div>
                     <CardHeader className="p-10 pb-0">
                         <CardTitle className="text-xl font-serif font-black italic tracking-tight flex items-center gap-3 text-primary">
                             <LinkIcon size={20} />
-                            Contract Registry
+                            {t('blockchain_registry_title')}
                         </CardTitle>
                         <CardDescription className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
-                            Deployed on {status.network}
+                            {t('blockchain_registry_desc', { network: status.network })}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 pt-6 space-y-8">
                         <div className="p-8 bg-slate-900 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-l from-primary/20 to-transparent" />
-                            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-white/30 mb-3">Polygon Registry Address</p>
+                            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-white/30 mb-3">{t('blockchain_address_label')}</p>
                             <div className="flex items-center justify-between gap-4">
                                 <code className="text-sm md:text-lg font-mono font-bold tracking-tighter text-blue-400 truncate">
                                     {status.contract}
@@ -109,10 +111,10 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {[
-                                { label: 'Gas Limit', value: '3,000,000', icon: Zap },
-                                { label: 'Latency', value: '1.2s', icon: Activity },
-                                { label: 'TX Success', value: '99.9%', icon: Shield },
-                                { label: 'Node Region', value: 'Global', icon: Globe },
+                                { label: t('blockchain_gas_limit'), value: '3,000,000', icon: Zap },
+                                { label: t('blockchain_latency'), value: '1.2s', icon: Activity },
+                                { label: t('blockchain_tx_success'), value: '99.9%', icon: Shield },
+                                { label: t('blockchain_node_region'), value: 'Global', icon: Globe },
                             ].map((item, i) => (
                                 <div key={i} className="p-4 rounded-2xl border border-primary/5 bg-white/40 flex flex-col items-center justify-center text-center">
                                     <item.icon size={16} className="text-primary/40 mb-2" />
@@ -131,27 +133,27 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
                             <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-emerald-500">
                                 <Activity size={20} />
                             </div>
-                            <h3 className="text-sm font-black uppercase tracking-widest">Protocol Health</h3>
+                            <h3 className="text-sm font-black uppercase tracking-widest">{t('blockchain_health_title')}</h3>
                         </div>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Notarization Stream</span>
-                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">ACTIVE</Badge>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">{t('blockchain_stream_label')}</span>
+                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">{t('monitoring_status_live')}</Badge>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">SLA Violation Oracle</span>
-                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">ACTIVE</Badge>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">{t('blockchain_oracle_label')}</span>
+                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">{t('monitoring_status_live')}</Badge>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Transfer Relayer</span>
-                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">ACTIVE</Badge>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/30">{t('blockchain_relayer_label')}</span>
+                                <Badge className="bg-emerald-500/20 text-emerald-500 border-0 text-[8px]">{t('monitoring_status_live')}</Badge>
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-10 space-y-4">
                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                            <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Block Propagation</p>
+                            <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">{t('blockchain_propagation_label')}</p>
                             <div className="flex gap-1">
                                 {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
                                     <motion.div 
@@ -172,10 +174,10 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
                 <div className="flex items-center justify-between px-4">
                     <h2 className="text-xl font-serif font-black italic tracking-tight flex items-center gap-3">
                         <Wallet className="text-primary" size={20} />
-                        Custodial Operational Wallets
+                        {t('blockchain_wallets_title')}
                     </h2>
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 italic">
-                        Managed Wallets for Automated Cross-Border Execution
+                        {t('blockchain_wallets_subtitle')}
                     </p>
                 </div>
 
@@ -194,8 +196,8 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
                                             <Shield size={20} />
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 mb-1">Status</p>
-                                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-500">OPERATIONAL</Badge>
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 mb-1">{t('blockchain_wallet_status')}</p>
+                                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-500">{t('blockchain_wallet_operational')}</Badge>
                                         </div>
                                     </div>
                                     
@@ -211,7 +213,7 @@ export function BlockchainMonitor({ status }: BlockchainMonitorProps) {
 
                                         <div className="pt-4 border-t border-primary/5 flex items-end justify-between">
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">Available Fuel (Gas)</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">{t('blockchain_wallet_fuel')}</p>
                                                 <p className="text-2xl font-serif font-black italic tracking-tighter text-foreground">
                                                     {wallet.balance}
                                                 </p>

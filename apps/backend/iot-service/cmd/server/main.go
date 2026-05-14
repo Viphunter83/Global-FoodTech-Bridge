@@ -79,8 +79,16 @@ func main() {
 	repo := postgres.NewTelemetryRepository(dbpool)
 	svc := service.NewTelemetryService(repo, rdb)
 	
+	// Zero Trust Auth Initialization
+	projectID := os.Getenv("FIREBASE_PROJECT_ID")
+	if projectID == "" {
+		log.Printf("Warning: FIREBASE_PROJECT_ID not set. Using default 'global-foodtech-bridge-prod'.")
+		projectID = "global-foodtech-bridge-prod"
+	}
+	jwtVerifier := transport.NewJWTVerifier(projectID)
+
 	// Create handler and routes
-	iotHandler := transport.NewHandler(svc)
+	iotHandler := transport.NewHandler(svc, jwtVerifier)
 	router := iotHandler.InitRoutes()
 
 	port := os.Getenv("PORT")

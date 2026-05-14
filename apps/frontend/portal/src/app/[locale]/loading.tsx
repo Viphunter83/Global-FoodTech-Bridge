@@ -1,6 +1,9 @@
 import { Shield } from "lucide-react";
+import { getTranslations } from 'next-intl/server';
 
-export default function Loading() {
+export default async function Loading() {
+    const t = await getTranslations('Loading');
+
     return (
         <div className="h-screen w-full flex items-center justify-center bg-background/50 backdrop-blur-sm selection:bg-primary/10">
             <div className="flex flex-col items-center gap-8">
@@ -25,10 +28,10 @@ export default function Loading() {
                 {/* Brand Text */}
                 <div className="text-center">
                     <p className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40">
-                        Global FoodTech Bridge
+                        {t('title')}
                     </p>
                     <p className="text-[8px] font-black uppercase tracking-[0.5em] text-muted-foreground/20 mt-2">
-                        Initializing Trust Layer...
+                        {t('subtitle')}
                     </p>
                 </div>
             </div>

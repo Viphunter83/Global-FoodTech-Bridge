@@ -17,16 +17,15 @@ export async function GET(request: NextRequest) {
         const isAdminPath = targetPath.startsWith('/admin/');
         
         let userRole = '';
-        if (isAdminPath) {
-            const user = await verifySession(request);
-            if (!user) {
-                return NextResponse.json({ error: 'Unauthorized: Session required for administrative access' }, { status: 401 });
-            }
+        let userToken = '';
+        const user = await verifySession(request);
+        if (user) {
             userRole = user.role?.toUpperCase() || '';
-        } else {
-            // Optional: still try to get role for analytics/audit if session exists
-            const user = await verifySession(request);
-            if (user) userRole = user.role?.toUpperCase() || '';
+            userToken = user.token || '';
+        }
+
+        if (isAdminPath && !user) {
+            return NextResponse.json({ error: 'Unauthorized: Session required for administrative access' }, { status: 401 });
         }
 
         // Standardize URL to include /api/v1 if not present
@@ -43,6 +42,9 @@ export async function GET(request: NextRequest) {
         };
         if (userRole) {
             headers['X-User-Role'] = userRole;
+        }
+        if (userToken) {
+            headers['Authorization'] = `Bearer ${userToken}`;
         }
 
         const response = await fetch(finalUrl, { headers });
@@ -66,6 +68,7 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
     try {
         const apiKey = process.env.INTERNAL_API_KEY;
         const userRole = user.role?.toUpperCase() || '';
+        const userToken = user.token || '';
         
         if (!apiKey) {
             console.error(`[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY missing for ${method} request.`);
@@ -84,6 +87,7 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
         const headers: Record<string, string> = {
             'x-api-key': apiKey || '',
             'X-User-Role': userRole,
+            'Authorization': `Bearer ${userToken}`,
         };
 
         let body: any;

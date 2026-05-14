@@ -80,13 +80,13 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
         
         try {
             const token = await auth.currentUser?.getIdToken();
-            const promise = reportViolation(latestBatch.id, "Demo: Artificial temperature excursion recorded (+24°C)", token);
+            const promise = reportViolation(latestBatch.id, t('demo_violation_msg'), token);
             
             toast.promise(promise, {
-                loading: 'Reporting violation...',
+                loading: t('demo_reporting_violation'),
                 success: (data) => {
                     refreshAdminData();
-                    return `Violation Notarized: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                    return t('demo_violation_notarized', { hash: data.txHash?.slice(0, 10) || 'Confirmed' });
                 },
                 error: (err) => `Error: ${err.message}`
             });
@@ -110,10 +110,10 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
             const promise = advanceBatchDemo(latestBatch.id, 'LOGISTICS', token);
 
             toast.promise(promise, {
-                loading: 'Processing handover...',
+                loading: t('demo_handover_processing'),
                 success: (data) => {
                     refreshAdminData();
-                    return `Handover complete: ${data.txHash?.slice(0, 10) || 'Confirmed'}...`;
+                    return t('demo_handover_complete', { hash: data.txHash?.slice(0, 10) || 'Confirmed' });
                 },
                 error: (err) => `Error: ${err.message}`
             });
@@ -223,7 +223,7 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                                                 <div className="flex-grow min-w-0">
                                                     <div className="flex items-center gap-3 mb-1">
                                                         <h3 className="text-sm font-serif font-black italic text-foreground truncate">
-                                                            Batch #{batch.id.slice(0, 8).toUpperCase()}
+                                                            {t('batch_label_prefix')}{batch.id.slice(0, 8).toUpperCase()}
                                                         </h3>
                                                         <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border-primary/10">
                                                             {batch.product_type}
@@ -324,7 +324,7 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center">
                                 <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{t('gas_level')}</span>
-                                <span className="text-[10px] font-mono font-black text-emerald-500">42.5 MATIC</span>
+                                <span className="text-[10px] font-mono font-black text-emerald-500">42.5 {t('gas_unit')}</span>
                             </div>
                             <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <div className="h-full w-4/5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />

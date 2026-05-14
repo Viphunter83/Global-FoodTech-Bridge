@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
 
 /**
  * Root-level error boundary.
@@ -15,74 +16,169 @@ export default function GlobalError({
     reset: () => void;
 }) {
     useEffect(() => {
-        console.error('[GFTB Global Error]', error);
+        console.error('[GFTB-CRITICAL-ROOT]', error);
     }, [error]);
 
     return (
         <html lang="en">
-            <body style={{
-                margin: 0,
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                background: '#0f172a',
-                color: '#e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-            }}>
-                <div style={{ textAlign: 'center', maxWidth: 480, padding: 32 }}>
-                    <div style={{ fontSize: 64, marginBottom: 16 }}>⚠️</div>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-                        Critical Error
-                    </h1>
-                    <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                        A critical application error occurred. Please refresh the page. If the problem persists, contact support.
-                    </p>
-                    {error.digest && (
-                        <p style={{ 
-                            fontSize: 11, 
-                            fontFamily: 'monospace', 
-                            color: '#64748b',
-                            background: '#1e293b',
-                            padding: '8px 16px',
-                            borderRadius: 8,
-                            display: 'inline-block',
-                            marginBottom: 24,
+            <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, sans-serif', background: '#0f172a' }}>
+                <div style={{
+                    minHeight: '100vh',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '2rem',
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+                    padding: '2rem',
+                    color: '#f1f5f9',
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}>
+                    {/* Decorative glow */}
+                    <div style={{
+                        position: 'absolute',
+                        width: '400px',
+                        height: '400px',
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%)',
+                        filter: 'blur(60px)',
+                        pointerEvents: 'none',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                    }} />
+
+                    <div style={{
+                        position: 'relative',
+                        zIndex: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '2rem',
+                        maxWidth: '480px',
+                        textAlign: 'center',
+                    }}>
+                        {/* Icon */}
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '24px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 20px 50px -15px rgba(239, 68, 68, 0.3)',
                         }}>
-                            Ref: {error.digest}
-                        </p>
-                    )}
-                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
-                        <button
-                            onClick={reset}
-                            style={{
-                                padding: '12px 24px',
-                                background: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 12,
+                            <AlertTriangle size={40} color="#ef4444" />
+                        </div>
+
+                        {/* Text */}
+                        <div>
+                            <h2 style={{
+                                fontSize: '2.5rem',
+                                fontWeight: 900,
+                                fontStyle: 'italic',
+                                letterSpacing: '-0.05em',
+                                marginBottom: '0.75rem',
+                                color: '#f1f5f9',
+                                lineHeight: '0.9',
+                            }}>
+                                Critical System Failure<span style={{ color: '#fbbf24' }}>.</span>
+                            </h2>
+                            <p style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.2em',
+                                color: 'rgba(241, 245, 249, 0.4)',
+                                lineHeight: '1.8',
+                                maxWidth: '360px',
+                                margin: '0 auto',
+                            }}>
+                                The core bridge infrastructure encountered an unrecoverable error. This usually indicates a deployment configuration mismatch.
+                            </p>
+                        </div>
+
+                        {/* Error digest */}
+                        {error.digest && (
+                            <div style={{
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '1rem',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                fontSize: '0.625rem',
+                                fontFamily: 'monospace',
                                 fontWeight: 700,
-                                cursor: 'pointer',
-                                fontSize: 14,
-                            }}
-                        >
-                            Retry
-                        </button>
-                        <button
-                            onClick={() => window.location.href = '/'}
-                            style={{
-                                padding: '12px 24px',
-                                background: 'transparent',
-                                color: '#94a3b8',
-                                border: '1px solid #334155',
-                                borderRadius: 12,
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                fontSize: 14,
-                            }}
-                        >
-                            Home
-                        </button>
+                                color: 'rgba(241, 245, 249, 0.3)',
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                            }}>
+                                REFID: {error.digest}
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <button
+                                onClick={() => reset()}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    padding: '1rem 2rem',
+                                    borderRadius: '1.5rem',
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    fontSize: '0.625rem',
+                                    fontWeight: 900,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.2em',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 10px 30px -5px rgba(239, 68, 68, 0.4)',
+                                }}
+                            >
+                                <RefreshCcw size={16} />
+                                Re-initialize
+                            </button>
+                            <button
+                                onClick={() => window.location.href = '/'}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    padding: '1rem 2rem',
+                                    borderRadius: '1.5rem',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    color: 'rgba(241, 245, 249, 0.7)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    fontSize: '0.625rem',
+                                    fontWeight: 900,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.2em',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <Home size={16} />
+                                Emergency Exit
+                            </button>
+                        </div>
+
+                        {/* Footer branding */}
+                        <div style={{
+                            marginTop: '2rem',
+                            fontSize: '0.5rem',
+                            fontWeight: 900,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.4em',
+                            color: 'rgba(241, 245, 249, 0.15)',
+                            fontStyle: 'italic',
+                        }}>
+                            GFTB Sovereign Trust Protocol • Recovery Mode
+                        </div>
                     </div>
                 </div>
             </body>

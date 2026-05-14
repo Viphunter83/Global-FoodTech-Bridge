@@ -1,9 +1,29 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == 'ADMIN';
+    }
+    
+    function isFromCompany(companyId) {
+      return request.auth != null && request.auth.token.companyId == companyId;
+    }
+
+    // Public batch assets (certificates, photos)
+    match /batches/{batchId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || (request.auth != null && request.auth.token.role in ['MANUFACTURER', 'LOGISTICS']);
+    }
+    
+    // Private company assets
+    match /companies/{companyId}/{allPaths=**} {
+      allow read, write: if isAdmin() || isFromCompany(companyId);
+    }
+
+    // Default deny
     match /{allPaths=**} {
-      // Allow read and write only for authenticated users
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
   }
 }

@@ -21,13 +21,15 @@ type Handler struct {
 	service         *service.BatchService
 	companyService  *service.CompanyService
 	templateService *service.TemplateService
+	jwtVerifier     *JWTVerifier
 }
 
-func NewHandler(service *service.BatchService, companyService *service.CompanyService, templateService *service.TemplateService) *Handler {
+func NewHandler(service *service.BatchService, companyService *service.CompanyService, templateService *service.TemplateService, jwtVerifier *JWTVerifier) *Handler {
 	return &Handler{
 		service:         service,
 		companyService:  companyService,
 		templateService: templateService,
+		jwtVerifier:     jwtVerifier,
 	}
 }
 
@@ -38,6 +40,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.RealIP)
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(NewRateLimiter(100, time.Minute).Middleware) // 100 req/min per IP
+	r.Use(h.jwtVerifier.Middleware)                    // Validate Firebase JWT if present
 
 	// Root Health Check (critical for Railway)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -138,10 +141,10 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			role := r.Header.Get("X-User-Role")
+			role := r.Header.Get("X-Verified-Role")
 			
 			if role == "" {
-				log.Printf("[ROLE] Access denied to %s %s: No X-User-Role header provided", r.Method, r.URL.Path)
+				log.Printf("[ROLE] Access denied to %s %s: No verified role found in token", r.Method, r.URL.Path)
 				http.Error(w, "Forbidden: Role header required", http.StatusForbidden)
 				return
 			}
@@ -190,9 +193,19 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	companyID := r.Header.Get("X-Verified-Company-ID")
+	role := r.Header.Get("X-Verified-Role")
+
 	batch, err := h.service.GetBatch(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// SECURITY: Ensure user belongs to the company that owns the batch, or is an ADMIN
+	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+		log.Printf("[AUTH] Denied access to batch %s for company %s (user company: %s, role: %s)", id, batch.ManufacturerID, companyID, role)
+		http.Error(w, "Forbidden: You do not have access to this batch", http.StatusForbidden)
 		return
 	}
 
@@ -224,6 +237,22 @@ func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	companyID := r.Header.Get("X-Verified-Company-ID")
+	role := r.Header.Get("X-Verified-Role")
+
+	// First verify ownership
+	batch, err := h.service.GetBatch(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+		log.Printf("[AUTH] Denied updateBlockchain for batch %s: company mismatch", id)
+		http.Error(w, "Forbidden: Access denied", http.StatusForbidden)
+		return
+	}
+
 	var req domain.UpdateBlockchainRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -243,6 +272,22 @@ func (h *Handler) updateSensor(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	companyID := r.Header.Get("X-Verified-Company-ID")
+	role := r.Header.Get("X-Verified-Role")
+
+	// Verify ownership
+	batch, err := h.service.GetBatch(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+		log.Printf("[AUTH] Denied updateSensor for batch %s: company mismatch", id)
+		http.Error(w, "Forbidden: Access denied", http.StatusForbidden)
 		return
 	}
 
@@ -273,6 +318,22 @@ func (h *Handler) reportViolation(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		http.Error(w, "missing batch id", http.StatusBadRequest)
+		return
+	}
+
+	companyID := r.Header.Get("X-Verified-Company-ID")
+	role := r.Header.Get("X-Verified-Role")
+
+	// Verify ownership
+	batch, err := h.service.GetBatch(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+		log.Printf("[AUTH] Denied reportViolation for batch %s: company mismatch", id)
+		http.Error(w, "Forbidden: Access denied", http.StatusForbidden)
 		return
 	}
 
@@ -429,8 +490,8 @@ func (h *Handler) deleteTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listBatches(w http.ResponseWriter, r *http.Request) {
-	companyID := r.Header.Get("X-Company-ID")
-	role := r.Header.Get("X-User-Role")
+	companyID := r.Header.Get("X-Verified-Company-ID")
+	role := r.Header.Get("X-Verified-Role")
 
 	batches, err := h.service.ListAllBatches(r.Context(), companyID, role)
 	if err != nil {

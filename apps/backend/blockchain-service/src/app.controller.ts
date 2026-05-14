@@ -1,5 +1,7 @@
-import { Body, Controller, Post, Get, Param } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
 import { BlockchainService } from './blockchain/blockchain.service';
+import { FirebaseAuthGuard } from './auth/firebase-auth.guard';
+import { RolesGuard, Roles } from './auth/roles.guard';
 
 @Controller('blockchain')
 export class AppController {
@@ -8,6 +10,8 @@ export class AppController {
     ) { }
 
     @Post('notarize')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('MANUFACTURER', 'ADMIN')
     async notarize(@Body() body: { batchId: string; dataHash: string }) {
         // 'dataHash' is now treated as 'tokenURI' for NFT metadata
         const txHash = await this.blockchainService.createBatch(body.batchId, body.dataHash);
@@ -25,11 +29,15 @@ export class AppController {
     }
 
     @Post('violation')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('RETAILER', 'LOGISTICS', 'ADMIN')
     async reportViolation(@Body() body: { batchId: string; details: string }) {
         return this.blockchainService.reportViolationAsync(body.batchId, body.details);
     }
 
     @Post('transfer/initiate')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('MANUFACTURER', 'LOGISTICS', 'ADMIN')
     async initiateTransfer(@Body() body: { batchId: string; toAddress: string }) {
         if (!body.toAddress || !body.toAddress.startsWith('0x')) {
             throw new Error('Valid toAddress (0x...) is required for transfer initiation');
@@ -39,6 +47,8 @@ export class AppController {
     }
 
     @Post('transfer/accept')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('LOGISTICS', 'RETAILER', 'ADMIN')
     async acceptTransfer(@Body() body: { batchId: string }) {
         const txHash = await this.blockchainService.acceptTransfer(body.batchId);
         return { status: 'success', txHash };
@@ -50,11 +60,15 @@ export class AppController {
     }
 
     @Post('demo/advance')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('ADMIN')
     async advanceBatch(@Body() body: { batchId: string; targetRole: 'LOGISTICS' | 'RETAILER' }) {
         return this.blockchainService.advanceBatch(body.batchId, body.targetRole);
     }
 
     @Post('demo/reset')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('ADMIN')
     async resetBatch(@Body() body: { batchId: string }) {
         return this.blockchainService.resetBatch(body.batchId);
     }

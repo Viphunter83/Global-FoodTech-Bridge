@@ -1,5 +1,7 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Logger, UseGuards } from '@nestjs/common';
 import { BlockchainService } from '../blockchain/blockchain.service';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { RolesGuard, Roles } from '../auth/roles.guard';
 
 interface GrantRoleDto {
     role: string;
@@ -7,6 +9,8 @@ interface GrantRoleDto {
 }
 
 @Controller('admin')
+@UseGuards(FirebaseAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class AdminController {
     private readonly logger = new Logger(AdminController.name);
 

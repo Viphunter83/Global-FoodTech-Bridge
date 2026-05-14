@@ -19,6 +19,31 @@ import {
     AnimatedBar,
     ScrollToButton 
 } from '@/components/home/HomeClient';
+import { Metadata } from 'next';
+
+/**
+ * Metadata for the homepage.
+ */
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const t = await getTranslations({ locale: params.locale, namespace: 'Metadata' });
+    
+    return {
+        title: t('home_title'),
+        description: t('home_description'),
+        openGraph: {
+            title: t('home_title'),
+            description: t('home_description'),
+            images: ['/og-image.png'],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: t('home_title'),
+            description: t('home_description'),
+            images: ['/og-image.png'],
+        }
+    };
+}
 
 /**
  * Homepage — Server Component (SSR).

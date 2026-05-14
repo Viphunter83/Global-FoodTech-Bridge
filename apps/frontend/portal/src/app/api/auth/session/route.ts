@@ -21,16 +21,22 @@ export async function POST(request: NextRequest) {
 
         console.log(`[AUTH_SESSION_API] Token verified for UID: ${uid}, currentRole: ${role}`);
 
-        // 2. Self-healing: If role is missing in token, try to fetch from Firestore and sync
-        if (!decodedToken.role) {
-            console.log(`[AUTH_SESSION_API] Role missing for user ${uid}. Attempting sync from Firestore...`);
+        // 2. Self-healing: If role or companyId is missing in token, try to fetch from Firestore and sync
+        if (!decodedToken.role || !decodedToken.company_id) {
+            console.log(`[AUTH_SESSION_API] Missing claims for user ${uid}. Attempting sync from Firestore...`);
             const userDoc = await adminDb.collection('users').doc(uid).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
-                if (userData?.role) {
-                    role = userData.role;
-                    await adminAuth.setCustomUserClaims(uid, { role });
-                    console.log(`[AUTH_SESSION_API] Successfully synced role '${role}' to custom claims for ${uid}`);
+                const newRole = userData?.role || role;
+                const newCompanyId = userData?.companyId || decodedToken.company_id || '';
+                
+                if (newRole !== decodedToken.role || newCompanyId !== decodedToken.company_id) {
+                    await adminAuth.setCustomUserClaims(uid, { 
+                        role: newRole, 
+                        company_id: newCompanyId 
+                    });
+                    role = newRole;
+                    console.log(`[AUTH_SESSION_API] Successfully synced claims {role: '${newRole}', company_id: '${newCompanyId}'} for ${uid}`);
                 }
             }
         }

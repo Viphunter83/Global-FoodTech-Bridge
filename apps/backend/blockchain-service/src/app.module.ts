@@ -9,9 +9,11 @@ import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './auth/api-key.guard';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { HealthController } from './health.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
     imports: [
+        AuthModule,
         ConfigModule.forRoot({
             isGlobal: true,
         }),

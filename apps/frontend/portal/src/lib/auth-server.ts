@@ -5,6 +5,7 @@ export interface AuthenticatedUser {
     uid: string;
     email?: string;
     role?: 'manufacturer' | 'logistics' | 'retailer' | 'admin';
+    token?: string;
 }
 
 /**
@@ -45,6 +46,7 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
             uid: decodedToken.uid,
             email: decodedToken.email,
             role,
+            token,
         };
     } catch (error) {
         console.error('Server-side auth verification failed:', error);

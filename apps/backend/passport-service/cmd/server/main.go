@@ -72,7 +72,14 @@ func main() {
 		log.Printf("Warning: failed to seed default templates: %v", err)
 	}
 
-	handler := transport.NewHandler(svc, companySvc, templateSvc)
+	jwtProjectID := os.Getenv("FIREBASE_PROJECT_ID")
+	if jwtProjectID == "" {
+		jwtProjectID = "global-foodtech-bridge-prod"
+		log.Printf("Warning: FIREBASE_PROJECT_ID not set, using default: %s", jwtProjectID)
+	}
+	verifier := transport.NewJWTVerifier(jwtProjectID)
+
+	handler := transport.NewHandler(svc, companySvc, templateSvc, verifier)
 
 	// Init Router
 	router := handler.InitRoutes()

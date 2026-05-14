@@ -17,11 +17,15 @@ import (
 )
 
 type Handler struct {
-	service *service.TelemetryService
+	service     *service.TelemetryService
+	jwtVerifier *JWTVerifier
 }
 
-func NewHandler(service *service.TelemetryService) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *service.TelemetryService, jwtVerifier *JWTVerifier) *Handler {
+	return &Handler{
+		service:     service,
+		jwtVerifier: jwtVerifier,
+	}
 }
 
 func (h *Handler) InitRoutes() *chi.Mux {
@@ -30,6 +34,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RealIP)
 	r.Use(SecurityHeadersMiddleware)
+	r.Use(h.jwtVerifier.Middleware)
 	r.Use(NewRateLimiter(200, time.Minute).Middleware) // 200 req/min per IP (higher for IoT)
 	
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -91,11 +96,11 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Role check only (API Key is handled by AuthMiddleware)
-			role := r.Header.Get("X-User-Role")
+			// Role check using VERIFIED role from JWT
+			role := r.Header.Get("X-Verified-Role")
 			if role == "" {
-				log.Printf("[ROLE] Access denied to %s %s: No X-User-Role header provided", r.Method, r.URL.Path)
-				http.Error(w, "Forbidden: Role header required", http.StatusForbidden)
+				log.Printf("[ROLE] Access denied to %s %s: No verified role found", r.Method, r.URL.Path)
+				http.Error(w, "Forbidden: Authentication required", http.StatusForbidden)
 				return
 			}
 			
