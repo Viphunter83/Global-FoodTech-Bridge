@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     signInWithEmailAndPassword, 
@@ -27,6 +27,27 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const getFriendlyError = useCallback((code: string) => {
+        switch (code) {
+            case 'auth/invalid-credential':
+                return t('error_invalid_credential');
+            case 'auth/user-not-found':
+                return t('error_user_not_found');
+            case 'auth/wrong-password':
+                return t('error_wrong_password');
+            case 'auth/too-many-requests':
+                return t('error_too_many_requests');
+            case 'auth/popup-closed-by-user':
+                return t('error_popup_closed');
+            case 'auth/email-already-in-use':
+                return t('error_email_already_in_use');
+            case 'auth/popup-blocked':
+                return t('error_popup_blocked');
+            default:
+                return t('error_unexpected');
+        }
+    }, [t]);
+
     // Handle Google redirect result on page load (fallback from signInWithRedirect)
     useEffect(() => {
         getRedirectResult(auth)
@@ -48,24 +69,7 @@ export default function LoginPage() {
                     setError(getFriendlyError(err.code));
                 }
             });
-    }, []);
-
-    const getFriendlyError = (code: string) => {
-        switch (code) {
-            case 'auth/invalid-credential':
-                return t('error_invalid_credential');
-            case 'auth/user-not-found':
-                return t('error_user_not_found');
-            case 'auth/wrong-password':
-                return t('error_wrong_password');
-            case 'auth/too-many-requests':
-                return t('error_too_many_requests');
-            case 'auth/popup-closed-by-user':
-                return t('error_popup_closed');
-            default:
-                return t('error_unexpected');
-        }
-    };
+    }, [getFriendlyError, router]);
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -73,7 +73,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
         ? telemetryData[telemetryData.length - 1].location_lon
         : undefined;
 
-    const fetchData = async (id: string, silent = false) => {
+    const fetchData = useCallback(async (id: string, silent = false) => {
         if (!id) return;
         if (!silent) setLoadingStatus(true);
         try {
@@ -91,36 +91,38 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
         } finally {
             if (!silent) setLoadingStatus(false);
         }
-    };
+    }, []);
+
+    const loadBatches = useCallback(async () => {
+        if (!user) return;
+        setLoadingStatus(true);
+        try {
+            const token = await getToken();
+            const data = await listBatches(token || undefined, role, companyId || undefined);
+            setBatches(data);
+        } catch (e) {
+            console.error('Failed to load batches from backend', e);
+            toast.error('Failed to sync batches');
+        } finally {
+            setLoadingStatus(false);
+        }
+    }, [user, role, companyId, getToken]);
 
     useEffect(() => {
-        if (!user) return;
-        
-        const loadBatches = async () => {
-            setLoadingStatus(true);
-            try {
-                const token = await getToken();
-                // Fetch ONLY batches authorized for this user/role
-                const data = await listBatches(token || undefined, role, companyId || undefined);
-                setBatches(data);
-                if (data.length > 0 && !selectedId) {
-                    setSelectedId(data[0].id);
-                }
-            } catch (e) {
-                console.error('Failed to load batches from backend', e);
-                toast.error('Failed to sync batches');
-            } finally {
-                setLoadingStatus(false);
-            }
-        };
-
         loadBatches();
-    }, [user, role, companyId]);
+    }, [loadBatches]);
+
+    useEffect(() => {
+        if (batches.length > 0 && !selectedId) {
+            setSelectedId(batches[0].id);
+        }
+    }, [batches, selectedId]);
+
     useEffect(() => {
         if (selectedId) {
             fetchData(selectedId);
         }
-    }, [selectedId]);
+    }, [selectedId, fetchData]);
 
     const handleRefresh = async () => {
         if (!selectedId) return;

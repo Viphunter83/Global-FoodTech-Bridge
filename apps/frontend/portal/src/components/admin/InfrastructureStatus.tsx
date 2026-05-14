@@ -21,6 +21,22 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
     const t = useTranslations('Admin');
     const locale = useLocale();
 
+    useEffect(() => {
+        setLastSync(new Date());
+    }, [data]);
+
+    // Implementation of Auto-Refresh (Live Data)
+    useEffect(() => {
+        if (!onRefresh) return;
+
+        const intervalId = setInterval(() => {
+            console.log('[GFTB-MONITOR] Auto-refreshing infrastructure data...');
+            onRefresh();
+        }, 60000); // Every 60 seconds
+
+        return () => clearInterval(intervalId);
+    }, [onRefresh]);
+
     // Fix: Move the null check to the top to prevent flatMap crash
     if (!data || data.length === 0) {
         return (
@@ -47,22 +63,6 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
     const activeServices = allServices.filter(s => s.status === 'SUCCESS' || s.status === 'DEPLOYED').length;
     const healthPercentage = totalServices > 0 ? (activeServices / totalServices) * 100 : 0;
     const averageUptime = totalServices > 0 ? (healthPercentage * 0.9999).toFixed(2) : "0.00";
-
-    useEffect(() => {
-        setLastSync(new Date());
-    }, [data]);
-
-    // Implementation of Auto-Refresh (Live Data)
-    useEffect(() => {
-        if (!onRefresh) return;
-
-        const intervalId = setInterval(() => {
-            console.log('[GFTB-MONITOR] Auto-refreshing infrastructure data...');
-            onRefresh();
-        }, 60000); // Every 60 seconds
-
-        return () => clearInterval(intervalId);
-    }, [onRefresh]);
 
     const handleRefresh = async () => {
         setIsLoading(true);

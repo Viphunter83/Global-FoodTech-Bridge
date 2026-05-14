@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,7 +64,7 @@ export default function CreateBatchPage() {
     const [productType, setProductType] = useState<string>('PHO_BO_SOUP');
     const [unitOfMeasure, setUnitOfMeasure] = useState<string>('kg');
 
-    const loadTemplates = async () => {
+    const loadTemplates = useCallback(async () => {
         setIsTemplatesLoading(true);
         setTemplatesError(null);
         try {
@@ -82,13 +82,13 @@ export default function CreateBatchPage() {
         } finally {
             setIsTemplatesLoading(false);
         }
-    };
+    }, [t]);
 
     useEffect(() => {
         const history = localStorage.getItem('recent_batches');
         if (history) setRecentBatches(JSON.parse(history));
         loadTemplates();
-    }, []);
+    }, [loadTemplates]);
 
     useEffect(() => {
         const selected = templates.find(t => t.id === selectedTemplateId);

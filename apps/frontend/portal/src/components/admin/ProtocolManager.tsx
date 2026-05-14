@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -31,11 +31,7 @@ export function ProtocolManager() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<Partial<SupplyChainTemplate> | null>(null);
 
-    useEffect(() => {
-        loadTemplates();
-    }, []);
-
-    const loadTemplates = async () => {
+    const loadTemplates = useCallback(async () => {
         setIsLoading(true);
         try {
             const token = await auth.currentUser?.getIdToken();
@@ -47,7 +43,11 @@ export function ProtocolManager() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [t]);
+
+    useEffect(() => {
+        loadTemplates();
+    }, [loadTemplates]);
 
     const handleOpenCreate = () => {
         setEditingTemplate({

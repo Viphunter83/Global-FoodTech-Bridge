@@ -42,7 +42,7 @@ export function SustainabilitySection({ marketingStory, certificates, productTyp
                             </div>
                         </div>
                         <p className="text-gray-600 leading-relaxed font-medium italic text-lg leading-[1.6]">
-                            "{marketingStory}"
+                            &quot;{marketingStory}&quot;
                         </p>
                         <div className="mt-8 flex items-center gap-6">
                             <div className="flex items-center gap-2">
