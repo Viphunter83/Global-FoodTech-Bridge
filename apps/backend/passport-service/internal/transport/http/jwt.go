@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	firebaseIssuer = "https://securetoken.google.com"
+	firebaseIssuer = "https://securetoken.google.com/"
 	firebaseJWKS   = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
 )
 
