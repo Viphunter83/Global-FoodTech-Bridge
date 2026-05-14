@@ -71,41 +71,47 @@ export default async function LocaleLayout({
     children: ReactNode;
     params: { locale: string };
 }) {
-    // Providing all messages to the client
-    const messages = await getMessages();
-    
-    // Server-side diagnostic
-    console.log(`[LocaleLayout] Rendering locale: ${locale}, messages found: ${messages ? Object.keys(messages).length : 0}`);
+    try {
+        // Providing all messages to the client
+        const messages = await getMessages();
+        
+        // Server-side diagnostic
+        console.log(`[LocaleLayout] Rendering locale: ${locale}, messages found: ${messages ? Object.keys(messages).length : 0}`);
 
-    return (
-        <html lang={locale} suppressHydrationWarning>
-            <body 
-                className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background`}
-                suppressHydrationWarning
-            >
-                <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
-                    <ClientHydrationLog />
-                    <AuthProvider>
-                        <NotificationProvider>
-                            <AlertSentinel />
-                            <DemoStateProvider>
-                                <div className="relative flex min-h-screen flex-col">
-                                    {/* Skip-to-content accessibility link */}
-                                    <a 
-                                        href="#main-content" 
-                                        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-primary focus:text-white focus:rounded-xl focus:shadow-2xl focus:text-sm focus:font-bold focus:outline-none"
-                                    >
-                                        Skip to main content
-                                    </a>
-                                    <Header />
-                                    <main id="main-content" className="flex-1">{children}</main>
-                                </div>
-                            </DemoStateProvider>
-                        </NotificationProvider>
-                    </AuthProvider>
-                    <Toaster position="bottom-right" richColors closeButton />
-                </NextIntlClientProvider>
-            </body>
-        </html>
-    );
+        return (
+            <html lang={locale} suppressHydrationWarning>
+                <body 
+                    className={`${outfit.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-background`}
+                    suppressHydrationWarning
+                >
+                    <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
+                        <ClientHydrationLog />
+                        <AuthProvider>
+                            <NotificationProvider>
+                                <AlertSentinel />
+                                <DemoStateProvider>
+                                    <div className="relative flex min-h-screen flex-col">
+                                        {/* Skip-to-content accessibility link */}
+                                        <a 
+                                            href="#main-content" 
+                                            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-primary focus:text-white focus:rounded-xl focus:shadow-2xl focus:text-sm focus:font-bold focus:outline-none"
+                                        >
+                                            Skip to main content
+                                        </a>
+                                        <Header />
+                                        <main id="main-content" className="flex-1">{children}</main>
+                                    </div>
+                                </DemoStateProvider>
+                            </NotificationProvider>
+                        </AuthProvider>
+                        <Toaster position="bottom-right" richColors closeButton />
+                    </NextIntlClientProvider>
+                </body>
+            </html>
+        );
+    } catch (layoutError) {
+        console.error('[LocaleLayout] CRITICAL ERROR during rendering:', layoutError);
+        // We still need to return a basic HTML structure or throw to let Next.js handle it
+        throw layoutError;
+    }
 }

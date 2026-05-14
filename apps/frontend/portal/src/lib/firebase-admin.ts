@@ -18,16 +18,28 @@ function getFirebaseAdminApp() {
     }
 
     if (clientEmail && privateKey) {
-        return admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId,
-                clientEmail,
-                privateKey,
-            }),
-        });
+        try {
+            console.log(`[GFTB-ADMIN] Initializing with ProjectID: ${projectId}, Email: ${clientEmail}, KeyLength: ${privateKey.length}`);
+            
+            // Validate private key format roughly
+            if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+                console.error('[GFTB-ADMIN] WARNING: Private key does not contain expected header.');
+            }
+
+            return admin.initializeApp({
+                credential: admin.credential.cert({
+                    projectId,
+                    clientEmail,
+                    privateKey,
+                }),
+            });
+        } catch (initError) {
+            console.error('[GFTB-ADMIN] FAILED to initialize with certificate:', initError);
+            // Fall through to fallback
+        }
     }
 
-    console.error('[GFTB-ADMIN] CRITICAL: Missing FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY');
+    console.error('[GFTB-ADMIN] CRITICAL: Missing or invalid FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY. Falling back to default initialization.');
     return admin.initializeApp({ projectId });
 }
 
