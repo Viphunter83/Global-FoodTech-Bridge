@@ -37,6 +37,14 @@ export const metadata: Metadata = {
         follow: true,
     },
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gftb.app'),
+    icons: {
+        icon: [
+            { url: '/favicon.svg', type: 'image/svg+xml' },
+        ],
+        apple: [
+            { url: '/favicon.svg' },
+        ],
+    },
 };
 
 const outfit = Outfit({ 

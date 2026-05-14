@@ -6,7 +6,7 @@ import {
     BarChart3, Cpu, ScanLine, Factory, Truck, Fingerprint, 
     Database, Warehouse, FileCheck, Store, ClipboardCheck 
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { ProcessStep } from '@/components/marketing/ProcessStep';
 import { TrustBadge } from '@/components/marketing/TrustBadge';
 import { 
@@ -27,8 +27,8 @@ import {
  * Interactive parts (search, animations) are Client Islands imported 
  * from HomeClient.tsx.
  */
-export default function Home() {
-    const t = useTranslations();
+export default async function Home() {
+    const t = await getTranslations();
 
     return (
         <div className="flex flex-col items-center bg-background min-h-screen">
