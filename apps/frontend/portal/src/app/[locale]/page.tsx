@@ -186,25 +186,25 @@ export default async function Home({ params: { locale } }: { params: { locale: s
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <ProcessStep 
-                            icon={Factory}
+                            icon={<Factory className="h-10 w-10" />}
                             title={t('Marketing.passport_creation_title')}
                             description={t('Marketing.passport_creation_desc')}
                             index={0}
                         />
                         <ProcessStep 
-                            icon={Thermometer}
+                            icon={<Thermometer className="h-10 w-10" />}
                             title={t('Marketing.iot_monitoring_title')}
                             description={t('Marketing.iot_monitoring_desc')}
                             index={1}
                         />
                         <ProcessStep 
-                            icon={Fingerprint}
+                            icon={<Fingerprint className="h-10 w-10" />}
                             title={t('Marketing.crypto_handover_title')}
                             description={t('Marketing.crypto_handover_desc')}
                             index={2}
                         />
                         <ProcessStep 
-                            icon={Globe}
+                            icon={<Globe className="h-10 w-10" />}
                             title={t('Marketing.consumer_proof_title')}
                             description={t('Marketing.consumer_proof_desc')}
                             index={3}
@@ -304,12 +304,12 @@ export default async function Home({ params: { locale } }: { params: { locale: s
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                        <TrustBadge name={t('Tracking.ecosystem_logistics')} description={t('Tracking.hcmc_location')} icon={Warehouse} />
-                        <TrustBadge name={t('Tracking.ecosystem_customs')} description={t('Tracking.ru_location')} icon={FileCheck} />
-                        <TrustBadge name={t('Tracking.ecosystem_retail')} description={t('Tracking.uae_location')} icon={Store} />
-                        <TrustBadge name={t('Tracking.ecosystem_audit')} description={t('Tracking.halal_cert')} icon={ClipboardCheck} />
-                        <TrustBadge name={t('Tracking.ecosystem_iot')} description={t('Tracking.tive_integration')} icon={Cpu} />
-                        <TrustBadge name={t('Tracking.ecosystem_l2')} description={t('Tracking.polygon_mainnet')} icon={Database} />
+                        <TrustBadge name={t('Tracking.ecosystem_logistics')} description={t('Tracking.hcmc_location')} icon={<Warehouse className="h-8 w-8 text-primary group-hover:text-white" />} />
+                        <TrustBadge name={t('Tracking.ecosystem_customs')} description={t('Tracking.ru_location')} icon={<FileCheck className="h-8 w-8 text-primary group-hover:text-white" />} />
+                        <TrustBadge name={t('Tracking.ecosystem_retail')} description={t('Tracking.uae_location')} icon={<Store className="h-8 w-8 text-primary group-hover:text-white" />} />
+                        <TrustBadge name={t('Tracking.ecosystem_audit')} description={t('Tracking.halal_cert')} icon={<ClipboardCheck className="h-8 w-8 text-primary group-hover:text-white" />} />
+                        <TrustBadge name={t('Tracking.ecosystem_iot')} description={t('Tracking.tive_integration')} icon={<Cpu className="h-8 w-8 text-primary group-hover:text-white" />} />
+                        <TrustBadge name={t('Tracking.ecosystem_l2')} description={t('Tracking.polygon_mainnet')} icon={<Database className="h-8 w-8 text-primary group-hover:text-white" />} />
                     </div>
                 </div>
             </section>

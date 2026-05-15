@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
 interface ProcessStepProps {
-    icon: LucideIcon;
+    icon: React.ReactNode;
     title: string;
     description: string;
     index: number;
 }
 
-export function ProcessStep({ icon: Icon, title, description, index }: ProcessStepProps) {
+export function ProcessStep({ icon, title, description, index }: ProcessStepProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -24,7 +24,7 @@ export function ProcessStep({ icon: Icon, title, description, index }: ProcessSt
             </div>
             
             <div className="mb-8 p-6 rounded-[2rem] bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
-                <Icon className="h-10 w-10" />
+                {icon}
             </div>
             
             <h3 className="text-2xl font-serif font-black italic tracking-tighter mb-4 text-foreground">

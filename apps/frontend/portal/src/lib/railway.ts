@@ -104,18 +104,19 @@ export async function fetchInfrastructureStatus(): Promise<InfrastructureStatus[
             return getMockInfrastructureStatus();
         }
 
-        const projects = await Promise.all(result.data.projects.edges.map(async (edge: any) => ({
-            project: edge.node.name,
-            services: await Promise.all(edge.node.services.edges.map(async (sEdge: any) => {
-                const latestDeployment = sEdge.node.deployments.edges[0]?.node;
-                const isReachable = await pingService(latestDeployment?.staticUrl);
+        const projects = await Promise.all((result.data?.projects?.edges || []).map(async (edge: any) => ({
+            project: edge?.node?.name || 'Unknown Project',
+            services: await Promise.all((edge?.node?.services?.edges || []).map(async (sEdge: any) => {
+                const latestDeployment = sEdge?.node?.deployments?.edges?.[0]?.node;
+                const staticUrl = latestDeployment?.staticUrl;
+                const isReachable = staticUrl ? await pingService(staticUrl) : false;
                 
                 return {
-                    id: sEdge.node.id,
-                    name: sEdge.node.name,
+                    id: sEdge?.node?.id || Math.random().toString(),
+                    name: sEdge?.node?.name || 'Unknown Service',
                     status: latestDeployment?.status || 'IDLE',
                     createdAt: latestDeployment?.createdAt || new Date().toISOString(),
-                    url: latestDeployment?.staticUrl,
+                    url: staticUrl,
                     isReachable,
                 };
             })),

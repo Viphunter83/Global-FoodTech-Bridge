@@ -8,13 +8,15 @@ import { Link } from '@/navigation';
 import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
     const { locale } = params;
-    const t = await getTranslations({ locale, namespace: 'Metadata' });
+    const t = await getTranslations({ locale, namespace: 'Admin' });
     
     return {
-        title: t('admin_operations_title'),
-        description: t('admin_operations_description'),
+        title: `${t('ledger_title')} | GFTB Admin`,
+        description: t('ledger_subtitle'),
     };
 }
 

@@ -39,8 +39,17 @@ function getFirebaseAdminApp() {
         }
     }
 
-    console.error('[GFTB-ADMIN] CRITICAL: Missing or invalid FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY. Falling back to default initialization.');
-    return admin.initializeApp({ projectId });
+    if (projectId) {
+        console.warn('[GFTB-ADMIN] Falling back to default initialization with ProjectID only.');
+        return admin.initializeApp({ projectId });
+    }
+
+    console.error('[GFTB-ADMIN] CRITICAL: Missing all Firebase credentials (ProjectID, Email, Key).');
+    
+    // During build, we might not have any of these. Return a dummy app if we can,
+    // or at least don't crash the whole process yet.
+    // admin.initializeApp() without args will throw, so we return a dummy or just let it throw if it must.
+    return admin.initializeApp({ projectId: 'gftb-build-placeholder' });
 }
 
 const app = getFirebaseAdminApp();

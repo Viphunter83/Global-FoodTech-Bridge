@@ -11,7 +11,9 @@
     "how_it_works_title": "Cách thức hoạt động | Tính minh bạch Blockchain | GFTB",
     "how_it_works_description": "Khám phá kỹ thuật đằng sau Cầu nối. Từ cảm biến IoT đến việc công chứng trên blockchain Polygon.",
     "not_found_title": "Không tìm thấy Tài sản | GFTB Bridge",
-    "error_title": "Ngoại lệ Hệ thống | GFTB Bridge"
+    "error_title": "Ngoại lệ Hệ thống | GFTB Bridge",
+    "admin_operations_title": "Sổ cái Hoạt động | GFTB Admin",
+    "admin_operations_description": "Toàn bộ lịch sử bất biến của tất cả các lô hàng được quản lý trong cụm này."
   },
   "Menu": {
     "how_it_works": "Cách thức hoạt động",
@@ -360,6 +362,7 @@
   },
   "Admin": {
     "monitoring_title": "Giám sát Hạ tầng",
+    "monitoring_description": "Trạng thái sức khỏe thời gian thực của các dịch vụ vi mô GFTB Bridge và cơ sở hạ tầng đám mây.",
     "monitoring_subtitle": "Trạng thái sức khỏe thời gian thực của các vi dịch vụ GFTB Bridge.",
     "monitoring_no_data": "Đang tìm kiếm các cụm hoạt động...",
     "monitoring_updated_at": "Cập nhật cuối:",
@@ -414,6 +417,8 @@
     "monitoring_system_logs": "SYSTEM LOGS",
     "monitoring_no_endpoint": "NO ENDPOINT",
     "monitoring_railway_v2": "Railway Global v2",
+    "contracts_title": "Hợp đồng Blockchain",
+    "contracts_description": "Quản lý hợp đồng thông minh và trạng thái triển khai.",
     "blockchain_title": "Smart Contracts",
     "blockchain_subtitle": "Transparency Ledger & Custodial Wallet Infrastructure",
     "blockchain_protocol_active": "{mode} PROTOCOL ACTIVE",
@@ -512,7 +517,11 @@
     "add_step_btn": "Add Step",
     "notarized_at": "Notarized at: {date}",
     "view_on_ledger": "View on Ledger",
-    "trust_label_kpi": "Trust"
+    "trust_label_kpi": "Tin cậy",
+    "companies_title": "Thực thể Đã đăng ký",
+    "companies_subtitle": "Quản lý và xác minh quyền truy cập của tổ chức vào mạng lưới GFTB Bridge.",
+    "ledger_title": "Sổ cái Vận hành",
+    "ledger_subtitle": "Toàn bộ lịch sử bất biến của tất cả các lô hàng được quản lý trong cụm này."
   },
   "HowItWorks": {
     "how_title": "Cách GFTB Bridge hoạt động",

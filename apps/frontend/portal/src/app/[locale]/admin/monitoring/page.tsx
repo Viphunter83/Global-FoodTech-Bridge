@@ -1,8 +1,10 @@
 import { fetchInfrastructureStatus } from '@/lib/railway';
 import { InfrastructureStatus } from '@/components/admin/InfrastructureStatus';
-import { revalidatePath } from 'next/cache';
 import { Metadata } from 'next';
 import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
+import { refreshMonitoringData } from './actions';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
     params: {
@@ -22,10 +24,7 @@ export async function generateMetadata({ params: { locale } }: PageProps): Promi
 export default async function MonitoringPage({ params: { locale } }: PageProps) {
     unstable_setRequestLocale(locale);
 
-    const refreshData = async () => {
-        'use server';
-        revalidatePath(`/${locale}/admin/monitoring`);
-    };
+    const handleRefresh = refreshMonitoringData.bind(null, locale);
 
     try {
         console.log('[GFTB-SSR] Fetching infrastructure status...');
@@ -36,7 +35,7 @@ export default async function MonitoringPage({ params: { locale } }: PageProps) 
             <div className="container mx-auto">
                 <InfrastructureStatus 
                     data={data} 
-                    onRefresh={refreshData} 
+                    onRefresh={handleRefresh} 
                 />
             </div>
         );
@@ -45,4 +44,5 @@ export default async function MonitoringPage({ params: { locale } }: PageProps) 
         throw new Error(`Failed to render monitoring page: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
+
 

@@ -11,7 +11,9 @@
     "how_it_works_title": "How it Works | Blockchain Transparency | GFTB",
     "how_it_works_description": "Discover the engineering behind the bridge. From IoT sensors to Polygon blockchain notarization.",
     "not_found_title": "Asset Not Found | GFTB Bridge",
-    "error_title": "System Exception | GFTB Bridge"
+    "error_title": "System Exception | GFTB Bridge",
+    "admin_operations_title": "سجل العمليات | مسؤول GFTB",
+    "admin_operations_description": "سجل تاريخي كامل غير قابل للتغيير لجميع الشحنات المدارة في هذا العنقود."
   },
   "Menu": {
     "how_it_works": "كيف يعمل",
@@ -355,6 +357,7 @@
   },
   "Admin": {
     "monitoring_title": "مراقب البنية التحتية",
+    "monitoring_description": "حالة الصحة في الوقت الفعلي لخدمات GFTB Bridge المصغرة والبنية التحتية السحابية.",
     "monitoring_subtitle": "حالة الصحة في الوقت الفعلي لخدمات GFTB Bridge الصغيرة.",
     "monitoring_no_data": "البحث عن مجموعات نشطة...",
     "monitoring_updated_at": "آخر مزامنة:",
@@ -409,6 +412,8 @@
     "monitoring_system_logs": "SYSTEM LOGS",
     "monitoring_no_endpoint": "NO ENDPOINT",
     "monitoring_railway_v2": "Railway Global v2",
+    "contracts_title": "Blockchain Contracts",
+    "contracts_description": "Smart contract management and deployment status.",
     "blockchain_title": "Smart Contracts",
     "blockchain_subtitle": "Transparency Ledger & Custodial Wallet Infrastructure",
     "blockchain_protocol_active": "{mode} PROTOCOL ACTIVE",
@@ -507,7 +512,11 @@
     "add_step_btn": "Add Step",
     "notarized_at": "Notarized at: {date}",
     "view_on_ledger": "View on Ledger",
-    "trust_label_kpi": "Trust"
+    "trust_label_kpi": "الثقة",
+    "companies_title": "الكيانات المسجلة",
+    "companies_subtitle": "إدارة والتحقق من وصول المنظمة إلى شبكة GFTB Bridge.",
+    "ledger_title": "سجل العمليات",
+    "ledger_subtitle": "تاريخ كامل غير قابل للتغيير لجميع الدفعات المدارة في هذه المجموعة."
   },
   "HowItWorks": {
     "how_title": "كيف يعمل GFTB Bridge",

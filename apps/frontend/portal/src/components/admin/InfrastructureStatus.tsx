@@ -17,7 +17,7 @@ interface InfrastructureStatusProps {
 
 export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [lastSync, setLastSync] = useState<Date>(new Date());
+    const [lastSync, setLastSync] = useState<Date | null>(null);
     const t = useTranslations('Admin');
     const locale = useLocale();
 
@@ -144,7 +144,7 @@ export function InfrastructureStatus({ data, onRefresh }: InfrastructureStatusPr
                         <div className="flex items-center gap-3 justify-end">
                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
                             <p className="text-sm font-mono font-black text-primary uppercase tracking-widest">
-                                {lastSync.toLocaleTimeString(locale)}
+                                {lastSync ? lastSync.toLocaleTimeString(locale) : '--:--:--'}
                             </p>
                         </div>
                     </div>

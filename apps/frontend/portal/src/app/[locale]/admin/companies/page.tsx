@@ -4,11 +4,11 @@ import { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
     const { locale } = params;
-    const t = await getTranslations({ locale, namespace: 'Metadata' });
+    const t = await getTranslations({ locale, namespace: 'Admin' });
     
     return {
-        title: t('admin_companies_title'),
-        description: t('admin_companies_description'),
+        title: `${t('companies_title')} | GFTB Admin`,
+        description: t('companies_subtitle'),
     };
 }
 

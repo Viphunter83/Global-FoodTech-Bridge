@@ -11,7 +11,9 @@
     "how_it_works_title": "Как это работает | Прозрачность на Блокчейне | GFTB",
     "how_it_works_description": "Узнайте о технологиях, стоящих за нашим Мостом. От датчиков IoT до нотариализации в сети Polygon.",
     "not_found_title": "Актив не найден | GFTB Bridge",
-    "error_title": "Системное исключение | GFTB Bridge"
+    "error_title": "Системное исключение | GFTB Bridge",
+    "admin_operations_title": "Журнал операций | GFTB Админ",
+    "admin_operations_description": "Полная неизменяемая история всех партий, управляемых в этом кластере."
   },
   "Menu": {
     "how_it_works": "Как это работает",
@@ -395,6 +397,7 @@
   },
   "Admin": {
     "monitoring_title": "Мониторинг инфраструктуры",
+    "monitoring_description": "Статус работоспособности микросервисов GFTB Bridge и облачной инфраструктуры в реальном времени.",
     "monitoring_subtitle": "Статус работоспособности микросервисов GFTB Bridge в реальном времени.",
     "monitoring_no_data": "Поиск активных кластеров...",
     "monitoring_updated_at": "Синхронизация:",
@@ -417,6 +420,8 @@
     "monitoring_system_logs": "СИСТЕМНЫЕ ЛОГИ",
     "monitoring_no_endpoint": "НЕТ ЭНДПОИНТА",
     "monitoring_railway_v2": "Railway Global v2",
+    "contracts_title": "Блокчейн-контракты",
+    "contracts_description": "Управление смарт-контрактами и статус развертывания.",
     "blockchain_title": "Смарт-контракты",
     "blockchain_subtitle": "Реестр прозрачности и инфраструктура кастодиальных кошельков",
     "blockchain_protocol_active": "{mode} ПРОТОКОЛ АКТИВЕН",

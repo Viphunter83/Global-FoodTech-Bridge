@@ -3,6 +3,8 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Metadata } from 'next';
 import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
     params: {
         locale: string;

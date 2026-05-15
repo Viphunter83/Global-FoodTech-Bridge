@@ -11,7 +11,9 @@
     "how_it_works_title": "How it Works | Blockchain Transparency | GFTB",
     "how_it_works_description": "Discover the engineering behind the bridge. From IoT sensors to Polygon blockchain notarization.",
     "not_found_title": "Asset Not Found | GFTB Bridge",
-    "error_title": "System Exception | GFTB Bridge"
+    "error_title": "System Exception | GFTB Bridge",
+    "admin_operations_title": "Operations Ledger | GFTB Admin",
+    "admin_operations_description": "Full immutable history of all batches managed in this cluster."
   },
   "Menu": {
     "how_it_works": "How it Works",
@@ -386,6 +388,7 @@
   },
   "Admin": {
     "monitoring_title": "Infrastructure Monitor",
+    "monitoring_description": "Real-time health status of GFTB Bridge microservices and cloud infrastructure.",
     "monitoring_subtitle": "Real-time health status of GFTB Bridge microservices.",
     "monitoring_no_data": "Searching for active clusters...",
     "monitoring_updated_at": "Last Sync:",
@@ -408,6 +411,8 @@
     "monitoring_system_logs": "SYSTEM LOGS",
     "monitoring_no_endpoint": "NO ENDPOINT",
     "monitoring_railway_v2": "Railway Global v2",
+    "contracts_title": "Blockchain Contracts",
+    "contracts_description": "Smart contract management and deployment status.",
     "blockchain_title": "Smart Contracts",
     "blockchain_subtitle": "Transparency Ledger & Custodial Wallet Infrastructure",
     "blockchain_protocol_active": "{mode} PROTOCOL ACTIVE",
