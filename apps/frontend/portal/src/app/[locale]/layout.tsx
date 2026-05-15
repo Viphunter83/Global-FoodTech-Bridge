@@ -4,14 +4,21 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { DemoStateProvider } from "@/components/providers/DemoStateProvider";
 import { NextIntlClientProvider } from 'next-intl';
-import { getTranslations, getMessages } from 'next-intl/server';
+import { getTranslations, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import { ClientHydrationLog } from "../../components/ClientHydrationLog";
 import { Header } from "@/components/Header";
 import { AlertSentinel } from "@/components/AlertSentinel";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from 'next';
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+const locales = ['en', 'vi', 'ru'];
+
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({ params }: { params: { locale: string } }) {
+    const { locale } = params;
     const t = await getTranslations({ locale, namespace: 'Metadata' });
 
     return {
@@ -71,6 +78,8 @@ export default async function LocaleLayout({
     children: ReactNode;
     params: { locale: string };
 }) {
+    unstable_setRequestLocale(locale);
+    
     try {
         // Providing all messages to the client
         const messages = await getMessages();

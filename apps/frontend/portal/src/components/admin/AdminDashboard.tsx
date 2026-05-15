@@ -88,12 +88,12 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                     refreshAdminData();
                     return t('demo_violation_notarized', { hash: data.txHash?.slice(0, 10) || 'Confirmed' });
                 },
-                error: (err) => `Error: ${err.message}`
+                error: (err) => t('failed_to_report', { msg: err.message })
             });
 
             await promise;
         } catch (err: any) {
-            toast.error(`Auth Error: ${err.message}`);
+            toast.error(t('auth_error', { msg: err.message }));
         } finally {
             setIsDemoLoading(null);
         }
@@ -115,12 +115,12 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                     refreshAdminData();
                     return t('demo_handover_complete', { hash: data.txHash?.slice(0, 10) || 'Confirmed' });
                 },
-                error: (err) => `Error: ${err.message}`
+                error: (err) => t('failed_to_initiate', { msg: err.message })
             });
 
             await promise;
         } catch (err: any) {
-            toast.error(`Auth Error: ${err.message}`);
+            toast.error(t('auth_error', { msg: err.message }));
         } finally {
             setIsDemoLoading(null);
         }

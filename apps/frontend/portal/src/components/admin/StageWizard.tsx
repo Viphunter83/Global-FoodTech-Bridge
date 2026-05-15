@@ -28,9 +28,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { refreshAdminData } from '@/app/actions';
+import { Link } from '@/navigation';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface StageWizardProps {
     batches: BatchDetails[];
@@ -39,6 +40,7 @@ interface StageWizardProps {
 export function StageWizard({ batches }: StageWizardProps) {
     const router = useRouter();
     const { getToken } = useAuth();
+    const locale = useLocale();
     const tAdmin = useTranslations('Admin');
     const tTracking = useTranslations('Tracking');
     const tAuth = useTranslations('Auth');
@@ -247,12 +249,12 @@ export function StageWizard({ batches }: StageWizardProps) {
                 </p>
                 <div className="pt-4">
                     {selectedBatchId && (
-                        <a href={`/en/batches/${selectedBatchId}`} target="_blank">
+                        <Link href={`/batches/${selectedBatchId}`} target="_blank">
                             <Button variant="outline" className="rounded-full px-8 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5">
                                 <Search className="mr-2" size={14} />
                                 {tAdmin('view_digital_passport')}
                             </Button>
-                        </a>
+                        </Link>
                     )}
                 </div>
             </div>

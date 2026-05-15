@@ -1,11 +1,20 @@
 import { ProtocolManager } from '@/components/admin/ProtocolManager';
 
-export const metadata = {
-    title: 'Compliance Protocols | GFTB Admin',
-    description: 'Manage supply chain templates and compliance requirements.',
-};
+import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
+import { Metadata } from 'next';
 
-export default function ProtocolsPage() {
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const { locale } = params;
+    const t = await getTranslations({ locale, namespace: 'Metadata' });
+    
+    return {
+        title: t('admin_protocols_title'),
+        description: t('admin_protocols_description'),
+    };
+}
+
+export default function ProtocolsPage({ params: { locale } }: { params: { locale: string } }) {
+    unstable_setRequestLocale(locale);
     return (
         <div className="container mx-auto">
             <ProtocolManager />

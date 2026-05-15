@@ -1,12 +1,26 @@
 import { getBlockchainAdminStatus } from '@/lib/api';
 import { BlockchainMonitor } from '@/components/admin/BlockchainMonitor';
+import { Metadata } from 'next';
+import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
 
-export const metadata = {
-    title: 'Smart Contracts | GFTB Admin',
-    description: 'Blockchain ledger and custodial wallet monitoring.',
-};
+interface PageProps {
+    params: {
+        locale: string;
+    };
+}
 
-export default async function BlockchainAdminPage() {
+export async function generateMetadata({ params: { locale } }: PageProps): Promise<Metadata> {
+    const t = await getTranslations({ locale, namespace: 'Admin' });
+    
+    return {
+        title: `${t('contracts_title')} | GFTB Admin`,
+        description: t('contracts_description'),
+    };
+}
+
+export default async function BlockchainAdminPage({ params: { locale } }: PageProps) {
+    unstable_setRequestLocale(locale);
+    
     const status = await getBlockchainAdminStatus();
 
     // Fallback if API fails
@@ -27,3 +41,4 @@ export default async function BlockchainAdminPage() {
         </div>
     );
 }
+

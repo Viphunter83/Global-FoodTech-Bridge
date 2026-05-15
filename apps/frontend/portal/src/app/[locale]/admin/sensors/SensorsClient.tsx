@@ -33,10 +33,10 @@ export function SensorsClient({ initialSensors }: SensorsClientProps) {
             const token = await auth.currentUser?.getIdToken();
             const data = await getDevices(token);
             setSensors(data);
-            toast.success('Sensor registry synchronized');
+            toast.success(t('msg_sync_success'));
         } catch (error) {
             console.error('Refresh error:', error);
-            toast.error('Failed to sync sensor registry');
+            toast.error(t('msg_sync_failed'));
         } finally {
             setIsRefreshing(false);
         }
@@ -78,20 +78,20 @@ export function SensorsClient({ initialSensors }: SensorsClientProps) {
                         className="h-12 rounded-2xl border-primary/10 text-[10px] font-black uppercase tracking-widest"
                     >
                         {isRefreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4 opacity-40 shrink-0" />}
-                        Sync Registry
+                        {t('btn_sync')}
                     </Button>
                     <Button className="h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 text-[10px] font-black uppercase tracking-widest px-6">
                         <Plus className="mr-2 h-4 w-4 shrink-0" />
-                        Register Device
+                        {t('btn_register_device')}
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Network Coverage', value: '98.2%', icon: Radio, trend: '+0.4%' },
-                    { label: 'Active Sessions', value: sensors.filter(s => s.status === 'ACTIVE').length.toString(), icon: Zap, trend: 'Live' },
-                    { label: 'Critical Battery', value: sensors.filter(s => s.battery_level < 20).length.toString(), icon: Battery, trend: 'Warning', color: 'text-destructive' }
+                    { label: t('stat_coverage'), value: '98.2%', icon: Radio, trend: '+0.4%' },
+                    { label: t('stat_active_sessions'), value: sensors.filter(s => s.status === 'ACTIVE').length.toString(), icon: Zap, trend: t('trend_live') },
+                    { label: t('stat_critical_battery'), value: sensors.filter(s => s.battery_level < 20).length.toString(), icon: Battery, trend: t('trend_warning'), color: 'text-destructive' }
                 ].map((stat, i) => (
                     <motion.div 
                         key={i}
@@ -119,7 +119,7 @@ export function SensorsClient({ initialSensors }: SensorsClientProps) {
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="hover:bg-transparent border-slate-100 h-20">
                             <TableHead className="w-[250px] pl-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_sensor_serial')}</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Model</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('table_model')}</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_sensor_status')}</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_sensor_battery')}</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('admin_sensor_assignment')}</TableHead>
@@ -130,7 +130,7 @@ export function SensorsClient({ initialSensors }: SensorsClientProps) {
                         {sensors.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-40 text-center text-muted-foreground font-black uppercase tracking-widest text-[10px]">
-                                    No sensors found in registry
+                                    {t('no_sensors')}
                                 </TableCell>
                             </TableRow>
                         ) : sensors.map((sensor) => (

@@ -1,6 +1,7 @@
 import { getBatchDetails, getBlockchainStatus } from '@/lib/api';
 import { ScanClient } from './ScanClient';
 import { Metadata } from 'next';
+import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
 
 interface PageProps {
     params: {
@@ -9,18 +10,22 @@ interface PageProps {
     };
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const batch = await getBatchDetails(params.id);
-    if (!batch) return { title: 'Batch Not Found | GFTB' };
+export async function generateMetadata({ params: { locale, id } }: PageProps): Promise<Metadata> {
+    const t = await getTranslations({ locale, namespace: 'Verify' });
+    const batch = await getBatchDetails(id);
+    
+    if (!batch) return { title: t('notFound') };
     
     return {
-        title: `Verify Batch ${params.id.substring(0, 8)} | GFTB`,
-        description: `Verify and track the logistics state for batch #${params.id}.`,
+        title: `${t('scanTitle')} ${id.substring(0, 8)} | GFTB`,
+        description: t('scanDescription', { id }),
     };
 }
 
-export default async function ScanPage({ params }: PageProps) {
-    const batchId = params.id;
+export default async function ScanPage({ params: { locale, id } }: PageProps) {
+    unstable_setRequestLocale(locale);
+    
+    const batchId = id;
 
     // Fetch initial data on the server
     const [batchData, bcStatus] = await Promise.all([
@@ -45,3 +50,4 @@ export default async function ScanPage({ params }: PageProps) {
         />
     );
 }
+

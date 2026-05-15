@@ -1,17 +1,30 @@
-
 import { fetchInfrastructureStatus } from '@/lib/railway';
 import { InfrastructureStatus } from '@/components/admin/InfrastructureStatus';
 import { revalidatePath } from 'next/cache';
+import { Metadata } from 'next';
+import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
 
-export const metadata = {
-    title: 'Monitoring | GFTB Admin',
-    description: 'Infrastructure status and service health.',
-};
+interface PageProps {
+    params: {
+        locale: string;
+    };
+}
 
-export default async function MonitoringPage() {
+export async function generateMetadata({ params: { locale } }: PageProps): Promise<Metadata> {
+    const t = await getTranslations({ locale, namespace: 'Admin' });
+    
+    return {
+        title: `${t('monitoring_title')} | GFTB Admin`,
+        description: t('monitoring_description'),
+    };
+}
+
+export default async function MonitoringPage({ params: { locale } }: PageProps) {
+    unstable_setRequestLocale(locale);
+
     const refreshData = async () => {
         'use server';
-        revalidatePath('/admin/monitoring');
+        revalidatePath(`/${locale}/admin/monitoring`);
     };
 
     try {
@@ -29,7 +42,7 @@ export default async function MonitoringPage() {
         );
     } catch (error) {
         console.error('[GFTB-SSR] CRITICAL ERROR in MonitoringPage:', error);
-        // Throw a more descriptive error that might be caught by an error boundary
         throw new Error(`Failed to render monitoring page: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
+

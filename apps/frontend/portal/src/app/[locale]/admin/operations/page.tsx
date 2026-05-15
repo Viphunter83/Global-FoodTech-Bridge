@@ -5,12 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Package, Globe, ArrowLeft, Plus, Search, Filter } from 'lucide-react';
 import { Link } from '@/navigation';
 
-export const metadata = {
-    title: 'Global Operations | GFTB Admin',
-    description: 'Full ledger of global supply chain operations.',
-};
+import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
+import { Metadata } from 'next';
 
-export default async function AdminOperationsPage() {
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+    const { locale } = params;
+    const t = await getTranslations({ locale, namespace: 'Metadata' });
+    
+    return {
+        title: t('admin_operations_title'),
+        description: t('admin_operations_description'),
+    };
+}
+
+export default async function AdminOperationsPage({ params: { locale } }: { params: { locale: string } }) {
+    unstable_setRequestLocale(locale);
+    const t = await getTranslations('Admin');
     const batches = await getAdminBatches();
 
     return (
@@ -24,20 +34,20 @@ export default async function AdminOperationsPage() {
                                 <ArrowLeft size={20} />
                             </Button>
                         </Link>
-                        <h1 className="text-4xl font-serif font-black italic tracking-tighter text-foreground uppercase">
-                            Global Ledger
-                        </h1>
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 italic">
-                        Full spectrum operational visibility
-                    </p>
+                    <h1 className="text-4xl font-serif font-black italic tracking-tighter text-foreground uppercase">
+                        {t('ledger_title')}
+                    </h1>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 italic">
+                    {t('ledger_subtitle')}
+                </p>
                 </div>
                 
                 <div className="flex items-center gap-4">
                     <Link href="/batches/new">
                         <Button className="h-14 px-8 bg-slate-900 text-white hover:bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all">
                             <Plus className="w-4 h-4 mr-3" />
-                            Initialize New Batch
+                            {t('initialize_batch')}
                         </Button>
                     </Link>
                 </div>
@@ -55,7 +65,7 @@ export default async function AdminOperationsPage() {
                 </div>
                 <Button variant="outline" className="h-14 px-6 rounded-2xl border-primary/5 glass text-[10px] font-black uppercase tracking-widest">
                     <Filter className="mr-3" size={16} />
-                    Advanced Filters
+                    {t('advanced_filters')}
                 </Button>
             </div>
 
@@ -79,7 +89,7 @@ export default async function AdminOperationsPage() {
                                     <tr>
                                         <td colSpan={6} className="px-8 py-20 text-center">
                                             <Package className="w-12 h-12 text-primary/10 mx-auto mb-4" />
-                                            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/30">No operational data found</p>
+                                            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/30">{t('no_operational_data')}</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -116,7 +126,7 @@ export default async function AdminOperationsPage() {
                                             <td className="px-8 py-6 text-right">
                                                 <Link href={`/batches/${batch.id}`}>
                                                     <Button variant="ghost" size="sm" className="rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
-                                                        Details
+                                                        {t('btn_details')}
                                                     </Button>
                                                 </Link>
                                             </td>

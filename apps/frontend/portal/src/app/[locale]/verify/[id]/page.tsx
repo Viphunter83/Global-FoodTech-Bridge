@@ -6,6 +6,7 @@ import {
 } from '@/lib/api';
 import { VerifyClient } from './VerifyClient';
 import { Metadata } from 'next';
+import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
 
 interface PageProps {
     params: {
@@ -14,24 +15,32 @@ interface PageProps {
     };
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const batch = await getBatchDetails(params.id);
-    if (!batch) return { title: 'Product Not Found | GFTB Verify' };
+export async function generateMetadata({ params: { locale, id } }: PageProps): Promise<Metadata> {
+    const t = await getTranslations({ locale, namespace: 'Verify' });
+    const batch = await getBatchDetails(id);
     
-    const productLabel = batch.product_type?.replace(/_/g, ' ') || 'Food Product';
+    if (!batch) return { title: t('notFound') };
+    
+    const productLabel = batch.product_type?.replace(/_/g, ' ') || t('defaultProduct');
+    
     return {
-        title: `${productLabel} Verified | GFTB Trust Passport`,
-        description: `Verify the authenticity and cold chain integrity of ${productLabel} from ${batch.origin_country}. Blockchain-secured provenance.`,
+        title: `${productLabel} ${t('verified')} | GFTB Trust Passport`,
+        description: t('verifyDescription', { 
+            product: productLabel, 
+            country: batch.origin_country 
+        }),
         openGraph: {
-            title: `${productLabel} - Blockchain Verified`,
-            description: `Official digital passport for batch #${params.id.substring(0, 8)}.`,
-            images: [`/api/og/verify/${params.id}`], // Assuming an OG image generator exists or will be added
+            title: `${productLabel} - ${t('blockchainVerified')}`,
+            description: t('ogDescription', { id: id.substring(0, 8) }),
+            images: [`/api/og/verify/${id}`],
         }
     };
 }
 
-export default async function VerifyPage({ params }: PageProps) {
-    const batchId = params.id;
+export default async function VerifyPage({ params: { locale, id } }: PageProps) {
+    unstable_setRequestLocale(locale);
+    
+    const batchId = id;
 
     // Fetch all initial data on the server
     const [batchData, bcStatus, telemData, historyData] = await Promise.all([
@@ -42,7 +51,6 @@ export default async function VerifyPage({ params }: PageProps) {
     ]);
 
     if (!batchData || !bcStatus) {
-        // This will be caught by the client or shown as unverified
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">Verification Error</h1>
@@ -61,3 +69,4 @@ export default async function VerifyPage({ params }: PageProps) {
         />
     );
 }
+

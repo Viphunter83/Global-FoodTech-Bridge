@@ -6,7 +6,7 @@ import {
     BarChart3, Cpu, ScanLine, Factory, Truck, Fingerprint, 
     Database, Warehouse, FileCheck, Store, ClipboardCheck 
 } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
 import { ProcessStep } from '@/components/marketing/ProcessStep';
 import { TrustBadge } from '@/components/marketing/TrustBadge';
 import { 
@@ -25,7 +25,8 @@ import { Metadata } from 'next';
  * Metadata for the homepage.
  */
 export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
-    const t = await getTranslations({ locale: params.locale, namespace: 'Metadata' });
+    const { locale } = params;
+    const t = await getTranslations({ locale, namespace: 'Metadata' });
     
     return {
         title: t('home_title'),
@@ -52,7 +53,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
  * Interactive parts (search, animations) are Client Islands imported 
  * from HomeClient.tsx.
  */
-export default async function Home() {
+export default async function Home({ params: { locale } }: { params: { locale: string } }) {
+    unstable_setRequestLocale(locale);
     const t = await getTranslations();
 
     return (
