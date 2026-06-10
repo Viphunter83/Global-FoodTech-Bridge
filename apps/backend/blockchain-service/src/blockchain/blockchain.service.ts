@@ -68,13 +68,14 @@ export class BlockchainService implements OnModuleInit {
         });
     }
 
-    onModuleInit() {
+    async onModuleInit() {
         const rpcUrl = this.configService.get<string>('RPC_URL');
         const privateKey = this.configService.get<string>('PRIVATE_KEY'); // Should be Manufacturer
         const logisticsKey = this.configService.get<string>('LOGISTICS_KEY');
         const retailerKey = this.configService.get<string>('RETAILER_KEY');
         const contractAddress = this.configService.get<string>('CONTRACT_ADDRESS');
         const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
+        const useX402 = this.configService.get<string>('USE_X402') === 'true';
 
         this.redis = new Redis(redisUrl);
 
@@ -85,7 +86,54 @@ export class BlockchainService implements OnModuleInit {
         }
 
         try {
-            this.provider = new ethers.JsonRpcProvider(rpcUrl);
+            if (useX402) {
+                this.logger.log('Initializing blockchain connection with QuickNode x402...');
+                const { createQuicknodeX402Client } = await import('@quicknode/x402');
+                
+                const paymentNetwork = rpcUrl.includes('amoy') ? 'eip155:80002' : 'eip155:137';
+                const targetNetworkName = rpcUrl.includes('amoy') ? 'polygon-amoy' : 'polygon-mainnet';
+                const targetUrl = `https://x402.quicknode.com/${targetNetworkName}`;
+                
+                this.logger.log(`x402 Client setup: paying on ${paymentNetwork}, querying target: ${targetUrl}`);
+                
+                const formattedKey = (privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`) as `0x${string}`;
+                
+                const x402Client = await createQuicknodeX402Client({
+                    baseUrl: 'https://x402.quicknode.com',
+                    network: paymentNetwork,
+                    evmPrivateKey: formattedKey,
+                    preAuth: true,
+                });
+                
+                const fetchReq = new ethers.FetchRequest(targetUrl);
+                fetchReq.getUrlFunc = async (req: ethers.FetchRequest, signal?: any) => {
+                    const bodyStr = req.body ? ethers.toUtf8String(req.body) : undefined;
+                    const res = await x402Client.fetch(req.url, {
+                        method: req.method,
+                        headers: req.headers,
+                        body: bodyStr,
+                    });
+                    
+                    const headers: Record<string, string> = {};
+                    res.headers.forEach((value, key) => {
+                        headers[key] = value;
+                    });
+                    
+                    const bodyText = await res.text();
+                    const bodyBytes = ethers.toUtf8Bytes(bodyText);
+                    
+                    return {
+                        statusCode: res.status,
+                        statusMessage: res.statusText,
+                        headers,
+                        body: bodyBytes
+                    };
+                };
+                
+                this.provider = new ethers.JsonRpcProvider(fetchReq);
+            } else {
+                this.provider = new ethers.JsonRpcProvider(rpcUrl);
+            }
 
             // Initialize All Custodial Wallets
             this.manufacturerWallet = new ethers.Wallet(privateKey, this.provider);
@@ -95,7 +143,7 @@ export class BlockchainService implements OnModuleInit {
             // Default contract connected to Manufacturer (Admin)
             this.contract = new ethers.Contract(contractAddress, REGISTRY_ABI, this.manufacturerWallet);
 
-            this.logger.log(`Blockchain Service Initialized on ${rpcUrl.includes('amoy') ? 'Polygon Amoy' : 'Polygon Mainnet'}`);
+            this.logger.log(`Blockchain Service Initialized on ${useX402 ? 'QuickNode x402' : (rpcUrl.includes('amoy') ? 'Polygon Amoy' : 'Polygon Mainnet')}`);
             this.logger.log(`- Manufacturer: ${this.manufacturerWallet.address}`);
             this.logger.log(`- Logistics: ${this.logisticsWallet.address}`);
             this.logger.log(`- Retailer: ${this.retailerWallet.address}`);
@@ -373,9 +421,12 @@ export class BlockchainService implements OnModuleInit {
         try {
             const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
             const latestBlock = await this.provider.getBlockNumber();
-            const fromBlock = Math.max(latestBlock - 9999, 85000000); // Don't go before contract deployment (approx 85M)
+            
+            // If x402 is enabled, we can query from contract deployment block without the 10k public RPC range limit
+            const useX402 = this.configService.get<string>('USE_X402') === 'true';
+            const fromBlock = useX402 ? 85000000 : Math.max(latestBlock - 9999, 85000000);
 
-            // Query events within the allowed 10k range
+            // Query events within the allowed range
             const [created, transfers, completed, violations] = await Promise.all([
                 this.contract.queryFilter(this.contract.filters.BatchCreated(tokenId), fromBlock, 'latest'),
                 this.contract.queryFilter(this.contract.filters.TransferInitiated(tokenId), fromBlock, 'latest'),
