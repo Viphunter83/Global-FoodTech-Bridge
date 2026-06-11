@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { BlockchainService } from './blockchain/blockchain.service';
 import { FirebaseAuthGuard } from './auth/firebase-auth.guard';
 import { RolesGuard, Roles } from './auth/roles.guard';
@@ -13,9 +13,17 @@ export class AppController {
     @UseGuards(FirebaseAuthGuard, RolesGuard)
     @Roles('MANUFACTURER', 'ADMIN')
     async notarize(@Body() body: { batchId: string; dataHash: string }) {
-        // 'dataHash' is now treated as 'tokenURI' for NFT metadata
-        const txHash = await this.blockchainService.createBatch(body.batchId, body.dataHash);
-        return { status: 'success', txHash };
+        try {
+            // 'dataHash' is now treated as 'tokenURI' for NFT metadata
+            const txHash = await this.blockchainService.createBatch(body.batchId, body.dataHash);
+            return { status: 'success', txHash };
+        } catch (error) {
+            throw new HttpException({
+                status: 'error',
+                message: error.message,
+                details: error.stack
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Get('status/:batchId')
@@ -32,7 +40,14 @@ export class AppController {
     @UseGuards(FirebaseAuthGuard, RolesGuard)
     @Roles('RETAILER', 'LOGISTICS', 'ADMIN')
     async reportViolation(@Body() body: { batchId: string; details: string }) {
-        return this.blockchainService.reportViolationAsync(body.batchId, body.details);
+        try {
+            return await this.blockchainService.reportViolationAsync(body.batchId, body.details);
+        } catch (error) {
+            throw new HttpException({
+                status: 'error',
+                message: error.message,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Post('transfer/initiate')
@@ -40,18 +55,32 @@ export class AppController {
     @Roles('MANUFACTURER', 'LOGISTICS', 'ADMIN')
     async initiateTransfer(@Body() body: { batchId: string; toAddress: string }) {
         if (!body.toAddress || !body.toAddress.startsWith('0x')) {
-            throw new Error('Valid toAddress (0x...) is required for transfer initiation');
+            throw new HttpException('Valid toAddress (0x...) is required for transfer initiation', HttpStatus.BAD_REQUEST);
         }
-        const txHash = await this.blockchainService.initiateTransfer(body.batchId, body.toAddress);
-        return { status: 'success', txHash };
+        try {
+            const txHash = await this.blockchainService.initiateTransfer(body.batchId, body.toAddress);
+            return { status: 'success', txHash };
+        } catch (error) {
+            throw new HttpException({
+                status: 'error',
+                message: error.message,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Post('transfer/accept')
     @UseGuards(FirebaseAuthGuard, RolesGuard)
     @Roles('LOGISTICS', 'RETAILER', 'ADMIN')
     async acceptTransfer(@Body() body: { batchId: string }) {
-        const txHash = await this.blockchainService.acceptTransfer(body.batchId);
-        return { status: 'success', txHash };
+        try {
+            const txHash = await this.blockchainService.acceptTransfer(body.batchId);
+            return { status: 'success', txHash };
+        } catch (error) {
+            throw new HttpException({
+                status: 'error',
+                message: error.message,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Get('admin/status')

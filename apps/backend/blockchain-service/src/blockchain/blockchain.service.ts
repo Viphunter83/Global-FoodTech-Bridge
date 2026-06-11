@@ -550,10 +550,20 @@ export class BlockchainService implements OnModuleInit {
             };
         }
 
+        const getBalSafe = async (address: string) => {
+            try {
+                const bal = await this.provider.getBalance(address);
+                return `${ethers.formatEther(bal)} MATIC`;
+            } catch (err) {
+                this.logger.error(`Failed to get balance for ${address}: ${err.message}`);
+                return "Error fetching";
+            }
+        };
+
         const [mBal, lBal, rBal] = await Promise.all([
-            this.provider.getBalance(this.manufacturerWallet.address),
-            this.provider.getBalance(this.logisticsWallet.address),
-            this.provider.getBalance(this.retailerWallet.address)
+            getBalSafe(this.manufacturerWallet.address),
+            getBalSafe(this.logisticsWallet.address),
+            getBalSafe(this.retailerWallet.address)
         ]);
 
         return {
@@ -561,9 +571,9 @@ export class BlockchainService implements OnModuleInit {
             network: (await this.provider.getNetwork()).name,
             contract: await this.contract.getAddress(),
             wallets: [
-                { name: 'Manufacturer (Admin)', address: this.manufacturerWallet.address, balance: `${ethers.formatEther(mBal)} MATIC` },
-                { name: 'Logistics Partner', address: this.logisticsWallet.address, balance: `${ethers.formatEther(lBal)} MATIC` },
-                { name: 'Retailer Partner', address: this.retailerWallet.address, balance: `${ethers.formatEther(rBal)} MATIC` }
+                { name: 'Manufacturer (Admin)', address: this.manufacturerWallet.address, balance: mBal },
+                { name: 'Logistics Partner', address: this.logisticsWallet.address, balance: lBal },
+                { name: 'Retailer Partner', address: this.retailerWallet.address, balance: rBal }
             ]
         };
     }
