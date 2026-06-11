@@ -103,7 +103,7 @@ async function runE2ETest() {
 
         // --- 4. SIMULATE HANDOVER TO LOGISTICS ---
         console.log("\n🚛 Step 4: Simulating Handover to Logistics...");
-        const transferRes = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/advance`, {
+        const transferRes = await fetch(`${BLOCKCHAIN_URL}/blockchain/demo/advance`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
