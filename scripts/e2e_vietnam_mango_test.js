@@ -130,6 +130,26 @@ async function runE2ETest() {
         assert.strictEqual(statusLogisticsData.ownerRole, 'LOGISTICS', "Blockchain owner role must now be LOGISTICS");
         console.log(`   -> Confirmed blockchain owner role is LOGISTICS`);
 
+        // --- 4.1. ACTIVATE SENSOR IN PASSPORT SERVICE ---
+        console.log("\n📡 Step 4.1: Associating IoT Sensor and Activating Tracking in Passport Service...");
+        const sensorRes = await fetch(`${PASSPORT_URL}/batches/${batchId}/sensor`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY,
+                'X-Verified-Role': 'ADMIN'
+            },
+            body: JSON.stringify({
+                sensor_ids: ["TIVE-EXP-USA-99"],
+                start_tracking: true
+            })
+        });
+
+        if (!sensorRes.ok) {
+            throw new Error(`Failed to activate sensor tracking: ${sensorRes.status} ${await sensorRes.text()}`);
+        }
+        console.log("✅ Step 4.1 Success! IoT sensor activated.");
+
         // --- 5. INGEST OPTIMAL TELEMETRY ---
         console.log("\n🌡️ Step 5: Sending Optimal Temperature Telemetry (4.5°C)...");
         const normalTemps = [4.4, 4.5, 4.6];
