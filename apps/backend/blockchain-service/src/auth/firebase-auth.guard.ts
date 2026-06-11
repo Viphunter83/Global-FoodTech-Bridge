@@ -7,6 +7,20 @@ export class FirebaseAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const apiKey = request.headers['x-api-key'];
+    const secretKey = process.env.INTERNAL_API_KEY;
+
+    // Bypass for internal services & tests using the master API key
+    if (apiKey && secretKey && apiKey === secretKey) {
+      request['user'] = {
+        uid: 'system-admin',
+        email: 'system@gftb.local',
+        role: 'ADMIN',
+      };
+      request.headers['x-verified-role'] = 'ADMIN';
+      return true;
+    }
+
     const authHeader = request.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
