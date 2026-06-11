@@ -85,7 +85,15 @@ export class AppController {
 
     @Get('admin/status')
     async getAdminStatus() {
-        return this.blockchainService.getAdminStatus();
+        try {
+            return await this.blockchainService.getAdminStatus();
+        } catch (error) {
+            throw new HttpException({
+                status: 'error',
+                message: error.message,
+                stack: error.stack
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Post('demo/advance')
