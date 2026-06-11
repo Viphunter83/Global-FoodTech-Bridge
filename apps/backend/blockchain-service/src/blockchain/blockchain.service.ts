@@ -69,7 +69,11 @@ export class BlockchainService implements OnModuleInit {
     }
 
     async onModuleInit() {
-        const rpcUrl = this.configService.get<string>('RPC_URL');
+        let rpcUrl = this.configService.get<string>('RPC_URL');
+        // Fallback to stable and fast DRPC endpoint if default public RPC is configured
+        if (!rpcUrl || rpcUrl === 'https://rpc-amoy.polygon.technology') {
+            rpcUrl = 'https://lb.drpc.live/polygon-amoy/AlVK5_YuREjmtO6UkBFatFYqocHRRYgR8Z3JtiKh6MJI';
+        }
         const privateKey = this.configService.get<string>('PRIVATE_KEY'); // Should be Manufacturer
         const logisticsKey = this.configService.get<string>('LOGISTICS_KEY');
         const retailerKey = this.configService.get<string>('RETAILER_KEY');
