@@ -29,6 +29,17 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized: Session required for administrative access' }, { status: 401 });
         }
 
+        const batchMatch = targetPath.match(/^\/batches\/([0-9a-fA-F-]{36})$/);
+        if (batchMatch) {
+            const batchId = batchMatch[1];
+            console.log(`[GFTB-PROXY] Decorating batch details with history for ID: ${batchId}`);
+            const { getBatchDetails } = await import('@/lib/api');
+            const decoratedBatch = await getBatchDetails(batchId, userToken);
+            if (decoratedBatch) {
+                return NextResponse.json(decoratedBatch);
+            }
+        }
+
         // Standardize URL to include /api/v1 if not present
         let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
         if (!baseUrl.endsWith('/api/v1')) {

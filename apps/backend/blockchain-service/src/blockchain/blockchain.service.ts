@@ -440,7 +440,17 @@ export class BlockchainService implements OnModuleInit {
             
             // If x402 is enabled, we can query from contract deployment block without the 10k public RPC range limit
             const useX402 = this.configService.get<string>('USE_X402') === 'true';
-            const fromBlock = useX402 ? 85000000 : Math.max(latestBlock - 9999, 85000000);
+            
+            // Dynamic deployment block detection
+            const rpcUrl = this.configService.get<string>('RPC_URL') || '';
+            const isAmoy = rpcUrl.toLowerCase().includes('amoy') || 
+                           (this.provider && (await this.provider.getNetwork()).chainId === 80002n);
+            const deployBlock = isAmoy ? 35000000 : 85000000;
+            
+            let fromBlock = useX402 ? deployBlock : Math.max(latestBlock - 9999, deployBlock);
+            if (fromBlock > latestBlock) {
+                fromBlock = Math.max(latestBlock - 9999, 0);
+            }
 
             // Query events within the allowed range
             const [created, transfers, completed, violations] = await Promise.all([
