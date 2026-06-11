@@ -45,7 +45,13 @@ export async function GET(request: NextRequest) {
         }
 
         const response = await fetch(finalUrl, { headers });
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data: any;
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() };
+        }
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error('Blockchain Proxy Error:', error);
@@ -107,7 +113,13 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
             body: arrayBuffer,
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data: any;
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() };
+        }
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
         console.error('Blockchain Proxy POST Error:', error);

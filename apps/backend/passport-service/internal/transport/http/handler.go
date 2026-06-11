@@ -203,7 +203,8 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// SECURITY: Ensure user belongs to the company that owns the batch, or is an ADMIN
-	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+	// If role is empty (guest/public request), we allow reading the batch details.
+	if role != "" && role != "ADMIN" && batch.ManufacturerID.String() != companyID {
 		log.Printf("[AUTH] Denied access to batch %s for company %s (user company: %s, role: %s)", id, batch.ManufacturerID, companyID, role)
 		http.Error(w, "Forbidden: You do not have access to this batch", http.StatusForbidden)
 		return

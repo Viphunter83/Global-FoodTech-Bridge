@@ -49,7 +49,13 @@ export async function GET(request: NextRequest) {
 
         const response = await fetch(finalUrl, { headers });
 
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data: any;
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() };
+        }
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error('Passport Proxy Error:', error);
@@ -109,7 +115,13 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
             duplex: 'half',
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data: any;
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() };
+        }
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error(`Passport Proxy ${method} Error:`, error);
