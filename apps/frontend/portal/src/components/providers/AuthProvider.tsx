@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { setSessionCookie, removeSessionCookie } from '@/lib/cookies';
+import { removeSessionCookie } from '@/lib/cookies';
 
 export type UserRole = 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER' | 'ADMIN' | 'PENDING';
 

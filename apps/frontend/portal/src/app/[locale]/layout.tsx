@@ -11,7 +11,7 @@ import { AlertSentinel } from "@/components/AlertSentinel";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from 'next';
 
-const locales = ['en', 'vi', 'ru'];
+const locales = ['en', 'vi', 'ru', 'ar'];
 
 export function generateStaticParams() {
     return locales.map((locale) => ({ locale }));

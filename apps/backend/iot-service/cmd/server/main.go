@@ -161,15 +161,9 @@ func runMigrations(dbURL string) error {
 			return nil
 		}
 		
-		// Auto-healing for dirty migrations
+		// Handle dirty migrations warning
 		if strings.Contains(err.Error(), "Dirty database") {
-			log.Printf("Detected dirty database state: %v. Attempting to force-fix to last stable version...", err)
-			// Force to the version before the failing one
-			if forceErr := m.Force(20260421042018); forceErr != nil {
-				return fmt.Errorf("could not force version after dirty state: %w", forceErr)
-			}
-			log.Println("Force-fix successful. Re-attempting migration...")
-			return m.Up()
+			log.Printf("CRITICAL: Database migrations are in a dirty state. Manual intervention required (use migrate force). Error: %v", err)
 		}
 		
 		return fmt.Errorf("could not apply migrations: %w", err)

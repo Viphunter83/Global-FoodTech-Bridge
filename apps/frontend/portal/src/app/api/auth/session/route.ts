@@ -30,13 +30,14 @@ export async function POST(request: NextRequest) {
                 const newRole = userData?.role || role;
                 const newCompanyId = userData?.companyId || decodedToken.company_id || '';
                 
-                if (newRole !== decodedToken.role || newCompanyId !== decodedToken.company_id) {
+                if (newRole !== decodedToken.role || newCompanyId !== decodedToken.company_id || !decodedToken.companyId) {
                     await adminAuth.setCustomUserClaims(uid, { 
                         role: newRole, 
-                        company_id: newCompanyId 
+                        company_id: newCompanyId,
+                        companyId: newCompanyId 
                     });
                     role = newRole;
-                    console.log(`[AUTH_SESSION_API] Successfully synced claims {role: '${newRole}', company_id: '${newCompanyId}'} for ${uid}`);
+                    console.log(`[AUTH_SESSION_API] Successfully synced claims {role: '${newRole}', company_id/companyId: '${newCompanyId}'} for ${uid}`);
                 }
             }
         }
