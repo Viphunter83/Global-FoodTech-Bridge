@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Passport service URL is not configured' }, { status: 500 });
     }
 
+    let finalUrl = '';
     try {
         const apiKey = process.env.INTERNAL_API_KEY;
         const isAdminPath = targetPath.startsWith('/admin/');
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
             baseUrl = `${baseUrl}/api/v1`;
         }
         
-        const finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
+        finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
         console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
 
         const headers: Record<string, string> = {
@@ -120,9 +121,9 @@ async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', us
             duplex: 'half',
         });
 
-        const contentType = response.headers.get('content-type') || '';
+        const resContentType = response.headers.get('content-type') || '';
         let data: any;
-        if (contentType.includes('application/json')) {
+        if (resContentType.includes('application/json')) {
             data = await response.json();
         } else {
             data = { message: await response.text() };

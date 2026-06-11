@@ -113,9 +113,9 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
             body: arrayBuffer,
         });
 
-        const contentType = response.headers.get('content-type') || '';
+        const resContentType = response.headers.get('content-type') || '';
         let data: any;
-        if (contentType.includes('application/json')) {
+        if (resContentType.includes('application/json')) {
             data = await response.json();
         } else {
             data = { message: await response.text() };
