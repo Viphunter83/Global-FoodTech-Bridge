@@ -84,9 +84,14 @@ export class BlockchainService implements OnModuleInit {
         const logisticsKey = this.configService.get<string>('LOGISTICS_KEY');
         const retailerKey = this.configService.get<string>('RETAILER_KEY');
         const contractAddress = this.configService.get<string>('CONTRACT_ADDRESS');
-        const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
-        const useX402 = this.configService.get<string>('USE_X402') === 'true';
+        let useX402 = this.configService.get<string>('USE_X402') === 'true';
 
+        // If we use DRPC, we must bypass QuickNode x402 proxy wrapper
+        if (rpcUrl && rpcUrl.includes('drpc.live')) {
+            useX402 = false;
+        }
+
+        const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
         this.redis = new Redis(redisUrl);
 
         if (!rpcUrl || !privateKey || !contractAddress) {
