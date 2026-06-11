@@ -76,6 +76,7 @@ export class BlockchainService implements OnModuleInit {
             normalized.includes('polygon.technology') || 
             normalized.includes('ankr.com') || 
             normalized.includes('infura.io') ||
+            normalized.includes('quiknode.pro') ||
             normalized.includes('alchemy.com') && !normalized.includes('drpc.live')
         ) {
             rpcUrl = 'https://lb.drpc.live/polygon-amoy/AlVK5_YuREjmtO6UkBFatFYqocHRRYgR8Z3JtiKh6MJI';
