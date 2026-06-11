@@ -70,8 +70,14 @@ export class BlockchainService implements OnModuleInit {
 
     async onModuleInit() {
         let rpcUrl = this.configService.get<string>('RPC_URL');
+        const normalized = rpcUrl ? rpcUrl.trim().replace(/\/$/, '') : '';
         // Fallback to stable and fast DRPC endpoint if default public RPC is configured
-        if (!rpcUrl || rpcUrl === 'https://rpc-amoy.polygon.technology') {
+        if (!normalized || 
+            normalized.includes('polygon.technology') || 
+            normalized.includes('ankr.com') || 
+            normalized.includes('infura.io') ||
+            normalized.includes('alchemy.com') && !normalized.includes('drpc.live')
+        ) {
             rpcUrl = 'https://lb.drpc.live/polygon-amoy/AlVK5_YuREjmtO6UkBFatFYqocHRRYgR8Z3JtiKh6MJI';
         }
         const privateKey = this.configService.get<string>('PRIVATE_KEY'); // Should be Manufacturer
@@ -566,9 +572,17 @@ export class BlockchainService implements OnModuleInit {
             getBalSafe(this.retailerWallet.address)
         ]);
 
+        let networkName = 'Unknown Network';
+        try {
+            const net = await this.provider.getNetwork();
+            networkName = net.name;
+        } catch (err) {
+            this.logger.error(`Failed to get network: ${err.message}`);
+        }
+
         return {
             mode: 'LIVE',
-            network: (await this.provider.getNetwork()).name,
+            network: networkName,
             contract: await this.contract.getAddress(),
             wallets: [
                 { name: 'Manufacturer (Admin)', address: this.manufacturerWallet.address, balance: mBal },
