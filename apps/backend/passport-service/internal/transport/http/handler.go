@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -151,7 +152,9 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 			
 			if role == "" {
 				log.Printf("[ROLE] Access denied to %s %s: No verified role found in token", r.Method, r.URL.Path)
-				http.Error(w, "Forbidden: Role header required", http.StatusForbidden)
+				msg := fmt.Sprintf("Forbidden: Role header required. Debug: X-Verified-Role=%s, x-api-key-len=%d", 
+					r.Header.Get("X-Verified-Role"), len(r.Header.Get("x-api-key")))
+				http.Error(w, msg, http.StatusForbidden)
 				return
 			}
 			
