@@ -218,7 +218,11 @@ async function runE2ETest() {
 
         // --- 7. VERIFY COMPREHENSIVE PUBLIC SCAN DATA ---
         console.log("\n🛒 Step 7: Simulating Public Consumer QR Scan & Verification...");
-        const scanRes = await fetch(`${PASSPORT_URL}/batches/${batchId}`);
+        const scanRes = await fetch(`${PASSPORT_URL}/batches/${batchId}`, {
+            headers: {
+                'x-api-key': API_KEY
+            }
+        });
         if (!scanRes.ok) {
             throw new Error(`Failed to fetch scan passport: ${scanRes.status}`);
         }
