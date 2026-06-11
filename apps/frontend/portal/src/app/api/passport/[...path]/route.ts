@@ -57,9 +57,14 @@ export async function GET(request: NextRequest) {
             data = { message: await response.text() };
         }
         return NextResponse.json(data, { status: response.status });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Passport Proxy Error:', error);
-        return NextResponse.json({ error: 'Failed to connect to passport service' }, { status: 502 });
+        return NextResponse.json({ 
+            error: 'Failed to connect to passport service', 
+            message: error.message,
+            stack: error.stack,
+            debugUrl: finalUrl
+        }, { status: 502 });
     }
 }
 
