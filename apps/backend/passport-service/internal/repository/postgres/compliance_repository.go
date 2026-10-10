@@ -18,7 +18,8 @@ func NewComplianceRepository(db *pgxpool.Pool) *ComplianceRepository {
 
 func (r *ComplianceRepository) GetRules(ctx context.Context, countryCode string, productType string) ([]domain.ComplianceRule, error) {
 	query := `
-		SELECT id, country_code, product_type, requirement_name, requirement_type, min_value, max_value, is_mandatory, description, created_at
+		SELECT id, country_code, product_type, requirement_name, requirement_type, min_value, max_value,
+		       COALESCE(is_mandatory, false), COALESCE(description, ''), created_at
 		FROM compliance_rules
 		WHERE (country_code = $1 OR country_code = 'ALL')
 		AND (product_type IS NULL OR product_type = $2)
@@ -40,6 +41,9 @@ func (r *ComplianceRepository) GetRules(ctx context.Context, countryCode string,
 			return nil, fmt.Errorf("failed to scan compliance rule: %w", err)
 		}
 		rules = append(rules, rule)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read compliance rules: %w", err)
 	}
 	return rules, nil
 }
