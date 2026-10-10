@@ -444,7 +444,7 @@ export class BlockchainService implements OnModuleInit {
             // Dynamic deployment block detection
             const rpcUrl = this.configService.get<string>('RPC_URL') || '';
             const isAmoy = rpcUrl.toLowerCase().includes('amoy') || 
-                           (this.provider && (await this.provider.getNetwork()).chainId === 80002n);
+                           (this.provider && (await this.provider.getNetwork()).chainId === BigInt(80002));
             const deployBlock = isAmoy ? 35000000 : 85000000;
             
             let fromBlock = useX402 ? deployBlock : Math.max(latestBlock - 9999, deployBlock);
