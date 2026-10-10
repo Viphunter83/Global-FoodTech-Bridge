@@ -50,8 +50,13 @@ export function TemperatureChart({
         return <div className="h-80 w-full bg-primary/5 animate-pulse rounded-[2rem]" />;
     }
 
+    // Include the readings themselves so out-of-range points are not clipped
+    const temps = data.map((d) => d.temperature_celsius).filter((v) => Number.isFinite(v));
     const padding = Math.abs(maxLimit - minLimit) * 0.5 || 5;
-    const tempDomain = [minLimit - padding, maxLimit + padding];
+    const tempDomain = [
+        Math.min(minLimit - padding, ...temps.map((v) => v - 1)),
+        Math.max(maxLimit + padding, ...temps.map((v) => v + 1)),
+    ];
 
     return (
         <div className="space-y-6">

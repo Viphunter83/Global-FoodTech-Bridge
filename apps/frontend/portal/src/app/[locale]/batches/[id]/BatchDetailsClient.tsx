@@ -398,7 +398,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                                 <h2 className="font-serif font-black italic text-xl tracking-tight text-foreground">{t('Tracking.location_tracking_title')}</h2>
                             </div>
                             <div className="relative overflow-hidden rounded-[2rem] aspect-square flex items-center justify-center bg-background/50 border border-primary/5 shadow-inner">
-                                <LiveMap telemetry={telemetry} height="100%" />
+                                <LiveMap telemetry={telemetry} height="100%" minTemp={batch.min_temp} maxTemp={batch.max_temp} />
                             </div>
                         </div>
 
