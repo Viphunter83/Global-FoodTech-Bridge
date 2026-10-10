@@ -5,6 +5,11 @@ import { onIdTokenChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { removeSessionCookie } from '@/lib/cookies';
+import { usePathname } from 'next/navigation';
+
+// Only operator areas wait for auth before rendering; public pages (verify, scan,
+// landing) render immediately so a consumer scanning a QR code is not blocked.
+const GATED_PATH = /^\/(?:[a-z]{2}\/)?(?:dashboard|admin|batches)(?:\/|$)/;
 
 export type UserRole = 'MANUFACTURER' | 'LOGISTICS' | 'RETAILER' | 'ADMIN' | 'PENDING';
 
@@ -40,6 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [companyId, setCompanyId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const currentUid = useRef<string | null>(null);
+    const pathname = usePathname();
+    const isGatedPath = GATED_PATH.test(pathname || '');
 
     useEffect(() => {
         // onIdTokenChanged also fires on the hourly token refresh, keeping the session cookie valid
@@ -141,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={{ user, role, companyId, loading, logout, getToken, setRole, setCompanyId }}>
-            {loading ? <LoadingScreen /> : children}
+            {loading && isGatedPath ? <LoadingScreen /> : children}
         </AuthContext.Provider>
     );
 }
