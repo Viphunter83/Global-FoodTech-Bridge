@@ -2,6 +2,8 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Servi
 import { ConfigService } from '@nestjs/config';
 import { timingSafeEqual, createHash } from 'crypto';
 
+const PUBLIC_PATHS = new Set(['/api/v1/health', '/api/v1/health/']);
+
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
   private readonly logger = new Logger(ApiKeyGuard.name);
@@ -20,10 +22,11 @@ export class ApiKeyGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    const path = request.url || request.path;
+    // request.path excludes the query string, so `?x=/health` cannot bypass the check
+    const path: string = request.path;
 
-    // Allow health check endpoints without API key
-    if (path?.includes('/health')) {
+    // Allow health check endpoints without API key (exact match only)
+    if (PUBLIC_PATHS.has(path)) {
       return true;
     }
 

@@ -1,7 +1,8 @@
 const { ethers } = require('ethers');
 
-const RPC_URL = 'https://lb.drpc.live/polygon-amoy/AlVK5_YuREjmtO6UkBFatFYqocHRRYgR8Z3JtiKh6MJI';
-const CONTRACT_ADDRESS = '0xE326362613F44383504b1bFA5Dd92C0Fc7D38471';
+const RPC_URL = process.env.RPC_URL;
+if (!RPC_URL) { console.error('Set RPC_URL'); process.exit(1); }
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xE326362613F44383504b1bFA5Dd92C0Fc7D38471';
 
 const REGISTRY_ABI = [
     "function getBatchData(string memory batchUUID) public view returns (address currentOwner, string memory uri, string memory violation, bool isViolated, uint256 timestamp, address pendingOwner)"
