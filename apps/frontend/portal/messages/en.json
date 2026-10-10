@@ -239,7 +239,12 @@
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
     "devices_linked": "{count} Devices Linked",
-    "max_sensors_reached": "Maximum of {count} sensors per batch"
+    "max_sensors_reached": "Maximum of {count} sensors per batch",
+    "sla_temp_label": "SLA temperature range (°C)",
+    "sla_min": "Min",
+    "sla_max": "Max",
+    "sla_hint": "Leave empty to keep the product default",
+    "sla_invalid": "Min must be lower than max"
   },
   "Tracking": {
     "live_tracking": "Deep trust monitoring",

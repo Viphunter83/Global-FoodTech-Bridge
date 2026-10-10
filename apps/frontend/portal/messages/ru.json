@@ -239,7 +239,12 @@
     "fleet_health": "Состояние парка",
     "syncing_devices": "Синхронизация {count} устройств",
     "devices_linked": "{count} устройств привязано",
-    "max_sensors_reached": "Не более {count} датчиков на партию"
+    "max_sensors_reached": "Не более {count} датчиков на партию",
+    "sla_temp_label": "Температурный SLA (°C)",
+    "sla_min": "Мин.",
+    "sla_max": "Макс.",
+    "sla_hint": "Оставьте пустым, чтобы использовать значение по умолчанию для продукта",
+    "sla_invalid": "Минимум должен быть меньше максимума"
   },
   "Tracking": {
     "live_tracking": "Отслеживание в реальном времени",

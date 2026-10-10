@@ -131,10 +131,12 @@ export function useBlockchainOperations(batchId: string) {
         }
     );
 
-    const pairSensor = (sensorIds: string[], startTracking: boolean) => handleAction(
+    const pairSensor = (sensorIds: string[], startTracking: boolean, limits?: { minTemp?: number; maxTemp?: number }) => handleAction(
         (token) => updateBatchIOTConfig(batchId, {
             sensor_ids: sensorIds,
-            start_tracking: startTracking
+            start_tracking: startTracking,
+            min_temp: limits?.minTemp,
+            max_temp: limits?.maxTemp,
         }, token),
         { 
             sensorPaired: true, 

@@ -153,8 +153,8 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 isOpen={isPairingModalOpen}
                 onClose={() => setIsPairingModalOpen(false)}
                 batchId={batchId}
-                onPair={(sids, startTracking) => {
-                    ops.pairSensor(sids, startTracking);
+                onPair={(sids, startTracking, limits) => {
+                    ops.pairSensor(sids, startTracking, limits);
                 }}
             />
 

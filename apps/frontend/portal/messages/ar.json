@@ -712,7 +712,12 @@
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
     "devices_linked": "{count} Devices Linked",
-    "max_sensors_reached": "الحد الأقصى {count} مستشعرات لكل دفعة"
+    "max_sensors_reached": "الحد الأقصى {count} مستشعرات لكل دفعة",
+    "sla_temp_label": "نطاق درجة الحرارة المتفق عليه (°م)",
+    "sla_min": "الحد الأدنى",
+    "sla_max": "الحد الأقصى",
+    "sla_hint": "اتركه فارغًا لاستخدام القيمة الافتراضية للمنتج",
+    "sla_invalid": "يجب أن يكون الحد الأدنى أقل من الحد الأقصى"
   },
   "NotFound": {
     "title": "Page Not Found",
