@@ -373,7 +373,26 @@
     "map_last_known": "Last known position:",
     "notary_authority_label": "Notary authority",
     "qc_rejected_desc": "SENSORS DETECTED A CRITICAL DEVIATION",
-    "timeline_arrived_destination": "Arrived at destination"
+    "timeline_arrived_destination": "Arrived at destination",
+    "history_event_BatchCreated": "Production",
+    "history_event_TransferInitiated": "In transit",
+    "history_event_TransferCompleted": "Custody transfer",
+    "history_event_ViolationReported": "SLA violation",
+    "history_desc_BatchCreated": "Batch created and notarized on the blockchain",
+    "history_desc_TransferInitiated": "Custody transfer to {to} initiated",
+    "history_desc_TransferCompleted": "Custody accepted by {to}",
+    "history_desc_ViolationReported": "SLA breach recorded: {message}",
+    "role_MANUFACTURER": "Manufacturer",
+    "role_LOGISTICS": "Logistics partner",
+    "role_RETAILER": "Retailer",
+    "role_IOT": "IoT gateway",
+    "role_PARTICIPANT": "Participant",
+    "role_SYSTEM": "System",
+    "node_label": "Node",
+    "block_label": "Block",
+    "breach_hero_title": "Cold-chain breach recorded",
+    "breach_hero_desc": "The product is authentic, but its storage conditions were violated in transit",
+    "metadata_unavailable": "No documents uploaded yet"
   },
   "Auth": {
     "login_title": "Secure Access",
@@ -685,5 +704,14 @@
   "Loading": {
     "title": "Global FoodTech Bridge",
     "subtitle": "Initializing Trust Layer..."
+  },
+  "Verify": {
+    "notFound": "Product not found",
+    "defaultProduct": "Food product",
+    "verified": "Verified",
+    "verifyDescription": "Blockchain-verified digital passport of {product} from {country}.",
+    "blockchainVerified": "Blockchain verified",
+    "ogDescription": "Check the origin, documents and cold chain of batch {id}.",
+    "scanTitle": "Batch scan"
   }
 }

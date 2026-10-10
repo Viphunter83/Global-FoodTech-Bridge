@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
             // Show the loading screen only when the signed-in user changes,
             // not on the silent hourly token refresh
+            const wasSignedIn = currentUid.current !== null;
             const isNewUser = (firebaseUser?.uid ?? null) !== currentUid.current;
             currentUid.current = firebaseUser?.uid ?? null;
             if (firebaseUser && isNewUser) setLoading(true);
@@ -94,8 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setLoading(false);
                 }
             } else {
-                // Remove session cookie (httpOnly, so only the server route can delete it)
-                fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
+                // Remove session cookie (httpOnly, so only the server route can delete it);
+                // anonymous visitors have no session to clear
+                if (wasSignedIn) fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
                 removeSessionCookie();
                 setRole('PENDING');
                 setCompanyId(null);

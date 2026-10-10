@@ -17,7 +17,8 @@ import {
     ShieldCheck, 
     Thermometer, 
     Leaf, 
-    ShoppingCart 
+    ShoppingCart,
+    AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
@@ -87,13 +88,18 @@ export function VerifyClient({
         { label: t('metric_authenticity'), value: t('bc_secured_value'), icon: <ShieldCheck className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' }
     ];
 
+    // The product can be authentic and still have a recorded cold-chain breach;
+    // the hero must not show an all-green verdict in that case.
+    const hasBreach = Boolean(status.violation);
+    const createdEvent = bcHistory.find((e) => e.event === 'BatchCreated');
+
     const marketingStoryRaw = (batch as any).marketing_story?.[locale] || (batch as any).marketing_story?.en || (batch as any).marketing_story || "";
     const marketingStory = typeof marketingStoryRaw === 'string' ? marketingStoryRaw : "";
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
             {/* HERO SECTION */}
-            <div className="bg-gradient-to-b from-green-600 to-green-500 text-white p-8 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+            <div className={`bg-gradient-to-b ${hasBreach ? 'from-amber-600 to-amber-500' : 'from-green-600 to-green-500'} text-white p-8 rounded-b-[3rem] shadow-xl relative overflow-hidden`}>
                 <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12">
                     <ShieldCheck size={200} />
                 </div>
@@ -103,13 +109,13 @@ export function VerifyClient({
                         animate={{ scale: 1 }}
                         className="bg-white/20 backdrop-blur-md rounded-full p-2 w-fit mx-auto border border-white/30"
                     >
-                        <div className="bg-white text-green-600 rounded-full p-3 shadow-lg">
-                            <CheckCircle className="h-10 w-10" />
+                        <div className={`bg-white ${hasBreach ? 'text-amber-600' : 'text-green-600'} rounded-full p-3 shadow-lg`}>
+                            {hasBreach ? <AlertTriangle className="h-10 w-10" /> : <CheckCircle className="h-10 w-10" />}
                         </div>
                     </motion.div>
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight">{t('authentic_product')}</h1>
-                        <p className="opacity-90 font-medium text-lg mt-1">{t('gftb_verified')}</p>
+                        <h1 className="text-3xl font-extrabold tracking-tight">{hasBreach ? t('breach_hero_title') : t('authentic_product')}</h1>
+                        <p className="opacity-90 font-medium text-lg mt-1">{hasBreach ? t('breach_hero_desc') : t('gftb_verified')}</p>
                     </div>
                     <div className="flex justify-center gap-2 text-sm font-mono opacity-75">
                         <span>ID: {batch.id.substring(0, 8)}...</span>
@@ -213,6 +219,8 @@ export function VerifyClient({
                     dataHash={batch.token_uri?.replace('ipfs://', '')}
                     issuer={batch.manufacturer_id}
                     timestamp={new Date(batch.created_at).toLocaleString()}
+                    blockNumber={createdEvent?.blockNumber}
+                    noMetadataLabel={t('metadata_unavailable')}
                     violation={status.violation || undefined}
                 />
 

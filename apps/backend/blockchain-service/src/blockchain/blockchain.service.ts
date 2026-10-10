@@ -464,8 +464,8 @@ export class BlockchainService implements OnModuleInit {
     async getBatchHistory(batchId: string): Promise<any[]> {
         if (this.isMockMode) {
             return [
-                { event: 'BatchCreated', stage: 'Производство', details: 'Партия создана и заверена в блокчейне', timestamp: Date.now() - 3600000, actor: 'Производитель' },
-                { event: 'TransferCompleted', stage: 'Логистика', details: 'Владение передано логистической компании', timestamp: Date.now() - 1800000, actor: 'Логистический партнер' }
+                { event: 'BatchCreated', stage: 'Production', details: 'Batch created and notarized on the blockchain', actorRole: 'MANUFACTURER', timestamp: Date.now() - 3600000, actor: 'MANUFACTURER' },
+                { event: 'TransferCompleted', stage: 'Custody transfer', details: 'Custody accepted by LOGISTICS', actorRole: 'LOGISTICS', counterpartyRole: 'LOGISTICS', timestamp: Date.now() - 1800000, actor: 'LOGISTICS' }
             ];
         }
 
@@ -477,46 +477,62 @@ export class BlockchainService implements OnModuleInit {
                 const log = item;
                 const timestamp = item.timestamp;
 
+                // Roles and messages are returned as data so the portal can localize them;
+                // stage/details stay as English fallbacks for older clients.
+                const roleOf = (address: string) => {
+                    const addr = address.toLowerCase();
+                    if (addr === this.manufacturerWallet.address.toLowerCase()) return 'MANUFACTURER';
+                    if (addr === this.logisticsWallet?.address.toLowerCase()) return 'LOGISTICS';
+                    if (addr === this.retailerWallet?.address.toLowerCase()) return 'RETAILER';
+                    return 'PARTICIPANT';
+                };
+
                 let stage = 'Process';
                 let details = 'Blockchain event recorded';
-                let actor = 'System';
-
-                const resolveActor = (address: string) => {
-                    const addr = address.toLowerCase();
-                    if (addr === this.manufacturerWallet.address.toLowerCase()) return 'Производитель (Manufacturer)';
-                    if (addr === this.logisticsWallet?.address.toLowerCase()) return 'Логистический партнер (Logistics)';
-                    if (addr === this.retailerWallet?.address.toLowerCase()) return 'Ритейлер (Retailer)';
-                    return `Участник (${address.substring(0, 6)}...)`;
-                };
+                let actorRole = 'SYSTEM';
+                let actorAddress: string | null = null;
+                let counterpartyRole: string | null = null;
+                let message: string | null = null;
 
                 switch (item.type) {
                     case 'BatchCreated':
-                        stage = 'Производство';
-                        details = 'Партия успешно создана и заверена в блокчейне (Notarized)';
-                        actor = resolveActor(log.args[2]);
+                        stage = 'Production';
+                        details = 'Batch created and notarized on the blockchain';
+                        actorAddress = log.args[2];
+                        actorRole = roleOf(actorAddress);
                         break;
                     case 'TransferInitiated':
-                        stage = 'Транзит';
-                        details = `Инициирована передача прав на партию участнику ${resolveActor(log.args[2])}`;
-                        actor = resolveActor(log.args[1]);
+                        stage = 'In transit';
+                        actorAddress = log.args[1];
+                        actorRole = roleOf(actorAddress);
+                        counterpartyRole = roleOf(log.args[2]);
+                        details = `Custody transfer to ${counterpartyRole} initiated`;
                         break;
                     case 'TransferCompleted':
-                        stage = 'Передача прав';
-                        details = `Передача прав подтверждена. Текущий владелец: ${resolveActor(log.args[2])}`;
-                        actor = resolveActor(log.args[2]);
+                        stage = 'Custody transfer';
+                        actorAddress = log.args[2];
+                        actorRole = roleOf(actorAddress);
+                        counterpartyRole = actorRole;
+                        details = `Custody accepted by ${actorRole}`;
                         break;
                     case 'ViolationReported':
-                        stage = '🚨 НАРУШЕНИЕ';
-                        details = `Зафиксировано нарушение условий SLA: ${log.args[1]}`;
-                        actor = 'IoT Gateway (Autonomous Notary)';
+                        stage = 'SLA violation';
+                        message = log.args[1];
+                        actorRole = 'IOT';
+                        details = `SLA breach recorded: ${message}`;
                         break;
                 }
+                const actor = actorRole;
 
                 return {
                     event: item.type,
                     stage,
                     details,
                     actor,
+                    actorRole,
+                    actorAddress,
+                    counterpartyRole,
+                    message,
                     timestamp,
                     blockNumber: log.blockNumber,
                     transactionHash: log.transactionHash

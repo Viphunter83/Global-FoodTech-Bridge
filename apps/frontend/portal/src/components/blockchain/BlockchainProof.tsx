@@ -16,6 +16,8 @@ interface BlockchainProofProps {
     timestamp?: string;
     batchId: string;
     violation?: string;
+    blockNumber?: number;
+    noMetadataLabel?: string;
 }
 
 import { EXPLORER_URL } from '@/lib/constants';
@@ -34,7 +36,7 @@ const getIdentity = (addr?: string) => {
     return IDENTITY_MAP[addr] || `${addr.substring(0, 8)}...${addr.substring(addr.length - 4)}`;
 };
 
-export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, violation }: BlockchainProofProps) {
+export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, violation, blockNumber, noMetadataLabel }: BlockchainProofProps) {
     const explorerUrl = txHash ? `${EXPLORER_URL}/tx/${txHash}` : '#';
 
     return (
@@ -100,7 +102,7 @@ export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, 
                                 <Info className="h-3 w-3 text-gray-300" />
                             </p>
                             <p className="text-xs font-mono text-gray-600 break-all bg-gray-50 p-2 rounded border border-gray-100 mt-1">
-                                {dataHash || 'Generating Fingerprint...'}
+                                {dataHash || noMetadataLabel || 'No documents uploaded yet'}
                             </p>
                             <div className="hidden group-hover:block absolute -top-12 left-0 z-10 w-48 bg-gray-800 text-white text-[10px] p-2 rounded shadow-xl">
                                 If even one character of the product data (ingredients, dates, logs) is changed, this fingerprint will break.
@@ -138,7 +140,7 @@ export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, 
                 </div>
 
                 <div className="text-[9px] text-center text-gray-400 italic">
-                    Timestamp: {timestamp || 'N/A'} • Block Number: #36848285
+                    Timestamp: {timestamp || 'N/A'}{blockNumber ? ` • Block Number: #${blockNumber}` : ''}
                 </div>
             </CardContent>
         </Card>

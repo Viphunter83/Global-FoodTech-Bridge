@@ -373,7 +373,26 @@
     "fallback_producer": "ПРОИЗВОДИТЕЛЬ",
     "fallback_premium": "ПРЕМИУМ",
     "bc_unverified_badge": "НЕ ВЕРИФИЦИРОВАНО",
-    "bc_waiting_logistics": "Waiting for Logistics Confirmation"
+    "bc_waiting_logistics": "Waiting for Logistics Confirmation",
+    "history_event_BatchCreated": "Производство",
+    "history_event_TransferInitiated": "Транзит",
+    "history_event_TransferCompleted": "Передача прав",
+    "history_event_ViolationReported": "Нарушение SLA",
+    "history_desc_BatchCreated": "Партия создана и заверена в блокчейне",
+    "history_desc_TransferInitiated": "Инициирована передача прав: {to}",
+    "history_desc_TransferCompleted": "Права приняты: {to}",
+    "history_desc_ViolationReported": "Зафиксировано нарушение SLA: {message}",
+    "role_MANUFACTURER": "Производитель",
+    "role_LOGISTICS": "Логистический партнёр",
+    "role_RETAILER": "Ритейлер",
+    "role_IOT": "IoT-шлюз",
+    "role_PARTICIPANT": "Участник",
+    "role_SYSTEM": "Система",
+    "node_label": "Узел",
+    "block_label": "Блок",
+    "breach_hero_title": "Зафиксировано нарушение холодовой цепи",
+    "breach_hero_desc": "Продукт подлинный, но условия хранения при транспортировке были нарушены",
+    "metadata_unavailable": "Документы ещё не загружены"
   },
   "Auth": {
     "login_title": "Безопасный доступ",
@@ -685,5 +704,14 @@
   "Loading": {
     "title": "Global FoodTech Bridge",
     "subtitle": "Инициализация уровня доверия..."
+  },
+  "Verify": {
+    "notFound": "Продукт не найден",
+    "defaultProduct": "Пищевой продукт",
+    "verified": "проверен",
+    "verifyDescription": "Цифровой паспорт {product} из {country}, подтверждённый блокчейном.",
+    "blockchainVerified": "Подтверждено блокчейном",
+    "ogDescription": "Проверьте происхождение, документы и холодовую цепь партии {id}.",
+    "scanTitle": "Сканирование партии"
   }
 }

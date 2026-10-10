@@ -87,6 +87,11 @@ export interface BlockchainEvent {
     stage: string;
     details: string;
     actor: string;
+    // Structured fields used for localization (stage/details are English fallbacks)
+    actorRole?: string;
+    actorAddress?: string | null;
+    counterpartyRole?: string | null;
+    message?: string | null;
     timestamp: number;
     blockNumber: number;
     transactionHash: string;
