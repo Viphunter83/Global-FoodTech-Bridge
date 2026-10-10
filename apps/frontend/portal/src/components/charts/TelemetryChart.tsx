@@ -108,7 +108,11 @@ export default function TelemetryChart({ data, minTemp, maxTemp }: TelemetryChar
                             fontWeight="bold"
                             tickLine={false}
                             axisLine={false}
-                            domain={['auto', 'auto']}
+                            // Keep the SLA limits in view, not only the readings
+                            domain={[
+                                (dataMin: number) => Math.floor(Math.min(dataMin, minTemp ?? dataMin) - 1),
+                                (dataMax: number) => Math.ceil(Math.max(dataMax, maxTemp ?? dataMax) + 1),
+                            ]}
                             dx={-10}
                         />
                         <Tooltip
