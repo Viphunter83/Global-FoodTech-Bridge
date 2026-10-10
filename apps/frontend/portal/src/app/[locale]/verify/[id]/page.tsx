@@ -1,3 +1,4 @@
+import { getBatchDetailsCached } from '@/lib/batch-details-cache';
 import { 
     getBatchDetails, 
     getBlockchainStatus, 
@@ -17,7 +18,7 @@ interface PageProps {
 
 export async function generateMetadata({ params: { locale, id } }: PageProps): Promise<Metadata> {
     const t = await getTranslations({ locale, namespace: 'Verify' });
-    const batch = await getBatchDetails(id);
+    const batch = await getBatchDetailsCached(id);
     
     if (!batch) return { title: t('notFound') };
     
@@ -44,7 +45,7 @@ export default async function VerifyPage({ params: { locale, id } }: PageProps) 
 
     // Fetch all initial data on the server
     const [batchData, bcStatus, telemData, historyData] = await Promise.all([
-        getBatchDetails(batchId),
+        getBatchDetailsCached(batchId),
         getBlockchainStatus(batchId),
         getTelemetry(batchId),
         getBlockchainHistory(batchId)

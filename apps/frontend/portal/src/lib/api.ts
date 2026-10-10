@@ -178,6 +178,37 @@ const getHeaders = (isPost = false, token?: string, isJson = true) => {
 
 // --- API CLIENT ---
 
+const IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs/";
+const IPFS_TIMEOUT_MS = 2500;
+
+/**
+ * IPFS content is addressed by its hash and never changes, so it is cached
+ * indefinitely; a slow gateway is cut off so it cannot block the passport page.
+ */
+async function fetchIpfsMetadata(tokenUri: string): Promise<any | null> {
+    try {
+        const hash = tokenUri.replace('ipfs://', '');
+        const res = await fetch(`${IPFS_GATEWAY}${hash}`, {
+            signal: AbortSignal.timeout(IPFS_TIMEOUT_MS),
+            ...(isServer ? { next: { revalidate: false } } : { cache: 'force-cache' }),
+        } as RequestInit);
+        return res.ok ? await res.json() : null;
+    } catch (err) {
+        console.warn("Failed to fetch IPFS metadata:", err);
+        return null;
+    }
+}
+
+async function fetchPartner(partnerId: string, token?: string): Promise<any | null> {
+    try {
+        const res = await fetch(`${PASSPORT_URL}/partners/${partnerId}`, { headers: getHeaders(false, token), cache: 'no-store' });
+        return res.ok ? await res.json() : null;
+    } catch (err) {
+        console.warn("Failed to fetch partner details", err);
+        return null;
+    }
+}
+
 export async function getBatchDetails(id: string, token?: string): Promise<BatchDetails | null> {
     try {
         const res = await fetch(`${PASSPORT_URL}/batches/${id}`, { 
@@ -187,12 +218,18 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
         if (!res.ok) return null;
         const data = await res.json();
 
+        // Independent lookups run in parallel; the IPFS gateway is the slowest (seconds)
+        const [bcStatus, template, partnerData, ipfsData] = await Promise.all([
+            getBlockchainStatus(data.id),
+            data.template_id ? getTemplateDetails(data.template_id).catch(() => null) : Promise.resolve(null),
+            data.partner_id ? fetchPartner(data.partner_id, token) : Promise.resolve(null),
+            data.token_uri ? fetchIpfsMetadata(data.token_uri) : Promise.resolve(null),
+        ]);
+
         let history: BatchDetails['history'] = [];
-        const bcStatus = await getBlockchainStatus(data.id);
 
         if (data.template_id) {
             try {
-                const template = await getTemplateDetails(data.template_id);
                 if (template && template.steps) {
                     history = template.steps.map((step: any, index: number) => {
                         const isCompliant = !step.required_cert || 
@@ -269,51 +306,30 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
             partner_id: data.partner_id,
         };
 
-        // Fetch Partner Details if present
-        if (data.partner_id) {
-            try {
-                const partnerRes = await fetch(`${PASSPORT_URL}/partners/${data.partner_id}`, { headers: getHeaders(false, token), cache: 'no-store' });
-                if (partnerRes.ok) {
-                    const partnerData = await partnerRes.json();
-                    extendedData.partner_redirect_url = partnerData.verification_redirect_url;
-                }
-            } catch (err) {
-                console.warn("Failed to fetch partner details", err);
-            }
+        if (partnerData?.verification_redirect_url) {
+            extendedData.partner_redirect_url = partnerData.verification_redirect_url;
         }
 
-        // IPFS Fetch Logic
-        if (data.token_uri) {
-            try {
-                const ipfsGateway = "https://gateway.pinata.cloud/ipfs/";
-                const hash = data.token_uri.replace('ipfs://', '');
+        if (ipfsData) {
+            const attributes = ipfsData.attributes || [];
+            const getAttr = (key: string) => attributes.find((a: any) => a.trait_type === key)?.value;
 
-                const ipfsRes = await fetch(`${ipfsGateway}${hash}`);
-                if (ipfsRes.ok) {
-                    const ipfsData = await ipfsRes.json();
-                    const attributes = ipfsData.attributes || [];
-                    const getAttr = (key: string) => attributes.find((a: any) => a.trait_type === key)?.value;
+            // Passport data is localized and authoritative; IPFS only fills gaps
+            if (!extendedData.ingredients && getAttr("Ingredients")) {
+                extendedData.ingredients = getAttr("Ingredients");
+            }
 
-                    // Update Ingredients if present in IPFS
-                    if (getAttr("Ingredients")) {
-                        extendedData.ingredients = getAttr("Ingredients");
-                    }
+            extendedData.production_date = getAttr("Production Date");
+            extendedData.expiration_date = getAttr("Expiration Date");
+            extendedData.production_location = getAttr("Production Location");
+            extendedData.origin_location = getAttr("Origin Location");
 
-                    extendedData.production_date = getAttr("Production Date");
-                    extendedData.expiration_date = getAttr("Expiration Date");
-                    extendedData.production_location = getAttr("Production Location");
-                    extendedData.origin_location = getAttr("Origin Location");
-
-                    if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
-                        extendedData.certificates = ipfsData.certificates.map((cert: any) => ({
-                            name: cert.name,
-                            type: cert.type || "OTHER",
-                            uri: cert.uri.replace('ipfs://', ipfsGateway)
-                        }));
-                    }
-                }
-            } catch (ipfsErr) {
-                console.warn("Failed to fetch IPFS metadata:", ipfsErr);
+            if (ipfsData.certificates && Array.isArray(ipfsData.certificates)) {
+                extendedData.certificates = ipfsData.certificates.map((cert: any) => ({
+                    name: cert.name,
+                    type: cert.type || "OTHER",
+                    uri: cert.uri.replace('ipfs://', IPFS_GATEWAY)
+                }));
             }
         }
 

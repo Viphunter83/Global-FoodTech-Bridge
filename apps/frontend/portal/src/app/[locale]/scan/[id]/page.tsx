@@ -1,3 +1,4 @@
+import { getBatchDetailsCached } from '@/lib/batch-details-cache';
 import { getBatchDetails, getBlockchainStatus } from '@/lib/api';
 import { ScanClient } from './ScanClient';
 import { Metadata } from 'next';
@@ -12,7 +13,7 @@ interface PageProps {
 
 export async function generateMetadata({ params: { locale, id } }: PageProps): Promise<Metadata> {
     const t = await getTranslations({ locale, namespace: 'Verify' });
-    const batch = await getBatchDetails(id);
+    const batch = await getBatchDetailsCached(id);
     
     if (!batch) return { title: t('notFound') };
     
@@ -29,7 +30,7 @@ export default async function ScanPage({ params: { locale, id } }: PageProps) {
 
     // Fetch initial data on the server
     const [batchData, bcStatus] = await Promise.all([
-        getBatchDetails(batchId),
+        getBatchDetailsCached(batchId),
         getBlockchainStatus(batchId)
     ]);
 
