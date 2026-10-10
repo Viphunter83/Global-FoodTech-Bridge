@@ -336,7 +336,7 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                                     <span className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/40">{t('Dashboard.verified_stream_badge')}</span>
                                 </div>
                                 <div className="h-64">
-                                    <TelemetryChart data={telemetryData} />
+                                    <TelemetryChart data={telemetryData} minTemp={selectedBatch?.min_temp} maxTemp={selectedBatch?.max_temp} />
                                 </div>
                             </div>
                         </Card>

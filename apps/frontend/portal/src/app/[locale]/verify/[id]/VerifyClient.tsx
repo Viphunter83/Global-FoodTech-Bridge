@@ -27,7 +27,7 @@ import { BlockchainHistory } from '@/components/blockchain/BlockchainHistory';
 import { useTranslations, useLocale } from 'next-intl';
 import { SustainabilitySection } from '@/components/passport/SustainabilitySection';
 
-const TelemetryChart = dynamic<{ data: Telemetry[] }>(
+const TelemetryChart = dynamic<{ data: Telemetry[]; minTemp?: number | null; maxTemp?: number | null }>(
     () => import('@/components/charts/TelemetryChart'),
     { ssr: false, loading: () => <div className="h-40 w-full bg-gray-50 animate-pulse rounded-md" /> }
 );
@@ -204,7 +204,7 @@ export function VerifyClient({
                             </span>
                         </h3>
                         <div className="h-48 w-full">
-                            <TelemetryChart data={telemetry} />
+                            <TelemetryChart data={telemetry} minTemp={batch.min_temp} maxTemp={batch.max_temp} />
                         </div>
                         <p className="text-[9px] text-gray-400 mt-6 text-center font-black uppercase tracking-widest opacity-40">
                             Verified by Tive™ IoT Sensors & Polygon Blockchain

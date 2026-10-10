@@ -9,9 +9,14 @@ import { Activity, Thermometer, Clock } from 'lucide-react';
 
 interface TelemetryChartProps {
     data: Telemetry[];
+    // Batch SLA limits; without them no threshold is drawn
+    minTemp?: number | null;
+    maxTemp?: number | null;
 }
 
-export default function TelemetryChart({ data }: TelemetryChartProps) {
+export default function TelemetryChart({ data, minTemp, maxTemp }: TelemetryChartProps) {
+    const isBreach = (value: number) =>
+        (minTemp != null && value < minTemp) || (maxTemp != null && value > maxTemp);
     const t = useTranslations('Tracking');
     const [isMounted, setIsMounted] = useState(false);
 
@@ -78,13 +83,16 @@ export default function TelemetryChart({ data }: TelemetryChartProps) {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--primary) / 0.05)" />
-                        <ReferenceLine 
-                            y={-18} 
-                            label={{ position: 'insideTopLeft', value: 'CRITICAL THRESHOLD (-18°C)', fill: 'rgb(239 68 68)', fontSize: 9, fontWeight: 'black', offset: 10 }}
-                            stroke="rgb(239 68 68)" 
-                            strokeDasharray="4 4" 
-                            strokeWidth={2}
-                        />
+                        {[maxTemp, minTemp].filter((v): v is number => v != null).map((limit) => (
+                            <ReferenceLine
+                                key={limit}
+                                y={limit}
+                                label={{ position: 'insideTopLeft', value: `SLA ${limit}°C`, fill: 'rgb(239 68 68)', fontSize: 9, fontWeight: 'black', offset: 10 }}
+                                stroke="rgb(239 68 68)"
+                                strokeDasharray="4 4"
+                                strokeWidth={2}
+                            />
+                        ))}
                         <XAxis
                             dataKey="time"
                             stroke="hsl(var(--muted-foreground) / 0.4)"
@@ -139,7 +147,7 @@ export default function TelemetryChart({ data }: TelemetryChartProps) {
                             activeDot={{ r: 6, fill: "hsl(var(--primary))", strokeWidth: 0 }}
                             dot={(props: any) => {
                                 const { cx, cy, value } = props;
-                                if (value > -18) {
+                                if (isBreach(value)) {
                                     return (
                                         <g key={`dot-${cx}-${cy}`}>
                                             <circle cx={cx} cy={cy} r={6} fill="rgb(239 68 68)" className="animate-pulse" />

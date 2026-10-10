@@ -19,6 +19,9 @@ L.Marker.prototype.options.icon = DefaultIcon;
 interface LiveMapProps {
     telemetry: any[];
     height?: string;
+    // Batch SLA limits; a point is a violation only outside a configured limit
+    minTemp?: number | null;
+    maxTemp?: number | null;
 }
 
 function RecenterMap({ position }: { position: [number, number] }) {
@@ -29,7 +32,7 @@ function RecenterMap({ position }: { position: [number, number] }) {
     return null;
 }
 
-export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
+export default function LiveMap({ telemetry, height = '400px', minTemp, maxTemp }: LiveMapProps) {
     const t = useTranslations('Tracking');
 
     if (!telemetry || telemetry.length === 0) {
@@ -43,9 +46,10 @@ export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
         );
     }
 
-    // Filter points with valid coordinates and sort by time
+    // Readings without GPS omit the fields entirely (undefined, not null), so a
+    // strict null check let them through and crashed Leaflet with an invalid LatLng
     const path = telemetry
-        .filter(t => t.location_lat !== null && t.location_lon !== null)
+        .filter(t => Number.isFinite(t.location_lat) && Number.isFinite(t.location_lon))
         .map(t => ({
             pos: [t.location_lat, t.location_lon] as [number, number],
             temp: t.temperature_celsius,
@@ -56,7 +60,9 @@ export default function LiveMap({ telemetry, height = '400px' }: LiveMapProps) {
                 timeZone: 'UTC' 
             }) + ' (UTC)',
             humidity: t.humidity,
-            isViolation: t.temperature_celsius > -18 // Professional threshold check
+            isViolation:
+                (minTemp != null && t.temperature_celsius < minTemp) ||
+                (maxTemp != null && t.temperature_celsius > maxTemp)
         }));
 
     const latest = path[0]?.pos; // Assuming sorted by timestamp desc
