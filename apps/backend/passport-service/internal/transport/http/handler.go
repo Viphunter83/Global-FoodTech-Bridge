@@ -56,6 +56,7 @@ func (h *Handler) InitRoutes() *chi.Mux {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
+		r.Use(JSONContentType)
 
 		// Read-only routes (protected by API Key)
 		r.Get("/batches/{id}", h.getBatch)
@@ -675,4 +676,12 @@ func clientIP(r *http.Request) string {
 		return strings.TrimSpace(parts[len(parts)-1])
 	}
 	return r.RemoteAddr
+}
+
+// JSONContentType marks API responses as JSON; http.Error still overrides it for errors.
+func JSONContentType(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }

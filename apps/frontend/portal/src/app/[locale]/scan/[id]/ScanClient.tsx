@@ -174,7 +174,8 @@ export function ScanClient({ batchId, initialBatch, initialStatus }: ScanClientP
                                 <CheckCircle className="h-4 w-4" />
                                 <span className="text-[9px] uppercase font-black tracking-widest">IoT Data</span>
                             </div>
-                            <p className="text-lg font-serif font-black italic">Optimal</p>
+                            {/* This panel is only shown when no violation is recorded */}
+                            <p className="text-lg font-serif font-black italic">{tTracking('no_breaches')}</p>
                         </div>
                     </div>
                     <div className="pt-6">
@@ -286,19 +287,25 @@ export function ScanClient({ batchId, initialBatch, initialStatus }: ScanClientP
                                     </p>
                                 </div>
                                 
+                                {/* Only certificates actually uploaded for this batch */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <CertificateCard
-                                        title="Chemical-Free Certified"
-                                        issuer="Global Food Safety Initiative"
-                                        date="Audit: Oct 2025"
-                                        type="haccp"
-                                    />
-                                    <CertificateCard
-                                        title="Blockchain Notarized"
-                                        issuer="GFTB Protocol"
-                                        date={new Date().toLocaleDateString()}
-                                        type="halal"
-                                    />
+                                    {(batchDetails.certificates ?? []).map((cert: any, i: number) => (
+                                        <CertificateCard
+                                            key={i}
+                                            title={String(cert.type || cert.name || tTracking('certificate_fallback')).replace(/_/g, ' ')}
+                                            issuer={cert.name || 'IPFS'}
+                                            date={new Date(batchDetails.created_at).toLocaleDateString()}
+                                            type="iso"
+                                        />
+                                    ))}
+                                    {status.verified && (
+                                        <CertificateCard
+                                            title="Blockchain Notarized"
+                                            issuer="Polygon"
+                                            date={new Date(batchDetails.created_at).toLocaleDateString()}
+                                            type="halal"
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </Card>

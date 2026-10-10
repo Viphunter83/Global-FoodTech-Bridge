@@ -28,21 +28,24 @@ import { auth } from '@/lib/firebase';
 
 interface AdminDashboardProps {
     batches: BatchDetails[];
+    // Balance of the custodial signing wallet that pays gas, e.g. "1.23 MATIC"
+    gasBalance?: string | null;
 }
 
-export function AdminDashboard({ batches }: AdminDashboardProps) {
+export function AdminDashboard({ batches, gasBalance }: AdminDashboardProps) {
     const t = useTranslations('Admin');
 
+    // KPIs are derived from real batch data only
     const totalBatches = batches.length;
-    const activeShipments = batches.filter(b => b.history?.some(h => h.status === 'current')).length || 0;
-    const compliantBatches = batches.filter(b => b.history?.every(h => h.is_compliant !== false)).length || 0;
-    const violations = totalBatches - compliantBatches;
+    const notarizedBatches = batches.filter(b => Boolean(b.blockchain_hash)).length;
+    const violations = batches.filter(b => b.usf_status === 'VIOLATED').length;
+    const compliantBatches = totalBatches - violations;
+    const gasAmount = gasBalance ? parseFloat(gasBalance) : NaN;
 
-    // Premium KPIs
     const stats = [
         { 
-            label: t('total_value_secured'), 
-            value: `$${(totalBatches * 12500).toLocaleString()}`, 
+            label: t('notarized_batches_kpi'), 
+            value: notarizedBatches.toString(), 
             icon: ShieldCheck, 
             color: 'text-emerald-500',
             bg: 'bg-emerald-500/10'
@@ -324,11 +327,19 @@ export function AdminDashboard({ batches }: AdminDashboardProps) {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center">
                                 <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{t('gas_level')}</span>
-                                <span className="text-[10px] font-mono font-black text-emerald-500">42.5 {t('gas_unit')}</span>
+                                <span className={`text-[10px] font-mono font-black ${gasAmount < 0.5 ? 'text-destructive' : 'text-emerald-500'}`}>
+                                    {Number.isFinite(gasAmount) ? `${gasAmount.toFixed(3)} ${t('gas_unit')}` : '—'}
+                                </span>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full w-4/5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-                            </div>
+                            {Number.isFinite(gasAmount) && (
+                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    {/* Full bar at 10 MATIC; red below 0.5 MATIC (a few dozen transactions) */}
+                                    <div
+                                        className={`h-full ${gasAmount < 0.5 ? 'bg-destructive' : 'bg-emerald-500'}`}
+                                        style={{ width: `${Math.min(100, (gasAmount / 10) * 100)}%` }}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <Button variant="outline" className="w-full h-12 rounded-xl border-primary/10 text-[9px] font-black uppercase tracking-widest">

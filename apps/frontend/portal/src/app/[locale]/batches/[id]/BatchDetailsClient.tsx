@@ -156,6 +156,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         batchId={batch.id}
                         status={effectiveBlockchain.verified && !effectiveBlockchain.violation && alerts.length === 0 ? 'Verified' : (effectiveBlockchain.violation || alerts.length > 0 ? 'Warning' : 'Pending')}
                         trustMetrics={batch.trust_metrics}
+                        coldChain={effectiveBlockchain.violation || alerts.length > 0 ? 'breach' : (telemetry.length > 0 ? 'optimal' : 'awaiting')}
                     />
                 </div>
 
@@ -166,8 +167,8 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                         redirectUrl={batch.partner_redirect_url}
                         description={batch.marketing_story?.[locale] || batch.marketing_story?.en}
                         badges={[
-                            { label: t('Tracking.bc_secured_badge'), color: 'emerald' },
-                            { label: t('Tracking.badge_fda_compliance'), color: 'emerald' },
+                            // Only claims backed by data: notarization state and uploaded certificates
+                            ...(effectiveBlockchain.verified ? [{ label: t('Tracking.bc_secured_badge'), color: 'emerald' as const }] : []),
                             { label: batch.product_type?.toUpperCase().replace(/_/g, ' ') || t('Tracking.fallback_premium'), color: 'secondary' },
                             ...(batch.certificates?.map((c: any) => ({ 
                                 label: typeof c === 'string' ? c : (c.name || c.type || c.id || t('Common.certificate')), 
@@ -177,7 +178,8 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                     />
                 </div>
 
-                {/* Manufacturing Insight Section - NEW */}
+                {/* Manufacturing Insight: mango-specific content, so shown only for mango products */}
+                {batch.product_type?.includes('MANGO') && (
                 <div className="mb-12 rounded-[3rem] overflow-hidden border border-primary/10 glass bg-background/50 relative group">
                     <div className="grid md:grid-cols-2 gap-0">
                         <div className="relative aspect-video md:aspect-auto h-full overflow-hidden">
@@ -198,19 +200,10 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
                             <p className="text-muted-foreground leading-relaxed">
                                 {t('Tracking.mfg_dehydration_desc')}
                             </p>
-                            <div className="flex items-center gap-4 pt-4">
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
-                                    <CheckCircle size={12} />
-                                    {t('Tracking.mfg_haccp_certified')}
-                                </div>
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/10 text-primary text-[10px] font-black uppercase tracking-widest">
-                                    <CheckCircle size={12} />
-                                    {t('Tracking.mfg_iso_certified')}
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
+                )}
 
                 {/* Sustainability & Quality Proof Section - NEW */}
                 <div className="mb-12">

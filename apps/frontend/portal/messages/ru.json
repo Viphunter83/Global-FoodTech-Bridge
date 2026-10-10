@@ -219,7 +219,7 @@
   },
   "IoT": {
     "pair_sensor_title": "Привязка оборудования",
-    "pairing_complete": "Связь с оборудованием установлена",
+    "pairing_complete": "Устройства готовы — подтвердите сохранение",
     "batch_reference": "Партия товара",
     "sensor_serial_label": "Серийный номер датчика",
     "pairing_instr": "Убедитесь, что IoT-датчик активен. Система выполнит криптографическое рукопожатие для подтверждения идентичности оборудования.",
@@ -234,11 +234,11 @@
     "sensor_already_added": "Датчик уже в списке",
     "start_monitoring": "Начать мониторинг",
     "activate_on_loading": "Активировать датчики при погрузке",
-    "monitoring_activated": "Мониторинг активирован",
+    "monitoring_activated": "Мониторинг начнётся после активации",
     "pending_deployment": "Ожидание развертывания",
     "fleet_health": "Состояние парка",
     "syncing_devices": "Синхронизация {count} устройств",
-    "devices_linked": "{count} устройств привязано",
+    "devices_linked": "Готово устройств: {count}",
     "max_sensors_reached": "Не более {count} датчиков на партию",
     "sla_temp_label": "Температурный SLA (°C)",
     "sla_min": "Мин.",
@@ -406,7 +406,12 @@
     "timeline_update_checkpoint": "Обновить контрольную точку",
     "tooltip_temp": "Температура",
     "tooltip_humidity": "Влажность",
-    "tooltip_verified": "Подтверждённая позиция"
+    "tooltip_verified": "Подтверждённая позиция",
+    "metric_breach": "Нарушение",
+    "metric_awaiting": "Нет данных",
+    "no_breaches": "Нарушений нет",
+    "certificate_fallback": "Сертификат",
+    "sla_not_set": "SLA не задан"
   },
   "Auth": {
     "login_title": "Безопасный доступ",
@@ -655,7 +660,8 @@
     "status_active": "Активен",
     "btn_details": "Подробнее",
     "sensors_title": "IoT-парк",
-    "sensors_description": "Мониторинг и управление парком IoT-датчиков"
+    "sensors_description": "Мониторинг и управление парком IoT-датчиков",
+    "notarized_batches_kpi": "Нотаризовано партий"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",

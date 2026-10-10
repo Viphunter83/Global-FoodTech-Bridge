@@ -365,7 +365,12 @@
     "timeline_update_checkpoint": "Cập nhật điểm kiểm tra",
     "tooltip_temp": "Nhiệt độ",
     "tooltip_humidity": "Độ ẩm",
-    "tooltip_verified": "Vị trí đã xác minh"
+    "tooltip_verified": "Vị trí đã xác minh",
+    "metric_breach": "Có vi phạm",
+    "metric_awaiting": "Chờ dữ liệu",
+    "no_breaches": "Không có vi phạm",
+    "certificate_fallback": "Chứng nhận",
+    "sla_not_set": "Chưa đặt SLA"
   },
   "Auth": {
     "login_title": "Truy cập Bảo mật",
@@ -614,7 +619,8 @@
     "stat_coverage": "Network Coverage",
     "protocol_deleted_success": "Protocol deleted successfully",
     "sensors_title": "Đội thiết bị IoT",
-    "sensors_description": "Giám sát và quản lý đội cảm biến IoT"
+    "sensors_description": "Giám sát và quản lý đội cảm biến IoT",
+    "notarized_batches_kpi": "Lô đã công chứng"
   },
   "HowItWorks": {
     "how_title": "Cách GFTB Bridge hoạt động",
@@ -692,7 +698,7 @@
   },
   "IoT": {
     "pair_sensor_title": "Initialize hardware link",
-    "pairing_complete": "Hardware link finalized",
+    "pairing_complete": "Thiết bị đã sẵn sàng — xác nhận để lưu",
     "batch_reference": "Cargo Batch",
     "sensor_serial_label": "Device serial number",
     "pairing_instr": "Ensure the IoT device is active and broadcasting. The system will perform a cryptographic handshake to verify the hardware identity.",
@@ -707,11 +713,11 @@
     "sensor_already_added": "Sensor already in list",
     "start_monitoring": "Start Monitoring",
     "activate_on_loading": "Activate sensors upon loading",
-    "monitoring_activated": "Monitoring Activated",
+    "monitoring_activated": "Giám sát bắt đầu khi bạn kích hoạt",
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked",
+    "devices_linked": "{count} thiết bị sẵn sàng",
     "max_sensors_reached": "Tối đa {count} cảm biến cho mỗi lô",
     "sla_temp_label": "Ngưỡng nhiệt độ SLA (°C)",
     "sla_min": "Tối thiểu",

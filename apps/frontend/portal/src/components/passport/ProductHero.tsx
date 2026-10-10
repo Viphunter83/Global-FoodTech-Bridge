@@ -16,9 +16,11 @@ interface ProductHeroProps {
         source: 'Blockchain' | 'IoT' | 'Lab Report';
         status: 'verified' | 'warning' | 'pending';
     }[];
+    // Cold-chain state derived from telemetry and alerts
+    coldChain?: 'optimal' | 'breach' | 'awaiting';
 }
 
-export function ProductHero({ productName, batchId, status, trustMetrics }: ProductHeroProps) {
+export function ProductHero({ productName, batchId, status, trustMetrics, coldChain = 'awaiting' }: ProductHeroProps) {
     const t = useTranslations('Tracking');
     const tBatch = useTranslations('Batch');
 
@@ -50,9 +52,14 @@ export function ProductHero({ productName, batchId, status, trustMetrics }: Prod
         }
     };
 
-    // Fallback metrics if none provided
+    // Fallback metrics if none provided; the cold-chain value reflects real telemetry
+    const coldChainMetric = {
+        optimal: { value: t('metric_optimal'), status: 'verified' as const },
+        breach: { value: t('metric_breach'), status: 'warning' as const },
+        awaiting: { value: t('metric_awaiting'), status: 'pending' as const },
+    }[coldChain];
     const displayMetrics = trustMetrics || [
-        { type: 'temperature', label: t('metric_cold_chain'), value: t('metric_optimal'), source: 'IoT' as const, status: 'verified' as const },
+        { type: 'temperature', label: t('metric_cold_chain'), value: coldChainMetric.value, source: 'IoT' as const, status: coldChainMetric.status },
         { type: 'origin', label: t('metric_origin'), value: t('metric_traceable'), source: 'Blockchain' as const, status: 'verified' as const }
     ];
 

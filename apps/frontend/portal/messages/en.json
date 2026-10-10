@@ -219,7 +219,7 @@
   },
   "IoT": {
     "pair_sensor_title": "Initialize hardware link",
-    "pairing_complete": "Hardware link finalized",
+    "pairing_complete": "Devices ready — confirm to save",
     "batch_reference": "Cargo Batch",
     "sensor_serial_label": "Device serial number",
     "pairing_instr": "Ensure the IoT device is active and broadcasting. The system will perform a cryptographic handshake to verify the hardware identity.",
@@ -234,11 +234,11 @@
     "sensor_already_added": "Sensor already in list",
     "start_monitoring": "Start Monitoring",
     "activate_on_loading": "Activate sensors upon loading",
-    "monitoring_activated": "Monitoring Activated",
+    "monitoring_activated": "Monitoring starts when you activate",
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked",
+    "devices_linked": "{count} devices ready",
     "max_sensors_reached": "Maximum of {count} sensors per batch",
     "sla_temp_label": "SLA temperature range (°C)",
     "sla_min": "Min",
@@ -406,7 +406,12 @@
     "timeline_update_checkpoint": "Update checkpoint",
     "tooltip_temp": "Temperature",
     "tooltip_humidity": "Humidity",
-    "tooltip_verified": "Verified position"
+    "tooltip_verified": "Verified position",
+    "metric_breach": "Breach recorded",
+    "metric_awaiting": "Awaiting data",
+    "no_breaches": "No breaches",
+    "certificate_fallback": "Certificate",
+    "sla_not_set": "SLA not set"
   },
   "Auth": {
     "login_title": "Secure Access",
@@ -655,7 +660,8 @@
     "status_active": "Active",
     "btn_details": "View Details",
     "sensors_title": "IoT Fleet",
-    "sensors_description": "Monitor and manage the IoT sensor fleet"
+    "sensors_description": "Monitor and manage the IoT sensor fleet",
+    "notarized_batches_kpi": "Notarized Batches"
   },
   "HowItWorks": {
     "how_title": "How GFTB Bridge Works",

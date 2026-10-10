@@ -360,7 +360,12 @@
     "timeline_update_checkpoint": "تحديث نقطة التفتيش",
     "tooltip_temp": "درجة الحرارة",
     "tooltip_humidity": "الرطوبة",
-    "tooltip_verified": "موقع موثّق"
+    "tooltip_verified": "موقع موثّق",
+    "metric_breach": "تم تسجيل خرق",
+    "metric_awaiting": "بانتظار البيانات",
+    "no_breaches": "لا توجد مخالفات",
+    "certificate_fallback": "شهادة",
+    "sla_not_set": "لم يتم تحديد اتفاقية مستوى الخدمة"
   },
   "Auth": {
     "login_title": "وصول آمن",
@@ -609,7 +614,8 @@
     "stat_coverage": "Network Coverage",
     "protocol_deleted_success": "Protocol deleted successfully",
     "sensors_title": "أسطول إنترنت الأشياء",
-    "sensors_description": "مراقبة وإدارة أسطول مستشعرات إنترنت الأشياء"
+    "sensors_description": "مراقبة وإدارة أسطول مستشعرات إنترنت الأشياء",
+    "notarized_batches_kpi": "الدفعات الموثقة"
   },
   "HowItWorks": {
     "how_title": "كيف يعمل GFTB Bridge",
@@ -692,7 +698,7 @@
   },
   "IoT": {
     "pair_sensor_title": "Initialize hardware link",
-    "pairing_complete": "Hardware link finalized",
+    "pairing_complete": "الأجهزة جاهزة — أكّد للحفظ",
     "batch_reference": "Cargo Batch",
     "sensor_serial_label": "Device serial number",
     "pairing_instr": "Ensure the IoT device is active and broadcasting. The system will perform a cryptographic handshake to verify the hardware identity.",
@@ -707,11 +713,11 @@
     "sensor_already_added": "Sensor already in list",
     "start_monitoring": "Start Monitoring",
     "activate_on_loading": "Activate sensors upon loading",
-    "monitoring_activated": "Monitoring Activated",
+    "monitoring_activated": "تبدأ المراقبة عند التفعيل",
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked",
+    "devices_linked": "{count} أجهزة جاهزة",
     "max_sensors_reached": "الحد الأقصى {count} مستشعرات لكل دفعة",
     "sla_temp_label": "نطاق درجة الحرارة المتفق عليه (°م)",
     "sla_min": "الحد الأدنى",
