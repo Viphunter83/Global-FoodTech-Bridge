@@ -73,6 +73,14 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 		}
 	}
 
+	// Explicit limits from the request take precedence over rule defaults
+	if req.MinTemp != nil || req.MaxTemp != nil {
+		if err := validateTempRange(req.MinTemp, req.MaxTemp); err != nil {
+			return nil, err
+		}
+		minTemp, maxTemp = req.MinTemp, req.MaxTemp
+	}
+
 	// 4. Entity Construction
 	batch := &domain.Batch{
 		ManufacturerID:     manufacturerUUID,
@@ -148,12 +156,30 @@ func (s *BatchService) UpdateBlockchainHash(ctx context.Context, idStr string, h
 	return s.repo.UpdateBlockchainHash(ctx, id, hash)
 }
 
-func (s *BatchService) UpdateIOTConfig(ctx context.Context, idStr string, sensorIDs []string, startTracking bool) error {
+func (s *BatchService) UpdateIOTConfig(ctx context.Context, idStr string, sensorIDs []string, startTracking bool, minTemp, maxTemp *float64) error {
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return fmt.Errorf("invalid uuid: %w", err)
+		return ValidationError("invalid batch id")
 	}
-	return s.repo.UpdateIOTConfig(ctx, id, sensorIDs, startTracking)
+	if minTemp != nil || maxTemp != nil {
+		if err := validateTempRange(minTemp, maxTemp); err != nil {
+			return err
+		}
+	}
+	return s.repo.UpdateIOTConfig(ctx, id, sensorIDs, startTracking, minTemp, maxTemp)
+}
+
+// validateTempRange checks an SLA temperature window; either bound may be open.
+func validateTempRange(minTemp, maxTemp *float64) error {
+	for _, v := range []*float64{minTemp, maxTemp} {
+		if v != nil && (*v < -100 || *v > 100) {
+			return ValidationError("temperature limits must be between -100 and 100 °C")
+		}
+	}
+	if minTemp != nil && maxTemp != nil && *minTemp >= *maxTemp {
+		return ValidationError("min_temp must be lower than max_temp")
+	}
+	return nil
 }
 
 func (s *BatchService) ReportViolation(ctx context.Context, idStr string, details string) error {

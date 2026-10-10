@@ -496,7 +496,7 @@ export async function updateBatchBlockchainHash(batchId: string, blockchainHash:
 
 export async function updateBatchIOTConfig(
     batchId: string, 
-    config: { sensor_ids: string[]; start_tracking: boolean }, 
+    config: { sensor_ids: string[]; start_tracking: boolean; min_temp?: number; max_temp?: number }, 
     token?: string
 ): Promise<{ status: string; error?: string }> {
     try {

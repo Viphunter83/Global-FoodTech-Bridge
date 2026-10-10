@@ -17,10 +17,15 @@ import { Thermometer, Cpu, RefreshCcw, ShieldCheck, Wifi, Battery, Plus, Trash2,
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
+export interface SlaLimits {
+    minTemp?: number;
+    maxTemp?: number;
+}
+
 interface PairSensorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onPair: (sensorIds: string[], startTracking: boolean) => void;
+    onPair: (sensorIds: string[], startTracking: boolean, limits: SlaLimits) => void;
     batchId: string;
 }
 
@@ -31,6 +36,15 @@ export function PairSensorModal({ isOpen, onClose, onPair, batchId }: PairSensor
     const [currentInput, setCurrentInput] = useState('');
     const [startTracking, setStartTracking] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    // Empty means "keep the batch's current / product-default limit"
+    const [minTemp, setMinTemp] = useState('');
+    const [maxTemp, setMaxTemp] = useState('');
+
+    const parseLimit = (value: string) => (value.trim() === '' ? undefined : Number(value));
+    const limits: SlaLimits = { minTemp: parseLimit(minTemp), maxTemp: parseLimit(maxTemp) };
+    const limitsInvalid =
+        [limits.minTemp, limits.maxTemp].some((v) => v !== undefined && Number.isNaN(v)) ||
+        (limits.minTemp !== undefined && limits.maxTemp !== undefined && limits.minTemp >= limits.maxTemp);
 
     const addSensor = () => {
         const input = currentInput.trim();
@@ -69,6 +83,10 @@ export function PairSensorModal({ isOpen, onClose, onPair, batchId }: PairSensor
 
     const handleStartSync = () => {
         if (sensorIds.length === 0) return;
+        if (limitsInvalid) {
+            toast.error(t('sla_invalid'));
+            return;
+        }
         setIsSyncing(true);
         // Professional simulation of connecting to multiple devices
         setTimeout(() => {
@@ -81,12 +99,14 @@ export function PairSensorModal({ isOpen, onClose, onPair, batchId }: PairSensor
     };
 
     const handleFinalize = () => {
-        onPair(sensorIds, startTracking);
+        onPair(sensorIds, startTracking, limits);
         onClose();
         setTimeout(() => {
             setStep('ID');
             setSensorIds([]);
             setStartTracking(true);
+            setMinTemp('');
+            setMaxTemp('');
         }, 300);
     };
 
@@ -193,12 +213,41 @@ export function PairSensorModal({ isOpen, onClose, onPair, batchId }: PairSensor
                                             className="data-[state=checked]:bg-primary"
                                         />
                                     </div>
+
+                                    <div className="space-y-2 pt-2 border-t border-primary/10">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                                            <Thermometer size={12} /> {t('sla_temp_label')}
+                                        </Label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <Input
+                                                type="number"
+                                                inputMode="decimal"
+                                                placeholder={t('sla_min')}
+                                                aria-label={t('sla_min')}
+                                                value={minTemp}
+                                                onChange={(e) => setMinTemp(e.target.value)}
+                                                className="rounded-xl"
+                                            />
+                                            <Input
+                                                type="number"
+                                                inputMode="decimal"
+                                                placeholder={t('sla_max')}
+                                                aria-label={t('sla_max')}
+                                                value={maxTemp}
+                                                onChange={(e) => setMaxTemp(e.target.value)}
+                                                className="rounded-xl"
+                                            />
+                                        </div>
+                                        <p className={`text-[9px] italic font-medium ${limitsInvalid ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                            {limitsInvalid ? t('sla_invalid') : t('sla_hint')}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <Button 
                                     className="w-full min-h-[4rem] h-auto py-4 rounded-[1.5rem] bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 disabled:opacity-50 whitespace-normal leading-tight px-6 text-xs"
                                     onClick={handleStartSync}
-                                    disabled={sensorIds.length === 0 || isSyncing}
+                                    disabled={sensorIds.length === 0 || isSyncing || limitsInvalid}
                                 >
                                     {isSyncing ? <RefreshCcw className="animate-spin mr-3 h-5 w-5 shrink-0" /> : t('start_handshake')}
                                 </Button>

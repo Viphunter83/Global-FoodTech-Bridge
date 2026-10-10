@@ -327,13 +327,15 @@ func (h *Handler) updateSensor(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		SensorIDs     []string `json:"sensor_ids"`
 		StartTracking bool     `json:"start_tracking"`
+		MinTemp       *float64 `json:"min_temp"`
+		MaxTemp       *float64 `json:"max_temp"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.UpdateIOTConfig(r.Context(), id, req.SensorIDs, req.StartTracking); err != nil {
+	if err := h.service.UpdateIOTConfig(r.Context(), id, req.SensorIDs, req.StartTracking, req.MinTemp, req.MaxTemp); err != nil {
 		internalError(w, r, err)
 		return
 	}

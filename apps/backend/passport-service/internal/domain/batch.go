@@ -55,8 +55,9 @@ type CreateBatchRequest struct {
 	UnitOfMeasure      string             `json:"unit_of_measure"`
 	OriginCountry      string             `json:"origin_country"`
 	DestinationCountry string             `json:"destination_country"`
-	MinTemp            float64            `json:"min_temp,omitempty"`
-	MaxTemp            float64            `json:"max_temp,omitempty"`
+	// Explicit SLA limits override the compliance-rule defaults
+	MinTemp            *float64           `json:"min_temp,omitempty"`
+	MaxTemp            *float64           `json:"max_temp,omitempty"`
 	MinHumidity        float64            `json:"min_humidity,omitempty"`
 	MaxHumidity        float64            `json:"max_humidity,omitempty"`
 	TokenURI           string             `json:"token_uri,omitempty"`

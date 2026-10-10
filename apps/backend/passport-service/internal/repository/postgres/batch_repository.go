@@ -114,23 +114,18 @@ func (r *BatchRepository) UpdateBlockchainHash(ctx context.Context, id uuid.UUID
 	return err
 }
 
-func (r *BatchRepository) UpdateIOTConfig(ctx context.Context, id uuid.UUID, sensorIDs []string, startTracking bool) error {
-	if startTracking {
-		query := `
-			UPDATE product_batches
-			SET sensor_ids = $1, tracking_started_at = NOW()
-			WHERE id = $2
-		`
-		_, err := r.db.Exec(ctx, query, sensorIDs, id)
-		return err
-	}
-
+// UpdateIOTConfig links sensors, optionally starts tracking and, when given,
+// sets the SLA temperature limits (nil keeps the current value).
+func (r *BatchRepository) UpdateIOTConfig(ctx context.Context, id uuid.UUID, sensorIDs []string, startTracking bool, minTemp, maxTemp *float64) error {
 	query := `
 		UPDATE product_batches
-		SET sensor_ids = $1
+		SET sensor_ids = $1,
+			tracking_started_at = CASE WHEN $3 THEN COALESCE(tracking_started_at, NOW()) ELSE tracking_started_at END,
+			min_temp = COALESCE($4, min_temp),
+			max_temp = COALESCE($5, max_temp)
 		WHERE id = $2
 	`
-	_, err := r.db.Exec(ctx, query, sensorIDs, id)
+	_, err := r.db.Exec(ctx, query, sensorIDs, id, startTracking, minTemp, maxTemp)
 	return err
 }
 

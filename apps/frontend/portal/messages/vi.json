@@ -712,7 +712,12 @@
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
     "devices_linked": "{count} Devices Linked",
-    "max_sensors_reached": "Tối đa {count} cảm biến cho mỗi lô"
+    "max_sensors_reached": "Tối đa {count} cảm biến cho mỗi lô",
+    "sla_temp_label": "Ngưỡng nhiệt độ SLA (°C)",
+    "sla_min": "Tối thiểu",
+    "sla_max": "Tối đa",
+    "sla_hint": "Để trống để dùng giá trị mặc định của sản phẩm",
+    "sla_invalid": "Giá trị tối thiểu phải nhỏ hơn tối đa"
   },
   "NotFound": {
     "title": "Page Not Found",
