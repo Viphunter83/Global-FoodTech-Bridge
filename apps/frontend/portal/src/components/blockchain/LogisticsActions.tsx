@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { PackageCheck, AlertTriangle, CheckCircle, Loader2, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { LOGISTICS_ADDR } from '@/lib/constants';
 
 interface LogisticsActionsProps {
     status: any;
@@ -24,8 +23,8 @@ export function LogisticsActions({
 }: LogisticsActionsProps) {
     const t = useTranslations('Tracking');
 
-    const isPendingForLogistics = status.pendingOwner === LOGISTICS_ADDR;
-    const isCurrentOwner = status.owner === LOGISTICS_ADDR;
+    const isPendingForLogistics = status.pendingOwnerRole === 'LOGISTICS';
+    const isCurrentOwner = status.ownerRole === 'LOGISTICS';
 
     return (
         <div className="space-y-6">
@@ -42,7 +41,7 @@ export function LogisticsActions({
             )}
 
             {/* B. Update Shipping Status (We are Owner) */}
-            {isCurrentOwner && !status.pendingOwner && (
+            {isCurrentOwner && !status.pendingOwnerRole && (
                 <div className="bg-muted/20 p-8 rounded-[2rem] border border-primary/5 shadow-inner space-y-6">
                     <label className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] flex items-center gap-2">
                         <MapPin size={12} />
@@ -79,7 +78,7 @@ export function LogisticsActions({
             )}
 
             {/* C. Forward to Retailer */}
-            {isCurrentOwner && !status.pendingOwner && (
+            {isCurrentOwner && !status.pendingOwnerRole && (
                 <Button 
                     onClick={onTransfer} 
                     variant="outline" 

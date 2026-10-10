@@ -5,7 +5,6 @@ import { useDemoState } from '../providers/DemoStateProvider';
 import { useBlockchainOperations } from '@/hooks/useBlockchainOperations';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Package, RefreshCcw, Loader2 } from 'lucide-react';
-import { MANUFACTURER_ADDR, LOGISTICS_ADDR, RETAILER_ADDR } from '@/lib/constants';
 import { PairSensorModal } from '../iot/PairSensorModal';
 
 // Sub-components
@@ -106,13 +105,12 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                         batchId={batchId}
                         isVerified={status.verified}
                         sensorPaired={status.sensorPaired}
-                        pendingOwner={status.pendingOwner}
-                        owner={status.owner}
-                        manufacturerAddr={MANUFACTURER_ADDR}
+                        pendingOwnerRole={status.pendingOwnerRole}
+                        ownerRole={status.ownerRole}
                         onNotarize={ops.notarize}
                         onPairSensor={() => setIsPairingModalOpen(true)}
                         onUnbindSensor={ops.unbindSensor}
-                        onTransfer={() => ops.initiateTransfer(LOGISTICS_ADDR)}
+                        onTransfer={() => ops.initiateTransfer('LOGISTICS')}
                         loading={ops.loading}
                     />
                 )}
@@ -120,8 +118,8 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 {(role === 'LOGISTICS' || role === 'ADMIN') && status.verified && (
                     <LogisticsActions
                         status={status}
-                        onAccept={() => ops.acceptTransfer(LOGISTICS_ADDR)}
-                        onTransfer={() => ops.initiateTransfer(RETAILER_ADDR)}
+                        onAccept={() => ops.acceptTransfer('LOGISTICS')}
+                        onTransfer={() => ops.initiateTransfer('RETAILER')}
                         onReport={() => ops.report(t('violation_logistics'))}
                         onUnbindSensor={ops.unbindSensor}
                         onStatusUpdate={(id, label) => updateBatchState(batchId, { shippingStatus: id, shippingStatusLabel: label })}
@@ -132,7 +130,7 @@ export function BlockchainControls({ batchId, blockchainStatus, onRefresh }: Blo
                 {(role === 'RETAILER' || role === 'ADMIN') && status.verified && (
                     <RetailerActions
                         status={status}
-                        onAccept={() => ops.acceptTransfer(RETAILER_ADDR)}
+                        onAccept={() => ops.acceptTransfer('RETAILER')}
                         onReport={() => ops.report(t('violation_retail'))}
                         loading={ops.loading}
                     />

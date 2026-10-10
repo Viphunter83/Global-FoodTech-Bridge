@@ -46,7 +46,8 @@
     "batch_id": "ID Партии:",
     "report_issue": "Сообщить о проблеме / Спор",
     "scan_share": "Сканируйте для проверки этой партии на другом устройстве",
-    "btn_download_report": "Экспорт аудита (PDF)"
+    "btn_download_report": "Экспорт аудита (PDF)",
+    "certificate": "Сертификат"
   },
   "Hero": {
     "title": "Доверяйте каждому узлу в вашей цепочке.",
@@ -237,7 +238,8 @@
     "pending_deployment": "Ожидание развертывания",
     "fleet_health": "Состояние парка",
     "syncing_devices": "Синхронизация {count} устройств",
-    "devices_linked": "{count} устройств привязано"
+    "devices_linked": "{count} устройств привязано",
+    "max_sensors_reached": "Не более {count} датчиков на партию"
   },
   "Tracking": {
     "live_tracking": "Отслеживание в реальном времени",
@@ -392,7 +394,14 @@
     "block_label": "Блок",
     "breach_hero_title": "Зафиксировано нарушение холодовой цепи",
     "breach_hero_desc": "Продукт подлинный, но условия хранения при транспортировке были нарушены",
-    "metadata_unavailable": "Документы ещё не загружены"
+    "metadata_unavailable": "Документы ещё не загружены",
+    "blockchain_records": "Записи в блокчейне",
+    "live_iot_indicator": "IoT онлайн",
+    "retailer_checkpoint": "Пункт ритейлера",
+    "timeline_update_checkpoint": "Обновить контрольную точку",
+    "tooltip_temp": "Температура",
+    "tooltip_humidity": "Влажность",
+    "tooltip_verified": "Подтверждённая позиция"
   },
   "Auth": {
     "login_title": "Безопасный доступ",
@@ -412,7 +421,10 @@
     "role_manufacturer": "Производитель",
     "role_logistics": "Логистический узел",
     "role_retailer": "Ритейлер",
-    "role_persona": "Роль:"
+    "role_persona": "Роль:",
+    "error_email_already_in_use": "Этот email уже зарегистрирован",
+    "error_popup_blocked": "Окно входа заблокировано. Разрешите всплывающие окна и попробуйте снова",
+    "verified_badge": "Проверено"
   },
   "Admin": {
     "monitoring_title": "Мониторинг инфраструктуры",
@@ -636,7 +648,9 @@
     "table_created": "Создано",
     "no_operational_data": "Операционные данные в реестре отсутствуют",
     "status_active": "Активен",
-    "btn_details": "Подробнее"
+    "btn_details": "Подробнее",
+    "sensors_title": "IoT-парк",
+    "sensors_description": "Мониторинг и управление парком IoT-датчиков"
   },
   "HowItWorks": {
     "how_title": "Как работает GFTB Bridge",
@@ -712,6 +726,16 @@
     "verifyDescription": "Цифровой паспорт {product} из {country}, подтверждённый блокчейном.",
     "blockchainVerified": "Подтверждено блокчейном",
     "ogDescription": "Проверьте происхождение, документы и холодовую цепь партии {id}.",
-    "scanTitle": "Сканирование партии"
+    "scanTitle": "Сканирование партии",
+    "scanDescription": "Результат сканирования партии {id}"
+  },
+  "Batches": {
+    "notFound": "Партия не найдена",
+    "detailsTitle": "Партия",
+    "detailsDescription": "Терминал отслеживания партии {id}"
+  },
+  "Blockchain": {
+    "real_time_notary": "Нотариат в реальном времени",
+    "integrity_vault": "Хранилище целостности"
   }
 }

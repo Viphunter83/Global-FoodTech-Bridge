@@ -6,9 +6,8 @@ interface ManufacturerActionsProps {
     batchId: string;
     isVerified: boolean;
     sensorPaired?: boolean;
-    pendingOwner?: string | null;
-    owner?: string;
-    manufacturerAddr: string;
+    pendingOwnerRole?: string | null;
+    ownerRole?: string;
     onPairSensor: () => void;
     onUnbindSensor: () => void;
     onTransfer: () => void;
@@ -19,9 +18,8 @@ interface ManufacturerActionsProps {
 export function ManufacturerActions({
     isVerified,
     sensorPaired,
-    pendingOwner,
-    owner,
-    manufacturerAddr,
+    pendingOwnerRole,
+    ownerRole,
     onPairSensor,
     onUnbindSensor,
     onTransfer,
@@ -45,7 +43,9 @@ export function ManufacturerActions({
         );
     }
 
-    const isCurrentOwner = owner === manufacturerAddr;
+    // Ownership is compared by role: the backend resolves custodial wallets per role
+    const isCurrentOwner = (ownerRole ?? 'MANUFACTURER') === 'MANUFACTURER';
+    const pendingOwner = pendingOwnerRole;
 
     return (
         <div className="space-y-6">

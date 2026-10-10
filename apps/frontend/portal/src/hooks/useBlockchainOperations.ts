@@ -11,7 +11,6 @@ import {
     updateBatchIOTConfig,
     unbindBatchSensors
 } from '@/lib/api';
-import { MANUFACTURER_ADDR } from '@/lib/constants';
 import { toast } from 'sonner';
 
 export function useBlockchainOperations(batchId: string) {
@@ -89,20 +88,20 @@ export function useBlockchainOperations(batchId: string) {
         // The backend anchors the batch's own IPFS metadata URI from the passport
         (token) => notarizeBatch(batchId, undefined, token),
         { status: 'Notarizing...', verified: false },
-        (txHash) => ({ status: 'Notarized', verified: true, txHash, owner: MANUFACTURER_ADDR }),
+        (txHash) => ({ status: 'Notarized', verified: true, txHash, ownerRole: 'MANUFACTURER' }),
         (txHash, token) => updateBatchBlockchainHash(batchId, txHash, token)
     );
 
-    const initiateTransfer = (toAddress: string) => handleAction(
-        (token) => initiateHandover(batchId, toAddress, token),
-        { pendingOwner: toAddress },
-        () => ({ pendingOwner: toAddress })
+    const initiateTransfer = (toRole: 'LOGISTICS' | 'RETAILER') => handleAction(
+        (token) => initiateHandover(batchId, toRole, token),
+        { pendingOwnerRole: toRole },
+        () => ({ pendingOwnerRole: toRole })
     );
 
-    const acceptTransfer = (newOwner: string) => handleAction(
+    const acceptTransfer = (newRole: 'LOGISTICS' | 'RETAILER') => handleAction(
         (token) => acceptHandover(batchId, token),
         { status: 'Accepting...' },
-        (txHash) => ({ owner: newOwner, pendingOwner: null, txHash }),
+        (txHash) => ({ ownerRole: newRole, pendingOwnerRole: null, pendingOwner: null, txHash }),
         (txHash, token) => updateBatchBlockchainHash(batchId, txHash, token)
     );
 

@@ -295,7 +295,16 @@ export class BlockchainService implements OnModuleInit {
     /**
      * Step 1: Initiate Transfer
      */
-    async initiateTransfer(batchId: string, toAddress: string): Promise<string> {
+    /** Custodial wallet address that represents a supply-chain role. */
+    walletForRole(role: string): string {
+        switch (role) {
+            case 'LOGISTICS': return this.logisticsWallet.address;
+            case 'RETAILER': return this.retailerWallet.address;
+            default: throw new Error(`Unknown transfer role: ${role}`);
+        }
+    }
+
+    async initiateTransfer(batchId: string, toAddress: string, toRole?: string): Promise<string> {
         if (this.isMockMode) {
             this.logger.log(`[MOCK] Initiating transfer of ${batchId} to ${toAddress}`);
             const state = this.mockStore.get(batchId);
@@ -325,9 +334,11 @@ export class BlockchainService implements OnModuleInit {
                 batchId
             );
 
-            // Single-wallet logic: advance logical role to pending
+            // Single-wallet logic: record the logical role of the pending owner
             const currentRole = await this.redis.get(`batch_role:${batchId}`);
-            if (currentRole === 'MANUFACTURER') {
+            if (toRole) {
+                await this.redis.set(`pending_batch_role:${batchId}`, toRole);
+            } else if (currentRole === 'MANUFACTURER') {
                 await this.redis.set(`pending_batch_role:${batchId}`, 'LOGISTICS');
             } else if (currentRole === 'LOGISTICS') {
                 await this.redis.set(`pending_batch_role:${batchId}`, 'RETAILER');
@@ -455,7 +466,10 @@ export class BlockchainService implements OnModuleInit {
                 pendingOwnerRole: pendingOwnerRole
             };
         } catch (error) {
-            this.logger.error(`Failed to get batch data for ${batchId}`, error);
+            // Not yet notarized is a normal state, not an error
+            if (error?.reason !== 'Batch not found') {
+                this.logger.error(`Failed to get batch data for ${batchId}`, error);
+            }
             return { exists: false };
         }
     }
