@@ -1,5 +1,7 @@
 #!/bin/bash
-API_KEY="ftb_internal_9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d"
+: "${INTERNAL_API_KEY:?Set INTERNAL_API_KEY}"
+: "${MANUFACTURER_ID_TOKEN:?Set MANUFACTURER_ID_TOKEN (Firebase ID token of a manufacturer)}"
+API_KEY="$INTERNAL_API_KEY"
 PASSPORT_URL="https://chic-playfulness-production-d0d6.up.railway.app/api/v1"
 TELEMETRY_URL="https://celebrated-consideration-production.up.railway.app/api/v1"
 BLOCKCHAIN_URL="https://global-foodtech-bridge-production.up.railway.app/api/v1"
@@ -8,7 +10,7 @@ echo "🚀 Stage 1: Creating Premium Vietnam Mango Batch (Export to USA)..."
 RESPONSE=$(curl -s -X POST $PASSPORT_URL/batches \
   -H "Content-Type: application/json" \
   -H "x-api-key: $API_KEY" \
-  -H "X-User-Role: MANUFACTURER" \
+  -H "Authorization: Bearer $MANUFACTURER_ID_TOKEN" \
   -d '{
     "manufacturer_id": "550e8400-e29b-41d4-a716-446655440000", 
     "product_type": "DRIED_MANGO_PREMIUM", 

@@ -1,8 +1,10 @@
 #!/bin/bash
+: "${INTERNAL_API_KEY:?Set INTERNAL_API_KEY}"
+: "${MANUFACTURER_ID_TOKEN:?Set MANUFACTURER_ID_TOKEN (Firebase ID token)}"
 
 # 1. Create Batch (Pho Bo Soup: Min -25, Max -18)
 echo "Creating Batch..."
-RESPONSE=$(curl -s -X POST http://localhost:8080/api/v1/batches \
+RESPONSE=$(curl -s -X POST -H "x-api-key: $INTERNAL_API_KEY" -H "Authorization: Bearer $MANUFACTURER_ID_TOKEN" http://localhost:8080/api/v1/batches \
   -H "Content-Type: application/json" \
   -d '{"manufacturer_id": "550e8400-e29b-41d4-a716-446655440000", "product_type": "PHO_BO_SOUP", "batch_size": 100}')
 
@@ -16,7 +18,7 @@ echo "✅ Batch Created: $BATCH_ID"
 
 # 2. Send Violation (-10C, Limit is -18C)
 echo "Sending Temperature: -10C (Violation)..."
-curl -s -o /dev/null -X POST http://localhost:8081/api/v1/telemetry \
+curl -s -o /dev/null -X POST -H "x-api-key: $INTERNAL_API_KEY" http://localhost:8081/api/v1/telemetry \
   -H "Content-Type: application/json" \
   -d "{
     \"batch_id\": \"$BATCH_ID\",
@@ -27,7 +29,7 @@ curl -s -o /dev/null -X POST http://localhost:8081/api/v1/telemetry \
 # 3. Check Alerts
 echo "Checking Alerts..."
 sleep 1
-ALERTS=$(curl -s http://localhost:8081/api/v1/telemetry/$BATCH_ID/alerts)
+ALERTS=$(curl -s -H "x-api-key: $INTERNAL_API_KEY" http://localhost:8081/api/v1/telemetry/$BATCH_ID/alerts)
 echo "Alerts Response: $ALERTS"
 
 if [[ $ALERTS == *"TEMP_HIGH"* ]]; then

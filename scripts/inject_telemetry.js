@@ -35,16 +35,18 @@ async function run() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': INTERNAL_API_KEY,    // using correct header for IoT RoleMiddleware
-                    'x-user-role': 'SYSTEM'
+                    'x-api-key': INTERNAL_API_KEY, // gateway auth (SERVICE role)
                 },
+                // Field names must match iot-service IngestTelemetryRequest; the device
+                // must be one of the batch's linked sensor_ids
                 body: JSON.stringify({
                     batch_id: BATCH_ID,
-                    sensor_id: `sensor-mango-${BATCH_ID.substring(0,6)}`,
-                    temperature: point.temp,
+                    device_id: process.env.DEVICE_ID || `sensor-mango-${BATCH_ID.substring(0,6)}`,
+                    temp: point.temp,
                     humidity: point.hum,
-                    gps_coordinates: `${point.gps.lat},${point.gps.lng}`,
-                    timestamp: new Date().toISOString()
+                    lat: point.gps.lat,
+                    lon: point.gps.lng,
+                    ts: new Date().toISOString()
                 })
             });
             if (!res.ok) {

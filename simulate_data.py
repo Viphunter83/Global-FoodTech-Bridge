@@ -3,18 +3,25 @@ import json
 import time
 import datetime
 import random
+import os
 
 PASSPORT_URL = "http://localhost:8080/api/v1"
 IOT_URL = "http://localhost:8081/api/v1"
+
+# The service key authenticates the gateway; the user role comes only from a Firebase ID token
+SERVICE_HEADERS = {"x-api-key": os.environ["INTERNAL_API_KEY"]}
+USER_HEADERS = {**SERVICE_HEADERS, "Authorization": f"Bearer {os.environ['MANUFACTURER_ID_TOKEN']}"}
 
 def create_batch():
     payload = {
         "manufacturer_id": "550e8400-e29b-41d4-a716-446655440000",
         "product_type": "PHO_BO_SOUP",
-        "batch_size": 500
+        "batch_size": 500,
+        "origin_country": "Vietnam",
+        "destination_country": "Russia",
     }
     try:
-        r = requests.post(f"{PASSPORT_URL}/batches", json=payload)
+        r = requests.post(f"{PASSPORT_URL}/batches", json=payload, headers=USER_HEADERS)
         r.raise_for_status()
         data = r.json()
         print(f"✅ Batch Created: {data['batch_id']}")
@@ -48,21 +55,12 @@ def inject_telemetry(batch_id):
             "temp": round(temp, 2),
             "lat": 55.75 + (i * 0.001), # Moving slightly
             "lon": 37.61 + (i * 0.001),
-            "timestamp": ts.isoformat() # Note: API might create its own timestamp if not accepted, 
-            # checking handler: TelemetryService.IngestData sets Timestamp: time.Now()
-            # Ah, the current implementation overrides timestamp!
-            # To make history work, we would need to accept timestamp in API.
-            # But currently `IngestData` (lines 46 in telemetry_service.go) does: Timestamp: time.Now().
-            # So I can only generate "Real-time" data. 
-            # I cannot backfill history without changing backend.
+            # Device measurement time; iot-service accepts readings up to 7 days old
+            "ts": ts.astimezone(datetime.timezone.utc).isoformat(),
         }
         
-        # Correction: Since I can only do real-time, I will just send 5 points quickly.
-        # But wait, the chart will show them all clustered at current time.
-        # It's better than nothing.
-        
         try:
-            r = requests.post(f"{IOT_URL}/telemetry", json=payload)
+            r = requests.post(f"{IOT_URL}/telemetry", json=payload, headers=SERVICE_HEADERS)
             r.raise_for_status()
             print(f"   -> Point {i+1}: {temp}C")
         except Exception as e:
