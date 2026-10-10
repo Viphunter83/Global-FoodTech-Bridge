@@ -1,3 +1,4 @@
+import { getBatchDetailsCached } from '@/lib/batch-details-cache';
 import { getBatchDetails, getTelemetry, getBlockchainStatus, getAlerts, getBlockchainHistory } from '@/lib/api';
 import { BatchDetailsClient } from './BatchDetailsClient';
 import { notFound } from 'next/navigation';
@@ -13,7 +14,7 @@ interface PageProps {
 
 export async function generateMetadata({ params: { locale, id } }: PageProps): Promise<Metadata> {
     const t = await getTranslations({ locale, namespace: 'Batches' });
-    const batch = await getBatchDetails(id);
+    const batch = await getBatchDetailsCached(id);
     
     if (!batch) return { title: t('notFound') };
     
@@ -26,7 +27,7 @@ export async function generateMetadata({ params: { locale, id } }: PageProps): P
 export default async function BatchDetailsPage({ params: { locale, id } }: PageProps) {
     unstable_setRequestLocale(locale);
 
-    const batch = await getBatchDetails(id);
+    const batch = await getBatchDetailsCached(id);
     if (!batch) {
         notFound();
     }
