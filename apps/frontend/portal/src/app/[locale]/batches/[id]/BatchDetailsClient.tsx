@@ -61,7 +61,7 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
             setIsRefreshing(true);
             const token = await auth.currentUser?.getIdToken();
             
-            const res = await fetch(`/api/telemetry/${batch.id}`, {
+            const res = await fetch(`/api/telemetry/telemetry/${batch.id}`, {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             
@@ -73,7 +73,8 @@ export function BatchDetailsClient({ batch, telemetry: initialTelemetry, blockch
 
             if (res.ok) {
                 const data = await res.json();
-                setTelemetry(data);
+                // iot-service encodes an empty result as null
+                setTelemetry(Array.isArray(data) ? data : []);
             }
         } catch (error) {
             console.error('Failed to fetch live telemetry:', error);

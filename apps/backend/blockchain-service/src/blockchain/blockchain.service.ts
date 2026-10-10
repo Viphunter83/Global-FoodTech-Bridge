@@ -17,14 +17,15 @@ const REGISTRY_ABI = [
     "event ViolationReported(uint256 indexed tokenId, string details, address indexed reporter, uint256 timestamp)"
 ];
 
-// Providers commonly cap eth_getLogs at 10k blocks; the x402 gateway allows a larger range.
-const HISTORY_CHUNK_SIZE = 9_999;
-const HISTORY_CHUNK_SIZE_X402 = 100_000;
-const HISTORY_MAX_CHUNKS_PER_REQUEST = 50;
-const HISTORY_CACHE_TTL_SECONDS = 7 * 24 * 3600;
+// Public RPC plans cap eth_getLogs to tiny block ranges (dRPC free: ~100 blocks), so the
+// batch history is indexed when this service writes a transaction, and backfilled once
+// from the block explorer API when ETHERSCAN_API_KEY is configured.
+const EXPLORER_API_URL = 'https://api.etherscan.io/v2/api';
+const HISTORY_EVENTS = ['BatchCreated', 'TransferInitiated', 'TransferCompleted', 'ViolationReported'];
 
 interface HistoryLog {
     type: string;
+    logIndex: number;
     args: string[];
     blockNumber: number;
     transactionHash: string;
@@ -50,6 +51,7 @@ export class BlockchainService implements OnModuleInit {
     private contract: Contract;
     private isMockMode: boolean = false;
     private usesX402 = false;
+    private chainId: bigint = BigInt(0);
     private readonly walletMutexes = new Map<string, Mutex>();
 
     // Mock Store
@@ -68,7 +70,7 @@ export class BlockchainService implements OnModuleInit {
     /**
      * Helper to execute transaction with manual nonce management (queued via Mutex)
      */
-    private async executeTransaction(signer: Wallet, contractCall: () => Promise<any>): Promise<any> {
+    private async executeTransaction(signer: Wallet, contractCall: () => Promise<any>, batchId?: string): Promise<any> {
         const mutex = this.getMutexForAddress(signer.address);
         
         return await mutex.runExclusive(async () => {
@@ -80,6 +82,10 @@ export class BlockchainService implements OnModuleInit {
                 this.logger.log(`[NONCE-MANAGER] TX Sent: ${tx.hash}. Waiting for confirmation...`);
                 const receipt = await tx.wait();
                 this.logger.log(`[NONCE-MANAGER] TX Confirmed in block ${receipt.blockNumber}`);
+                if (batchId) {
+                    await this.recordReceipt(batchId, receipt).catch((e) =>
+                        this.logger.warn(`History index update failed for ${batchId}: ${e.message}`));
+                }
                 return tx;
             } catch (error) {
                 this.logger.error(`[NONCE-MANAGER] Transaction failed: ${error.message}`);
@@ -178,6 +184,7 @@ export class BlockchainService implements OnModuleInit {
             // Fail loudly instead of silently talking to the wrong network
             const expectedChainId = this.configService.get<string>('CHAIN_ID');
             const { chainId } = await this.provider.getNetwork();
+            this.chainId = chainId;
             if (expectedChainId && chainId.toString() !== expectedChainId) {
                 throw new Error(`RPC_URL points to chain ${chainId}, but CHAIN_ID=${expectedChainId}`);
             }
@@ -211,7 +218,8 @@ export class BlockchainService implements OnModuleInit {
         try {
             // Manufacturer creates batch
             const tx = await this.executeTransaction(this.manufacturerWallet, () => 
-                (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri)
+                (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri),
+                batchId
             );
             
             // Set initial logical role for single-wallet notary model
@@ -236,7 +244,8 @@ export class BlockchainService implements OnModuleInit {
 
         try {
             const tx = await this.executeTransaction(this.manufacturerWallet, () => 
-                this.contract.reportViolation(batchId, details)
+                this.contract.reportViolation(batchId, details),
+                batchId
             );
 
             // Sync with Passport Service (Business Logic state)
@@ -312,7 +321,8 @@ export class BlockchainService implements OnModuleInit {
             this.logger.log(`Initiating transfer of ${batchId} to ${toAddress}. Signer: ${signer.address}`);
 
             const tx = await this.executeTransaction(signer, () => 
-                (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress)
+                (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress),
+                batchId
             );
 
             // Single-wallet logic: advance logical role to pending
@@ -371,7 +381,8 @@ export class BlockchainService implements OnModuleInit {
             this.logger.log(`Signing acceptTransfer with ${signer.address}`);
 
             const tx = await this.executeTransaction(signer, () => 
-                (this.contract.connect(signer as any) as any).acceptTransfer(tokenId)
+                (this.contract.connect(signer as any) as any).acceptTransfer(tokenId),
+                batchId
             );
 
             // Single-wallet logic: finalize logical role
@@ -512,7 +523,7 @@ export class BlockchainService implements OnModuleInit {
                 };
             }));
 
-            return history.sort((a, b) => a.timestamp - b.timestamp);
+            return history.sort((a, b) => a.timestamp - b.timestamp || a.blockNumber - b.blockNumber);
 
         } catch (error) {
             this.logger.error(`Failed to fetch history for ${batchId}`, error);
@@ -520,92 +531,106 @@ export class BlockchainService implements OnModuleInit {
         }
     }
 
-    /**
-     * Collects all registry events for a batch without hitting RPC range limits.
-     *
-     * The scan starts at the block where the batch was created (found by binary search on
-     * the on-chain creation time), walks forward in chunks the provider accepts, and keeps
-     * the result plus the last scanned block in Redis so later requests only scan new blocks.
-     */
-    private async collectHistoryLogs(batchId: string): Promise<HistoryLog[]> {
-        const cacheKey = `history:${batchId}`;
-        let cache: { lastBlock: number; logs: HistoryLog[] } | null = null;
-        try {
-            const raw = await this.redis.get(cacheKey);
-            if (raw) cache = JSON.parse(raw);
-        } catch (e) {
-            this.logger.warn(`History cache read failed for ${batchId}: ${e.message}`);
-        }
-
-        const latestBlock = await this.provider.getBlockNumber();
-        let fromBlock: number;
-        if (cache) {
-            fromBlock = cache.lastBlock + 1;
-        } else {
-            const data = await this.contract.getBatchData(batchId);
-            const createdAt = Number(data[4]);
-            if (!createdAt) return []; // batch is not on-chain
-            fromBlock = await this.findBlockByTimestamp(createdAt, latestBlock);
-        }
-
-        const logs = cache ? [...cache.logs] : [];
-        const tokenIdTopic = ethers.zeroPadValue(ethers.toBeHex(ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]))), 32);
-        const iface = this.contract.interface;
-        const eventNames = ['BatchCreated', 'TransferInitiated', 'TransferCompleted', 'ViolationReported'];
-        const topic0 = eventNames.map(name => iface.getEvent(name)!.topicHash);
-        const contractAddress = await this.contract.getAddress();
-
-        let scannedTo = fromBlock - 1;
-        for (let chunk = 0; chunk < HISTORY_MAX_CHUNKS_PER_REQUEST && scannedTo < latestBlock; chunk++) {
-            const from = scannedTo + 1;
-            const to = Math.min(from + (this.usesX402 ? HISTORY_CHUNK_SIZE_X402 : HISTORY_CHUNK_SIZE) - 1, latestBlock);
-            const rawLogs = await this.provider.getLogs({
-                address: contractAddress,
-                topics: [topic0, tokenIdTopic],
-                fromBlock: from,
-                toBlock: to,
-            });
-            for (const rawLog of rawLogs) {
-                const parsed = iface.parseLog(rawLog);
-                if (!parsed) continue;
-                const block = await this.provider.getBlock(rawLog.blockNumber);
-                logs.push({
-                    type: parsed.name,
-                    args: parsed.args.map((a: any) => a.toString()),
-                    blockNumber: rawLog.blockNumber,
-                    transactionHash: rawLog.transactionHash,
-                    timestamp: block ? block.timestamp * 1000 : Date.now(),
-                });
-            }
-            scannedTo = to;
-        }
-
-        if (scannedTo < latestBlock) {
-            this.logger.warn(`History for ${batchId} is partial: scanned up to block ${scannedTo} of ${latestBlock}; the next request continues from there`);
-        }
-
-        try {
-            await this.redis.set(cacheKey, JSON.stringify({ lastBlock: scannedTo, logs }), 'EX', HISTORY_CACHE_TTL_SECONDS);
-        } catch (e) {
-            this.logger.warn(`History cache write failed for ${batchId}: ${e.message}`);
-        }
-        return logs;
+    private historyKey(batchId: string): string {
+        return `history:v2:${batchId}`;
     }
 
-    /** Returns the first block whose timestamp is >= `timestamp` (seconds). */
-    private async findBlockByTimestamp(timestamp: number, latestBlock: number): Promise<number> {
-        let lo = 0;
-        let hi = latestBlock;
-        while (lo < hi) {
-            const mid = Math.floor((lo + hi) / 2);
-            const block = await this.provider.getBlock(mid);
-            if (block && block.timestamp < timestamp) {
-                lo = mid + 1;
-            } else {
-                hi = mid;
+    private async readHistoryIndex(batchId: string): Promise<{ backfilled: boolean; logs: HistoryLog[] }> {
+        const raw = await this.redis.get(this.historyKey(batchId));
+        return raw ? JSON.parse(raw) : { backfilled: false, logs: [] };
+    }
+
+    private async mergeHistory(batchId: string, newLogs: HistoryLog[], backfilled?: boolean): Promise<HistoryLog[]> {
+        const entry = await this.readHistoryIndex(batchId);
+        const seen = new Set(entry.logs.map((l) => `${l.transactionHash}:${l.logIndex}`));
+        for (const log of newLogs) {
+            const id = `${log.transactionHash}:${log.logIndex}`;
+            if (!seen.has(id)) {
+                seen.add(id);
+                entry.logs.push(log);
             }
         }
-        return lo;
+        if (backfilled) entry.backfilled = true;
+        await this.redis.set(this.historyKey(batchId), JSON.stringify(entry));
+        return entry.logs;
+    }
+
+    /** Indexes the registry events of a transaction this service has just mined. */
+    private async recordReceipt(batchId: string, receipt: any): Promise<void> {
+        const contractAddress = (await this.contract.getAddress()).toLowerCase();
+        const block = await this.provider.getBlock(receipt.blockNumber);
+        const timestamp = block ? block.timestamp * 1000 : Date.now();
+        const logs: HistoryLog[] = [];
+        for (const rawLog of receipt.logs) {
+            if (rawLog.address.toLowerCase() !== contractAddress) continue;
+            const parsed = this.contract.interface.parseLog(rawLog);
+            if (!parsed || !HISTORY_EVENTS.includes(parsed.name)) continue;
+            logs.push({
+                type: parsed.name,
+                logIndex: rawLog.index ?? rawLog.logIndex,
+                args: parsed.args.map((a: any) => a.toString()),
+                blockNumber: receipt.blockNumber,
+                transactionHash: receipt.hash,
+                timestamp,
+            });
+        }
+        if (logs.length) await this.mergeHistory(batchId, logs);
+    }
+
+    /**
+     * Returns the indexed events of a batch. The first time a batch is read, events that
+     * predate the index (or were sent by another signer) are backfilled from the explorer API.
+     */
+    private async collectHistoryLogs(batchId: string): Promise<HistoryLog[]> {
+        const entry = await this.readHistoryIndex(batchId);
+        const apiKey = this.configService.get<string>('ETHERSCAN_API_KEY');
+        if (entry.backfilled || !apiKey) {
+            return entry.logs;
+        }
+        try {
+            return await this.backfillFromExplorer(batchId, apiKey);
+        } catch (e) {
+            // Serve what the index has; the backfill is retried on the next read
+            this.logger.warn(`History backfill failed for ${batchId}: ${e.message}`);
+            return entry.logs;
+        }
+    }
+
+    private async backfillFromExplorer(batchId: string, apiKey: string): Promise<HistoryLog[]> {
+        const tokenIdTopic = ethers.zeroPadValue(ethers.toBeHex(ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]))), 32);
+        const params = new URLSearchParams({
+            chainid: this.chainId.toString(),
+            module: 'logs',
+            action: 'getLogs',
+            address: await this.contract.getAddress(),
+            topic1: tokenIdTopic,
+            fromBlock: '0',
+            toBlock: 'latest',
+            page: '1',
+            offset: '1000',
+            apikey: apiKey,
+        });
+        const res = await fetch(`${EXPLORER_API_URL}?${params}`, { signal: AbortSignal.timeout(10_000) });
+        const body: any = await res.json();
+        // status "0" with "No records found" is a valid empty result
+        if (body.status !== '1' && !/no records/i.test(body.message || '')) {
+            throw new Error(`Explorer API: ${body.message} ${typeof body.result === 'string' ? body.result : ''}`);
+        }
+
+        const logs: HistoryLog[] = [];
+        for (const rawLog of Array.isArray(body.result) ? body.result : []) {
+            const parsed = this.contract.interface.parseLog({ topics: rawLog.topics, data: rawLog.data });
+            if (!parsed || !HISTORY_EVENTS.includes(parsed.name)) continue;
+            logs.push({
+                type: parsed.name,
+                logIndex: parseInt(rawLog.logIndex, 16) || 0,
+                args: parsed.args.map((a: any) => a.toString()),
+                blockNumber: parseInt(rawLog.blockNumber, 16),
+                transactionHash: rawLog.transactionHash,
+                timestamp: parseInt(rawLog.timeStamp, 16) * 1000,
+            });
+        }
+        return this.mergeHistory(batchId, logs, true);
     }
 
     /** Reads the batch passport (owner company and IPFS metadata URI) from passport-service. */
