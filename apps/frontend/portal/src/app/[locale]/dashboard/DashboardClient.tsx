@@ -271,8 +271,17 @@ export function DashboardClient({ initialBatches }: DashboardClientProps) {
                             icon={<Thermometer className="h-5 w-5 text-primary" />}
                             title={t('Tracking.temp_title')}
                             value={currentTemp !== null ? `${currentTemp}°C` : '--'}
-                            subText={t('Tracking.temp_optimal')}
-                            isAlert={Number(currentTemp) > -18}
+                            subText={
+                                selectedBatch?.min_temp != null || selectedBatch?.max_temp != null
+                                    ? `SLA: ${selectedBatch?.min_temp ?? '−∞'}…${selectedBatch?.max_temp ?? '+∞'}°C`
+                                    : t('Tracking.sla_not_set')
+                            }
+                            isAlert={
+                                currentTemp !== null && (
+                                    (selectedBatch?.min_temp != null && Number(currentTemp) < selectedBatch.min_temp) ||
+                                    (selectedBatch?.max_temp != null && Number(currentTemp) > selectedBatch.max_temp)
+                                )
+                            }
                         />
                     </div>
 

@@ -25,6 +25,8 @@ export interface BatchDetails {
     partner_redirect_url?: string | null;
     sensor_ids?: string[];
     tracking_started_at?: string;
+    usf_status?: string;
+    blockchain_hash?: string | null;
     // IPFS Extended Data
     production_date?: string;
     expiration_date?: string;

@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/admin-guard';
-import { getAdminBatches } from '@/lib/api';
+import { getAdminBatches, getBlockchainAdminStatus } from '@/lib/api';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Metadata } from 'next';
 import { unstable_setRequestLocale, getTranslations } from 'next-intl/server';
@@ -27,11 +27,15 @@ export default async function AdminDashboardPage({ params: { locale } }: PagePro
     // In a server component, we use the internal API key automatically via lib/api.ts
     // because isServer will be true.
     const { token } = await requireAdmin();
-    const batches = await getAdminBatches(token);
+    const [batches, chainStatus] = await Promise.all([
+        getAdminBatches(token),
+        getBlockchainAdminStatus(token),
+    ]);
+    const gasBalance: string | null = chainStatus?.wallets?.[0]?.balance ?? null;
 
     return (
         <div className="container mx-auto">
-            <AdminDashboard batches={batches} />
+            <AdminDashboard batches={batches} gasBalance={gasBalance} />
         </div>
     );
 }
