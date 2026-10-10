@@ -179,7 +179,7 @@ const getHeaders = (isPost = false, token?: string, isJson = true) => {
 // --- API CLIENT ---
 
 const IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs/";
-const IPFS_TIMEOUT_MS = 2500;
+const IPFS_TIMEOUT_MS = 1500;
 
 /**
  * IPFS content is addressed by its hash and never changes, so it is cached
@@ -223,7 +223,9 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
             getBlockchainStatus(data.id),
             data.template_id ? getTemplateDetails(data.template_id).catch(() => null) : Promise.resolve(null),
             data.partner_id ? fetchPartner(data.partner_id, token) : Promise.resolve(null),
-            data.token_uri ? fetchIpfsMetadata(data.token_uri) : Promise.resolve(null),
+            // The passport already stores certificates; the slow public gateway is only
+            // needed for older batches registered without them
+            data.token_uri && !(data.certificates?.length > 0) ? fetchIpfsMetadata(data.token_uri) : Promise.resolve(null),
         ]);
 
         let history: BatchDetails['history'] = [];
@@ -304,6 +306,11 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
             manufacturer_name: data.manufacturer_name || "Global FoodTech Verified Factory",
             history,
             partner_id: data.partner_id,
+            // Browsers cannot open ipfs:// links; serve certificates through the gateway
+            certificates: data.certificates?.map((cert: any) => ({
+                ...cert,
+                uri: typeof cert.uri === 'string' ? cert.uri.replace('ipfs://', IPFS_GATEWAY) : cert.uri,
+            })),
         };
 
         if (partnerData?.verification_redirect_url) {
