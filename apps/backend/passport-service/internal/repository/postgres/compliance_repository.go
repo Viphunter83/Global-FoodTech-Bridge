@@ -46,13 +46,13 @@ func (r *ComplianceRepository) GetRules(ctx context.Context, countryCode string,
 
 func (r *ComplianceRepository) GetPartner(ctx context.Context, id string) (*domain.Partner, error) {
 	query := `
-		SELECT id, name, verification_redirect_url, api_key, created_at, is_active
+		SELECT id, name, verification_redirect_url, created_at, is_active
 		FROM partners
 		WHERE id = $1 AND is_active = TRUE
 	`
 	var p domain.Partner
 	err := r.db.QueryRow(ctx, query, id).Scan(
-		&p.ID, &p.Name, &p.VerificationRedirectURL, &p.ApiKey, &p.CreatedAt, &p.IsActive,
+		&p.ID, &p.Name, &p.VerificationRedirectURL, &p.CreatedAt, &p.IsActive,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get partner: %w", err)

@@ -4,8 +4,9 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,8 +39,8 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.RealIP)
 	r.Use(SecurityHeadersMiddleware)
+	r.Use(MaxBodyMiddleware(1 << 20)) // 1 MB
 	r.Use(NewRateLimiter(100, time.Minute).Middleware) // 100 req/min per IP
 	r.Use(h.jwtVerifier.Middleware)                    // Validate Firebase JWT if present
 
@@ -74,9 +75,17 @@ func (h *Handler) InitRoutes() *chi.Mux {
 				r.Post("/batches", h.createBatch)
 			})
 			
-			r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
-			r.Patch("/batches/{id}/sensor", h.updateSensor)
-			r.Post("/batches/{id}/violation", h.reportViolation)
+			r.Group(func(r chi.Router) {
+				r.Use(h.RoleMiddleware("MANUFACTURER", "ADMIN"))
+				r.Patch("/batches/{id}/blockchain", h.updateBlockchain)
+				r.Patch("/batches/{id}/sensor", h.updateSensor)
+			})
+
+			// SERVICE: blockchain-service syncs violations it has written on-chain
+			r.Group(func(r chi.Router) {
+				r.Use(h.RoleMiddleware("SERVICE", "ADMIN"))
+				r.Post("/batches/{id}/violation", h.reportViolation)
+			})
 
 			// Admin Routes (protected by ADMIN role)
 			r.Group(func(r chi.Router) {
@@ -93,7 +102,11 @@ func (h *Handler) InitRoutes() *chi.Mux {
 				r.Put("/admin/templates/{id}", h.updateTemplate)
 				r.Delete("/admin/templates/{id}", h.deleteTemplate)
 
-				// Demo routes (ADMIN only in production)
+			})
+
+			// Demo reset: ADMIN directly, or SERVICE when blockchain-service fans out an ADMIN reset
+			r.Group(func(r chi.Router) {
+				r.Use(h.RoleMiddleware("SERVICE", "ADMIN"))
 				r.Post("/demo/reset/{id}", h.resetBatch)
 			})
 		})
@@ -136,9 +149,11 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Bypass role checks for internal service calls by injecting ADMIN role
+		// No user JWT: the caller is a trusted internal service (portal, iot, blockchain).
+		// It gets the limited SERVICE role, never ADMIN, so the shared key alone
+		// cannot be used to act as a user or reach admin routes.
 		if r.Header.Get("X-Verified-Role") == "" {
-			r.Header.Set("X-Verified-Role", "ADMIN")
+			r.Header.Set("X-Verified-Role", "SERVICE")
 		}
 
 		next.ServeHTTP(w, r)
@@ -152,9 +167,7 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 			
 			if role == "" {
 				log.Printf("[ROLE] Access denied to %s %s: No verified role found in token", r.Method, r.URL.Path)
-				msg := fmt.Sprintf("Forbidden: Role header required. Debug: X-Verified-Role=%s, x-api-key-len=%d", 
-					r.Header.Get("X-Verified-Role"), len(r.Header.Get("x-api-key")))
-				http.Error(w, msg, http.StatusForbidden)
+				http.Error(w, "Forbidden: Role required", http.StatusForbidden)
 				return
 			}
 			
@@ -183,9 +196,19 @@ func (h *Handler) createBatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// SECURITY: a manufacturer can only create batches for its own company
+	if r.Header.Get("X-Verified-Role") != "ADMIN" {
+		companyID := r.Header.Get("X-Verified-Company-ID")
+		if companyID == "" {
+			http.Error(w, "Forbidden: account is not linked to a company", http.StatusForbidden)
+			return
+		}
+		req.ManufacturerID = companyID
+	}
+
 	res, err := h.service.CreateBatch(r.Context(), req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError) // In real app, distinguish 400 vs 500 errors
+		internalError(w, r, err)
 		return
 	}
 
@@ -207,13 +230,13 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 
 	batch, err := h.service.GetBatch(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	// SECURITY: Ensure user belongs to the company that owns the batch, or is an ADMIN
-	// If role is empty (guest/public request), we allow reading the batch details.
-	if role != "" && role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+	// SERVICE requests are public reads (scan/verify pages); passports are public by design.
+	if role != "SERVICE" && role != "ADMIN" && batch.ManufacturerID.String() != companyID {
 		log.Printf("[AUTH] Denied access to batch %s for company %s (user company: %s, role: %s)", id, batch.ManufacturerID, companyID, role)
 		http.Error(w, "Forbidden: You do not have access to this batch", http.StatusForbidden)
 		return
@@ -232,7 +255,7 @@ func (h *Handler) getPartner(w http.ResponseWriter, r *http.Request) {
 
 	partner, err := h.service.GetPartner(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -253,7 +276,7 @@ func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
 	// First verify ownership
 	batch, err := h.service.GetBatch(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -270,7 +293,7 @@ func (h *Handler) updateBlockchain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.UpdateBlockchainHash(r.Context(), id, req.BlockchainHash); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -291,7 +314,7 @@ func (h *Handler) updateSensor(w http.ResponseWriter, r *http.Request) {
 	// Verify ownership
 	batch, err := h.service.GetBatch(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -311,7 +334,7 @@ func (h *Handler) updateSensor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.UpdateIOTConfig(r.Context(), id, req.SensorIDs, req.StartTracking); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -337,11 +360,11 @@ func (h *Handler) reportViolation(w http.ResponseWriter, r *http.Request) {
 	// Verify ownership
 	batch, err := h.service.GetBatch(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	if role != "ADMIN" && batch.ManufacturerID.String() != companyID {
+	if role != "ADMIN" && role != "SERVICE" && batch.ManufacturerID.String() != companyID {
 		log.Printf("[AUTH] Denied reportViolation for batch %s: company mismatch", id)
 		http.Error(w, "Forbidden: Access denied", http.StatusForbidden)
 		return
@@ -356,7 +379,7 @@ func (h *Handler) reportViolation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.ReportViolation(r.Context(), id, req.Details); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -373,7 +396,7 @@ func (h *Handler) createCompany(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.companyService.CreateCompany(r.Context(), req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -385,7 +408,7 @@ func (h *Handler) createCompany(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listCompanies(w http.ResponseWriter, r *http.Request) {
 	companies, err := h.companyService.GetAllCompanies(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -401,7 +424,7 @@ func (h *Handler) approveCompany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.companyService.ApproveCompany(r.Context(), id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -412,7 +435,7 @@ func (h *Handler) approveCompany(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listTemplates(w http.ResponseWriter, r *http.Request) {
 	templates, err := h.templateService.ListTemplates(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -428,7 +451,7 @@ func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 
 	template, err := h.templateService.GetTemplate(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -445,7 +468,7 @@ func (h *Handler) createTemplate(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.templateService.CreateTemplate(r.Context(), t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -476,7 +499,7 @@ func (h *Handler) updateTemplate(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.templateService.UpdateTemplate(r.Context(), t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -492,7 +515,7 @@ func (h *Handler) deleteTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.templateService.DeleteTemplate(r.Context(), id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -505,7 +528,7 @@ func (h *Handler) listBatches(w http.ResponseWriter, r *http.Request) {
 
 	batches, err := h.service.ListAllBatches(r.Context(), companyID, role)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -520,7 +543,7 @@ func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.ResetBatch(r.Context(), id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -591,7 +614,13 @@ func (rl *RateLimiter) cleanup() {
 // Middleware returns a chi-compatible middleware that enforces rate limiting.
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := r.RemoteAddr
+		// Trusted internal callers (the portal proxies every user through a few Vercel IPs)
+		// are not limited here; the limiter protects against unauthenticated floods.
+		if key := os.Getenv("INTERNAL_API_KEY"); key != "" && secureCompare(r.Header.Get("x-api-key"), key) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		ip := clientIP(r)
 
 		rl.mu.Lock()
 		v, exists := rl.visitors[ip]
@@ -613,4 +642,35 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// internalError logs the real error and returns a generic message, so database
+// and driver details never reach the client.
+func internalError(w http.ResponseWriter, r *http.Request, err error) {
+	if errors.Is(err, service.ErrValidation) {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Printf("[ERROR] %s %s: %v", r.Method, r.URL.Path, err)
+	http.Error(w, "Internal server error", http.StatusInternalServerError)
+}
+
+// MaxBodyMiddleware caps request bodies to protect against memory exhaustion.
+func MaxBodyMiddleware(limit int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// clientIP returns the address the edge proxy saw. Proxies append to X-Forwarded-For,
+// so only the last entry is trustworthy; earlier entries are client-controlled.
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[len(parts)-1])
+	}
+	return r.RemoteAddr
 }

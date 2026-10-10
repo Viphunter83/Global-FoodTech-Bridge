@@ -7,7 +7,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go mod tidy
 
 # Build the binary
 # CGO_ENABLED=0 for static binary, though less critical on Debian, still good practice
@@ -26,5 +25,7 @@ COPY --from=builder /app/passport-service .
 COPY migrations ./migrations
 
 EXPOSE 8080
+
+USER nobody
 
 CMD ["./passport-service"]
