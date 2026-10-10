@@ -58,3 +58,7 @@ fix-role.js
 *.tmp
 .vercel
 .env*.local
+
+# Vercel CLI env dumps (contain production secrets)
+.env*.tmp
+*.tsbuildinfo

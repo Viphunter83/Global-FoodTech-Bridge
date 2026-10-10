@@ -1,10 +1,17 @@
 const assert = require('assert');
 
 // URLs from production config
-const API_KEY = "ftb_internal_9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d";
-const PASSPORT_URL = "https://chic-playfulness-production-d0d6.up.railway.app/api/v1";
-const TELEMETRY_URL = "https://celebrated-consideration-production.up.railway.app/api/v1";
-const BLOCKCHAIN_URL = "https://global-foodtech-bridge-production.up.railway.app/api/v1";
+const API_KEY = process.env.INTERNAL_API_KEY;
+// Backends take the user role only from a verified Firebase ID token
+const MANUFACTURER_TOKEN = process.env.MANUFACTURER_ID_TOKEN;
+const ADMIN_TOKEN = process.env.ADMIN_ID_TOKEN;
+if (!API_KEY || !MANUFACTURER_TOKEN || !ADMIN_TOKEN) {
+    console.error("Set INTERNAL_API_KEY, MANUFACTURER_ID_TOKEN and ADMIN_ID_TOKEN");
+    process.exit(1);
+}
+const PASSPORT_URL = process.env.PASSPORT_URL || "https://chic-playfulness-production-d0d6.up.railway.app/api/v1";
+const TELEMETRY_URL = process.env.TELEMETRY_URL || "https://celebrated-consideration-production.up.railway.app/api/v1";
+const BLOCKCHAIN_URL = process.env.BLOCKCHAIN_URL || "https://global-foodtech-bridge-production.up.railway.app/api/v1";
 
 const REDIRECT_URL = "https://global-food-tech-bridge.vercel.app/demo-shop/vietnam-mango";
 
@@ -24,7 +31,7 @@ async function runE2ETest() {
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': API_KEY,
-                'X-Verified-Role': 'MANUFACTURER'
+                'Authorization': `Bearer ${MANUFACTURER_TOKEN}`
             },
             body: JSON.stringify({
                 manufacturer_id: "550e8400-e29b-41d4-a716-446655440000",
@@ -137,7 +144,7 @@ async function runE2ETest() {
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': API_KEY,
-                'X-Verified-Role': 'ADMIN'
+                'Authorization': `Bearer ${ADMIN_TOKEN}`
             },
             body: JSON.stringify({
                 sensor_ids: ["TIVE-EXP-USA-99"],

@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { getAdminBatches } from '@/lib/api';
 import { StageWizard } from '@/components/admin/StageWizard';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,8 @@ export async function generateMetadata({ params: { locale } }: PageProps): Promi
 export default async function DemoPage({ params: { locale } }: PageProps) {
     unstable_setRequestLocale(locale);
     const t = await getTranslations({ locale, namespace: 'Admin' });
-    const batches = await getAdminBatches();
+    const { token } = await requireAdmin();
+    const batches = await getAdminBatches(token);
 
     return (
         <div className="space-y-6">

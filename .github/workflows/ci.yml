@@ -123,6 +123,9 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Test
+        run: go test ./...
+
       - name: Build
         run: go build ./cmd/...
 
@@ -152,16 +155,46 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Test
+        run: go test ./...
+
       - name: Build
         run: go build ./cmd/...
 
   # ──────────────────────────────────────────────────────────────────
-  # 5. CI Status Gate (required check for branch protection)
+  # 5. Smart Contracts (Hardhat)
+  # ──────────────────────────────────────────────────────────────────
+  contracts:
+    name: 📜 Smart Contracts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/blockchain
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: packages/blockchain/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  # ──────────────────────────────────────────────────────────────────
+  # 6. CI Status Gate (required check for branch protection)
   # ──────────────────────────────────────────────────────────────────
   ci-pass:
     name: ✅ CI Pass
     runs-on: ubuntu-latest
-    needs: [frontend, blockchain-service, passport-service, iot-service]
+    needs: [frontend, blockchain-service, passport-service, iot-service, contracts]
     if: always()
     steps:
       - name: Check all jobs
@@ -170,11 +203,13 @@ jobs:
           echo "Blockchain:  ${{ needs.blockchain-service.result }}"
           echo "Passport:    ${{ needs.passport-service.result }}"
           echo "IoT:         ${{ needs.iot-service.result }}"
+          echo "Contracts:   ${{ needs.contracts.result }}"
 
           if [ "${{ needs.frontend.result }}" != "success" ] || \
              [ "${{ needs.blockchain-service.result }}" != "success" ] || \
              [ "${{ needs.passport-service.result }}" != "success" ] || \
-             [ "${{ needs.iot-service.result }}" != "success" ]; then
+             [ "${{ needs.iot-service.result }}" != "success" ] || \
+             [ "${{ needs.contracts.result }}" != "success" ]; then
             echo "❌ One or more jobs failed!"
             exit 1
           fi

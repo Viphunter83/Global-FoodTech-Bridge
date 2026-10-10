@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 export function useBlockchainOperations(batchId: string) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { updateBatchState } = useDemoState();
+    const { getBatchState, updateBatchState, resetBatchState } = useDemoState();
 
     const handleAction = async (
         actionFn: (token: string) => Promise<{ status: string; txHash?: string; error?: string }>,
@@ -27,6 +27,15 @@ export function useBlockchainOperations(batchId: string) {
     ) => {
         setLoading(true);
         setError(null);
+
+        // Snapshot so a failed operation does not leave the optimistic state behind
+        // (local state overrides the backend status in the UI)
+        const previousState = getBatchState(batchId);
+        const rollback = () => {
+            if (!optimisticUpdate) return;
+            resetBatchState(batchId);
+            if (previousState) updateBatchState(batchId, previousState);
+        };
 
         if (optimisticUpdate) {
             updateBatchState(batchId, optimisticUpdate);
@@ -39,6 +48,7 @@ export function useBlockchainOperations(batchId: string) {
             const res = await actionFn(token);
 
             if (res.error) {
+                rollback();
                 setError(res.error);
                 toast.error(`Operation failed: ${res.error}`);
                 return { success: false, error: res.error };
@@ -65,6 +75,7 @@ export function useBlockchainOperations(batchId: string) {
             toast.success('Action successfully recorded');
             return { success: true };
         } catch (err: any) {
+            rollback();
             const msg = err.message || 'Unknown error';
             setError(msg);
             toast.error(`Error: ${msg}`);
@@ -75,7 +86,8 @@ export function useBlockchainOperations(batchId: string) {
     };
 
     const notarize = () => handleAction(
-        (token) => notarizeBatch(batchId, "hash", token),
+        // The backend anchors the batch's own IPFS metadata URI from the passport
+        (token) => notarizeBatch(batchId, undefined, token),
         { status: 'Notarizing...', verified: false },
         (txHash) => ({ status: 'Notarized', verified: true, txHash, owner: MANUFACTURER_ADDR }),
         (txHash, token) => updateBatchBlockchainHash(batchId, txHash, token)

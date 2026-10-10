@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { getAdminBatches } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 export default async function AdminOperationsPage({ params: { locale } }: { params: { locale: string } }) {
     unstable_setRequestLocale(locale);
     const t = await getTranslations('Admin');
-    const batches = await getAdminBatches();
+    const { token } = await requireAdmin();
+    const batches = await getAdminBatches(token);
 
     return (
         <div className="space-y-12 pb-20">

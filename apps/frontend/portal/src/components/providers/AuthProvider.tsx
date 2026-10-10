@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut } from 'firebase/auth';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { onIdTokenChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { removeSessionCookie } from '@/lib/cookies';
@@ -39,11 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [role, setRole] = useState<UserRole>('PENDING');
     const [companyId, setCompanyId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const currentUid = useRef<string | null>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            // Only set loading to true if we are transitioning to a user
-            if (firebaseUser) setLoading(true);
+        // onIdTokenChanged also fires on the hourly token refresh, keeping the session cookie valid
+        const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+            // Show the loading screen only when the signed-in user changes,
+            // not on the silent hourly token refresh
+            const isNewUser = (firebaseUser?.uid ?? null) !== currentUid.current;
+            currentUid.current = firebaseUser?.uid ?? null;
+            if (firebaseUser && isNewUser) setLoading(true);
             
             setUser(firebaseUser);
             
@@ -89,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setLoading(false);
                 }
             } else {
-                // Remove session cookie
+                // Remove session cookie (httpOnly, so only the server route can delete it)
+                fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
                 removeSessionCookie();
                 setRole('PENDING');
                 setCompanyId(null);

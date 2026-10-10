@@ -364,7 +364,16 @@
     "fallback_producer": "PRODUCER",
     "fallback_premium": "PREMIUM",
     "bc_secured_badge": "NOTARIZED",
-    "bc_unverified_badge": "NOT VERIFIED"
+    "bc_unverified_badge": "NOT VERIFIED",
+    "action_pair_sensor": "Action required: pair an IoT sensor",
+    "active_step": "Active",
+    "authenticity_verified_desc": "VERIFIED BY GOVERNMENT AND BLOCKCHAIN",
+    "authenticity_verified_title": "AUTHENTICITY CONFIRMED",
+    "batch_target_temp": "Target: {min}°C to {max}°C",
+    "map_last_known": "Last known position:",
+    "notary_authority_label": "Notary authority",
+    "qc_rejected_desc": "SENSORS DETECTED A CRITICAL DEVIATION",
+    "timeline_arrived_destination": "Arrived at destination"
   },
   "Auth": {
     "login_title": "Secure Access",

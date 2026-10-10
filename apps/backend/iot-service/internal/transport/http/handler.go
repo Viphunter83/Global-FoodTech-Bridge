@@ -4,16 +4,18 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/global-foodtech-bridge/iot-service/internal/domain"
 	"github.com/global-foodtech-bridge/iot-service/internal/service"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Handler struct {
@@ -32,11 +34,11 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.RealIP)
 	r.Use(SecurityHeadersMiddleware)
+	r.Use(MaxBodyMiddleware(64 << 10)) // 64 KB: telemetry payloads are tiny
 	r.Use(h.jwtVerifier.Middleware)
 	r.Use(NewRateLimiter(200, time.Minute).Middleware) // 200 req/min per IP (higher for IoT)
-	
+
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -45,9 +47,10 @@ func (h *Handler) InitRoutes() *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
 
-		// Protected Routes (Logistics or Manufacturer)
+		// Ingestion: device gateways authenticate with the service key (SERVICE);
+		// the device itself must be linked to the batch (checked in the service).
 		r.Group(func(r chi.Router) {
-			r.Use(h.RoleMiddleware("LOGISTICS", "MANUFACTURER"))
+			r.Use(h.RoleMiddleware("SERVICE", "LOGISTICS", "MANUFACTURER"))
 			r.Post("/telemetry", h.ingestTelemetry)
 		})
 
@@ -55,9 +58,9 @@ func (h *Handler) InitRoutes() *chi.Mux {
 		r.Get("/telemetry/{batchId}", h.getReadings)
 		r.Get("/telemetry/{batchId}/alerts", h.getAlerts)
 
-		// Demo routes (ADMIN only in production)
+		// Demo reset: ADMIN directly, or SERVICE when blockchain-service fans out an ADMIN reset
 		r.Group(func(r chi.Router) {
-			r.Use(h.RoleMiddleware("ADMIN"))
+			r.Use(h.RoleMiddleware("SERVICE", "ADMIN"))
 			r.Post("/demo/reset/{batchId}", h.resetBatch)
 		})
 	})
@@ -90,9 +93,10 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Bypass role checks for internal service calls by injecting ADMIN role
+		// No user JWT: the caller is a trusted internal service or device gateway.
+		// It gets the limited SERVICE role, never ADMIN.
 		if r.Header.Get("X-Verified-Role") == "" {
-			r.Header.Set("X-Verified-Role", "ADMIN")
+			r.Header.Set("X-Verified-Role", "SERVICE")
 		}
 
 		next.ServeHTTP(w, r)
@@ -109,7 +113,7 @@ func (h *Handler) RoleMiddleware(allowedRoles ...string) func(next http.Handler)
 				http.Error(w, "Forbidden: Authentication required", http.StatusForbidden)
 				return
 			}
-			
+
 			allowed := false
 			if role == "ADMIN" {
 				allowed = true
@@ -140,7 +144,7 @@ func (h *Handler) ingestTelemetry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.IngestData(r.Context(), req); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeServiceError(w, r, err)
 		return
 	}
 
@@ -156,7 +160,7 @@ func (h *Handler) getReadings(w http.ResponseWriter, r *http.Request) {
 
 	readings, err := h.service.GetReadings(r.Context(), batchID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeServiceError(w, r, err)
 		return
 	}
 
@@ -173,7 +177,7 @@ func (h *Handler) getAlerts(w http.ResponseWriter, r *http.Request) {
 
 	alerts, err := h.service.GetAlerts(r.Context(), batchID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeServiceError(w, r, err)
 		return
 	}
 
@@ -189,7 +193,7 @@ func (h *Handler) resetBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.ResetBatch(r.Context(), batchID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeServiceError(w, r, err)
 		return
 	}
 
@@ -260,7 +264,13 @@ func (rl *RateLimiter) cleanup() {
 // Middleware enforces rate limiting.
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := r.RemoteAddr
+		// Trusted internal callers (portal, gateways) are not limited here;
+		// the limiter protects against unauthenticated floods.
+		if key := os.Getenv("INTERNAL_API_KEY"); key != "" && secureCompare(r.Header.Get("x-api-key"), key) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		ip := clientIP(r)
 
 		rl.mu.Lock()
 		v, exists := rl.visitors[ip]
@@ -282,4 +292,38 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// writeServiceError maps service errors to status codes without leaking internals.
+func writeServiceError(w http.ResponseWriter, r *http.Request, err error) {
+	switch {
+	case errors.Is(err, service.ErrValidation):
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	case errors.Is(err, service.ErrUnavailable):
+		log.Printf("[ERROR] %s %s: %v", r.Method, r.URL.Path, err)
+		http.Error(w, "Temporarily unavailable, retry later", http.StatusServiceUnavailable)
+	default:
+		log.Printf("[ERROR] %s %s: %v", r.Method, r.URL.Path, err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+// MaxBodyMiddleware caps request bodies to protect against memory exhaustion.
+func MaxBodyMiddleware(limit int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// clientIP returns the address the edge proxy saw. Proxies append to X-Forwarded-For,
+// so only the last entry is trustworthy; earlier entries are client-controlled.
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[len(parts)-1])
+	}
+	return r.RemoteAddr
 }

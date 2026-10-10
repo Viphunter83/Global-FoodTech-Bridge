@@ -58,6 +58,20 @@ contract SupplyChainRegistryV2 is ERC721, AccessControl, Pausable, Ownable {
         _unpause();
     }
 
+    /**
+     * @dev Custody may only move through initiateTransfer/acceptTransfer.
+     *      ERC721 transferFrom/safeTransferFrom pass the caller as `auth`, while the
+     *      internal _mint/_transfer used by this contract pass address(0); rejecting
+     *      the former keeps the two-step handover (and its events) the only path, and
+     *      prevents a stale pending recipient from pulling the token from a new owner.
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override whenNotPaused returns (address) {
+        if (auth != address(0)) {
+            revert("Use initiateTransfer/acceptTransfer");
+        }
+        return super._update(to, tokenId, auth);
+    }
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
@@ -119,8 +133,11 @@ contract SupplyChainRegistryV2 is ERC721, AccessControl, Pausable, Ownable {
     function reportViolation(string memory batchUUID, string memory details) public whenNotPaused {
         uint256 tokenId = uuidToTokenId[batchUUID];
         require(tokenId != 0, "Batch does not exist");
+        // Logistics partners may only report on batches in their own custody
         require(
-            hasRole(AUDITOR_ROLE, msg.sender) || hasRole(LOGISTICS_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), 
+            hasRole(AUDITOR_ROLE, msg.sender) ||
+                hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                (hasRole(LOGISTICS_ROLE, msg.sender) && ownerOf(tokenId) == msg.sender),
             "Not authorized"
         );
 

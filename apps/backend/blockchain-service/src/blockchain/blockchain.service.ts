@@ -17,6 +17,25 @@ const REGISTRY_ABI = [
     "event ViolationReported(uint256 indexed tokenId, string details, address indexed reporter, uint256 timestamp)"
 ];
 
+// Providers commonly cap eth_getLogs at 10k blocks; the x402 gateway allows a larger range.
+const HISTORY_CHUNK_SIZE = 9_999;
+const HISTORY_CHUNK_SIZE_X402 = 100_000;
+const HISTORY_MAX_CHUNKS_PER_REQUEST = 50;
+const HISTORY_CACHE_TTL_SECONDS = 7 * 24 * 3600;
+
+interface HistoryLog {
+    type: string;
+    args: string[];
+    blockNumber: number;
+    transactionHash: string;
+    timestamp: number;
+}
+
+/** Accepts a service URL with or without the `/api/v1` suffix and returns its base. */
+function serviceBase(url: string): string {
+    return url.trim().replace(/\/$/, '').replace(/\/api\/v1$/, '');
+}
+
 @Injectable()
 export class BlockchainService implements OnModuleInit {
     private readonly logger = new Logger(BlockchainService.name);
@@ -30,6 +49,7 @@ export class BlockchainService implements OnModuleInit {
 
     private contract: Contract;
     private isMockMode: boolean = false;
+    private usesX402 = false;
     private readonly walletMutexes = new Map<string, Mutex>();
 
     // Mock Store
@@ -69,18 +89,7 @@ export class BlockchainService implements OnModuleInit {
     }
 
     async onModuleInit() {
-        let rpcUrl = this.configService.get<string>('RPC_URL');
-        const normalized = rpcUrl ? rpcUrl.trim().replace(/\/$/, '') : '';
-        // Fallback to stable and fast DRPC endpoint if default public RPC is configured
-        if (!normalized || 
-            normalized.includes('polygon.technology') || 
-            normalized.includes('ankr.com') || 
-            normalized.includes('infura.io') ||
-            normalized.includes('quiknode.pro') ||
-            normalized.includes('alchemy.com') && !normalized.includes('drpc.live')
-        ) {
-            rpcUrl = 'https://lb.drpc.live/polygon-amoy/AlVK5_YuREjmtO6UkBFatFYqocHRRYgR8Z3JtiKh6MJI';
-        }
+        const rpcUrl = this.configService.get<string>('RPC_URL')?.trim();
         const privateKey = this.configService.get<string>('PRIVATE_KEY'); // Should be Manufacturer
         const logisticsKey = this.configService.get<string>('LOGISTICS_KEY');
         const retailerKey = this.configService.get<string>('RETAILER_KEY');
@@ -95,13 +104,20 @@ export class BlockchainService implements OnModuleInit {
         const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
         this.redis = new Redis(redisUrl);
 
+        // MOCK mode returns fake tx hashes; it must never silently replace the real chain in production
+        const allowMock = process.env.NODE_ENV !== 'production' || process.env.ALLOW_MOCK_MODE === 'true';
+
         if (!rpcUrl || !privateKey || !contractAddress) {
+            if (!allowMock) {
+                throw new Error('RPC_URL, PRIVATE_KEY and CONTRACT_ADDRESS are required in production');
+            }
             this.logger.warn('Blockchain config missing. Starting in MOCK mode.');
             this.isMockMode = true;
             return;
         }
 
         try {
+            this.usesX402 = useX402;
             if (useX402) {
                 this.logger.log('Initializing blockchain connection with QuickNode x402...');
                 const { createQuicknodeX402Client } = await import('@quicknode/x402');
@@ -159,6 +175,13 @@ export class BlockchainService implements OnModuleInit {
             // Default contract connected to Manufacturer (Admin)
             this.contract = new ethers.Contract(contractAddress, REGISTRY_ABI, this.manufacturerWallet);
 
+            // Fail loudly instead of silently talking to the wrong network
+            const expectedChainId = this.configService.get<string>('CHAIN_ID');
+            const { chainId } = await this.provider.getNetwork();
+            if (expectedChainId && chainId.toString() !== expectedChainId) {
+                throw new Error(`RPC_URL points to chain ${chainId}, but CHAIN_ID=${expectedChainId}`);
+            }
+
             this.logger.log(`Blockchain Service Initialized on ${useX402 ? 'QuickNode x402' : (rpcUrl.includes('amoy') ? 'Polygon Amoy' : 'Polygon Mainnet')}`);
             this.logger.log(`- Manufacturer: ${this.manufacturerWallet.address}`);
             this.logger.log(`- Logistics: ${this.logisticsWallet.address}`);
@@ -166,6 +189,7 @@ export class BlockchainService implements OnModuleInit {
 
         } catch (error) {
             this.logger.error('Failed to initialize blockchain connection', error);
+            if (!allowMock) throw error;
             this.isMockMode = true;
         }
     }
@@ -220,7 +244,7 @@ export class BlockchainService implements OnModuleInit {
             const apiKey = this.configService.get<string>('INTERNAL_API_KEY');
             if (passportUrl && apiKey) {
                 try {
-                    await fetch(`${passportUrl}/api/v1/batches/${batchId}/violation`, {
+                    await fetch(`${serviceBase(passportUrl)}/api/v1/batches/${batchId}/violation`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -435,43 +459,12 @@ export class BlockchainService implements OnModuleInit {
         }
 
         try {
-            const tokenId = ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]));
-            const latestBlock = await this.provider.getBlockNumber();
-            
-            // If x402 is enabled, we can query from contract deployment block without the 10k public RPC range limit
-            const useX402 = this.configService.get<string>('USE_X402') === 'true';
-            
-            // Dynamic deployment block detection
-            const rpcUrl = this.configService.get<string>('RPC_URL') || '';
-            const isAmoy = rpcUrl.toLowerCase().includes('amoy') || 
-                           (this.provider && (await this.provider.getNetwork()).chainId === BigInt(80002));
-            const deployBlock = isAmoy ? 35000000 : 85000000;
-            
-            let fromBlock = useX402 ? deployBlock : Math.max(latestBlock - 9999, deployBlock);
-            if (fromBlock > latestBlock) {
-                fromBlock = Math.max(latestBlock - 9999, 0);
-            }
-
-            // Query events within the allowed range
-            const [created, transfers, completed, violations] = await Promise.all([
-                this.contract.queryFilter(this.contract.filters.BatchCreated(tokenId), fromBlock, 'latest'),
-                this.contract.queryFilter(this.contract.filters.TransferInitiated(tokenId), fromBlock, 'latest'),
-                this.contract.queryFilter(this.contract.filters.TransferCompleted(tokenId), fromBlock, 'latest'),
-                this.contract.queryFilter(this.contract.filters.ViolationReported(tokenId), fromBlock, 'latest')
-            ]);
-
-            const allEvents = [
-                ...created.map(e => ({ type: 'BatchCreated', log: e })),
-                ...transfers.map(e => ({ type: 'TransferInitiated', log: e })),
-                ...completed.map(e => ({ type: 'TransferCompleted', log: e })),
-                ...violations.map(e => ({ type: 'ViolationReported', log: e }))
-            ];
+            const allEvents = await this.collectHistoryLogs(batchId);
 
             // Resolve block timestamps and format
             const history = await Promise.all(allEvents.map(async (item) => {
-                const log = item.log as any;
-                const block = await this.provider.getBlock(log.blockNumber);
-                const timestamp = block ? block.timestamp * 1000 : Date.now();
+                const log = item;
+                const timestamp = item.timestamp;
 
                 let stage = 'Process';
                 let details = 'Blockchain event recorded';
@@ -525,6 +518,110 @@ export class BlockchainService implements OnModuleInit {
             this.logger.error(`Failed to fetch history for ${batchId}`, error);
             return [];
         }
+    }
+
+    /**
+     * Collects all registry events for a batch without hitting RPC range limits.
+     *
+     * The scan starts at the block where the batch was created (found by binary search on
+     * the on-chain creation time), walks forward in chunks the provider accepts, and keeps
+     * the result plus the last scanned block in Redis so later requests only scan new blocks.
+     */
+    private async collectHistoryLogs(batchId: string): Promise<HistoryLog[]> {
+        const cacheKey = `history:${batchId}`;
+        let cache: { lastBlock: number; logs: HistoryLog[] } | null = null;
+        try {
+            const raw = await this.redis.get(cacheKey);
+            if (raw) cache = JSON.parse(raw);
+        } catch (e) {
+            this.logger.warn(`History cache read failed for ${batchId}: ${e.message}`);
+        }
+
+        const latestBlock = await this.provider.getBlockNumber();
+        let fromBlock: number;
+        if (cache) {
+            fromBlock = cache.lastBlock + 1;
+        } else {
+            const data = await this.contract.getBatchData(batchId);
+            const createdAt = Number(data[4]);
+            if (!createdAt) return []; // batch is not on-chain
+            fromBlock = await this.findBlockByTimestamp(createdAt, latestBlock);
+        }
+
+        const logs = cache ? [...cache.logs] : [];
+        const tokenIdTopic = ethers.zeroPadValue(ethers.toBeHex(ethers.toBigInt(ethers.solidityPackedKeccak256(['string'], [batchId]))), 32);
+        const iface = this.contract.interface;
+        const eventNames = ['BatchCreated', 'TransferInitiated', 'TransferCompleted', 'ViolationReported'];
+        const topic0 = eventNames.map(name => iface.getEvent(name)!.topicHash);
+        const contractAddress = await this.contract.getAddress();
+
+        let scannedTo = fromBlock - 1;
+        for (let chunk = 0; chunk < HISTORY_MAX_CHUNKS_PER_REQUEST && scannedTo < latestBlock; chunk++) {
+            const from = scannedTo + 1;
+            const to = Math.min(from + (this.usesX402 ? HISTORY_CHUNK_SIZE_X402 : HISTORY_CHUNK_SIZE) - 1, latestBlock);
+            const rawLogs = await this.provider.getLogs({
+                address: contractAddress,
+                topics: [topic0, tokenIdTopic],
+                fromBlock: from,
+                toBlock: to,
+            });
+            for (const rawLog of rawLogs) {
+                const parsed = iface.parseLog(rawLog);
+                if (!parsed) continue;
+                const block = await this.provider.getBlock(rawLog.blockNumber);
+                logs.push({
+                    type: parsed.name,
+                    args: parsed.args.map((a: any) => a.toString()),
+                    blockNumber: rawLog.blockNumber,
+                    transactionHash: rawLog.transactionHash,
+                    timestamp: block ? block.timestamp * 1000 : Date.now(),
+                });
+            }
+            scannedTo = to;
+        }
+
+        if (scannedTo < latestBlock) {
+            this.logger.warn(`History for ${batchId} is partial: scanned up to block ${scannedTo} of ${latestBlock}; the next request continues from there`);
+        }
+
+        try {
+            await this.redis.set(cacheKey, JSON.stringify({ lastBlock: scannedTo, logs }), 'EX', HISTORY_CACHE_TTL_SECONDS);
+        } catch (e) {
+            this.logger.warn(`History cache write failed for ${batchId}: ${e.message}`);
+        }
+        return logs;
+    }
+
+    /** Returns the first block whose timestamp is >= `timestamp` (seconds). */
+    private async findBlockByTimestamp(timestamp: number, latestBlock: number): Promise<number> {
+        let lo = 0;
+        let hi = latestBlock;
+        while (lo < hi) {
+            const mid = Math.floor((lo + hi) / 2);
+            const block = await this.provider.getBlock(mid);
+            if (block && block.timestamp < timestamp) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    /** Reads the batch passport (owner company and IPFS metadata URI) from passport-service. */
+    async getPassportBatch(batchId: string): Promise<{ manufacturer_id: string; token_uri?: string } | null> {
+        const passportUrl = this.configService.get<string>('PASSPORT_SERVICE_URL');
+        const apiKey = this.configService.get<string>('INTERNAL_API_KEY');
+        if (!passportUrl || !apiKey) {
+            throw new Error('PASSPORT_SERVICE_URL is not configured');
+        }
+        const res = await fetch(`${serviceBase(passportUrl)}/api/v1/batches/${encodeURIComponent(batchId)}`, {
+            headers: { 'x-api-key': apiKey },
+            signal: AbortSignal.timeout(5000),
+        });
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`passport-service returned ${res.status}`);
+        return res.json();
     }
 
     async grantRole(role: string, targetAddress: string): Promise<string> {
@@ -657,7 +754,7 @@ export class BlockchainService implements OnModuleInit {
         try {
             if (iotUrl && apiKey) {
                 this.logger.log(`Demo: Resetting IoT state for ${batchId}`);
-                await fetch(`${iotUrl}/demo/reset/${batchId}`, {
+                await fetch(`${serviceBase(iotUrl)}/api/v1/demo/reset/${batchId}`, {
                     method: 'POST',
                     headers: { 'x-api-key': apiKey }
                 });
@@ -665,7 +762,7 @@ export class BlockchainService implements OnModuleInit {
 
             if (passportUrl && apiKey) {
                 this.logger.log(`Demo: Resetting Passport state for ${batchId}`);
-                await fetch(`${passportUrl}/demo/reset/${batchId}`, {
+                await fetch(`${serviceBase(passportUrl)}/api/v1/demo/reset/${batchId}`, {
                     method: 'POST',
                     headers: { 'x-api-key': apiKey }
                 });

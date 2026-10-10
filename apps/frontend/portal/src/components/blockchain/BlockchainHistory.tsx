@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BlockchainEvent } from '@/lib/api';
 import { useTranslations } from 'next-intl';
+import { EXPLORER_URL } from '@/lib/constants';
 
 interface BlockchainHistoryProps {
     history: BlockchainEvent[];
@@ -106,7 +107,7 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                                         <span className="font-mono">{item.actor}</span>
                                     </div>
                                     <a 
-                                        href={`https://amoy.polygonscan.com/tx/${item.transactionHash}`}
+                                        href={`${EXPLORER_URL}/tx/${item.transactionHash}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-[9px] font-black text-blue-600 hover:text-blue-800 underline-offset-4 decoration-wavy flex items-center gap-1.5 transition-all hover:gap-2 group/link"

@@ -18,10 +18,13 @@ interface BlockchainProofProps {
     violation?: string;
 }
 
+import { EXPLORER_URL } from '@/lib/constants';
+
 // Map of known entities for human-readability
 const IDENTITY_MAP: Record<string, string> = {
     '0x90Ac83B23BfEa12D7498689602C9512aD4929712': 'Verified Producer (FTB Factory #1)',
-    '0xE326362613F44383504b1bFA5Dd92C0Fc7D38471': 'Digital Notary Contract (v1.0)',
+    '0xE326362613F44383504b1bFA5Dd92C0Fc7D38471': 'Digital Notary Contract (v1.0, Amoy)',
+    '0xF48D6846Ac41AE6764f0747E2A1Cb282467F59E5': 'Digital Notary Contract (v1.0)',
     '0x1b9ba7069eb01d54fE7E8fC563274f945576B73a': 'Logistics Guardian',
     '0xB69B16B4b22e65BfCe544774DA9947E61506Fea0': 'Retailer Hub'
 };
@@ -32,7 +35,7 @@ const getIdentity = (addr?: string) => {
 };
 
 export function BlockchainProof({ txHash, dataHash, issuer, timestamp, batchId, violation }: BlockchainProofProps) {
-    const explorerUrl = txHash ? `https://amoy.polygonscan.com/tx/${txHash}` : '#';
+    const explorerUrl = txHash ? `${EXPLORER_URL}/tx/${txHash}` : '#';
 
     return (
         <Card className={`border-2 overflow-hidden shadow-sm transition-all duration-500 ${violation ? 'border-red-200 bg-red-50/10' : 'border-green-100 bg-white/50 backdrop-blur-sm'}`}>

@@ -123,13 +123,13 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Close Redis before exiting
-	if rdb != nil {
-		_ = rdb.Close()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
 	}
 
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+	// Close Redis only after in-flight requests have finished
+	if rdb != nil {
+		_ = rdb.Close()
 	}
 
 	log.Println("IoT Service stopped cleanly.")

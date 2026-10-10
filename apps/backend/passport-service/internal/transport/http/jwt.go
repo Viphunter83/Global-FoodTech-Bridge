@@ -40,6 +40,9 @@ func NewJWTVerifier(projectID string) *JWTVerifier {
 	}
 }
 
+// jwksClient bounds the key fetch, which runs while holding the verifier's write lock.
+var jwksClient = &http.Client{Timeout: 5 * time.Second}
+
 func (v *JWTVerifier) getPublicKeys() (map[string]*rsa.PublicKey, error) {
 	v.mu.RLock()
 	if time.Now().Before(v.expiry) && v.publicKeys != nil {
@@ -57,11 +60,14 @@ func (v *JWTVerifier) getPublicKeys() (map[string]*rsa.PublicKey, error) {
 	}
 
 	log.Printf("[AUTH] Fetching Firebase public keys for project %s...", v.projectID)
-	resp, err := http.Get(firebaseJWKS)
+	resp, err := jwksClient.Get(firebaseJWKS)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("JWKS fetch failed: %s", resp.Status)
+	}
 
 	var keys map[string]string
 	if err := json.NewDecoder(resp.Body).Decode(&keys); err != nil {
@@ -83,6 +89,10 @@ func (v *JWTVerifier) getPublicKeys() (map[string]*rsa.PublicKey, error) {
 			continue
 		}
 		newKeys[kid] = pubKey
+	}
+
+	if len(newKeys) == 0 {
+		return nil, errors.New("JWKS response contained no usable keys")
 	}
 
 	v.publicKeys = newKeys

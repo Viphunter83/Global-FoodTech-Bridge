@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { getBlockchainAdminStatus } from '@/lib/api';
 import { BlockchainMonitor } from '@/components/admin/BlockchainMonitor';
 import { Metadata } from 'next';
@@ -23,7 +24,8 @@ export async function generateMetadata({ params: { locale } }: PageProps): Promi
 export default async function BlockchainAdminPage({ params: { locale } }: PageProps) {
     unstable_setRequestLocale(locale);
     
-    const status = await getBlockchainAdminStatus();
+    const { token } = await requireAdmin();
+    const status = await getBlockchainAdminStatus(token);
 
     // Fallback if API fails
     const fallbackStatus = {

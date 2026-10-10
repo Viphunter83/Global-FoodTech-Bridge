@@ -21,12 +21,14 @@ type Reading struct {
 
 type IngestTelemetryRequest struct {
 	BatchID            string   `json:"batch_id"`
-	TemperatureCelsius float64  `json:"temp"`
-	LocationLat        *float64 `json:"lat,omitempty"`
-	LocationLon        *float64 `json:"lon,omitempty"`
-	DeviceID           string   `json:"device_id"`
-	Humidity           *float64 `json:"humidity,omitempty"`
-	Pressure           *float64 `json:"pressure,omitempty"`
+	TemperatureCelsius *float64 `json:"temp"`
+	// Timestamp is the device measurement time (RFC 3339); server time is used when omitted.
+	Timestamp   *time.Time `json:"ts,omitempty"`
+	LocationLat *float64   `json:"lat,omitempty"`
+	LocationLon *float64   `json:"lon,omitempty"`
+	DeviceID    string     `json:"device_id"`
+	Humidity    *float64   `json:"humidity,omitempty"`
+	Pressure    *float64   `json:"pressure,omitempty"`
 }
 
 type Alert struct {

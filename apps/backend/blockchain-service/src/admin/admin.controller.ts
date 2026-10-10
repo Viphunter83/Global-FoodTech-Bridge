@@ -10,7 +10,8 @@ interface GrantRoleDto {
 
 @Controller('admin')
 @UseGuards(FirebaseAuthGuard, RolesGuard)
-@Roles('ADMIN')
+// SERVICE: passport-service calls grant-role after an ADMIN approves a company
+@Roles('ADMIN', 'SERVICE')
 export class AdminController {
     private readonly logger = new Logger(AdminController.name);
 

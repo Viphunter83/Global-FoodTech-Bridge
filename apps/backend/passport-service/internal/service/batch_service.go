@@ -6,7 +6,6 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/domain"
 	"github.com/global-foodtech-bridge/passport-service/internal/repository/postgres"
 	"github.com/google/uuid"
-	"log"
 	"fmt"
 )
 
@@ -25,30 +24,31 @@ func NewBatchService(repo *postgres.BatchRepository, complianceRepo *postgres.Co
 func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRequest) (*domain.CreateBatchResponse, error) {
 	// 1. Validation
 	if req.BatchSize <= 0 {
-		return nil, errors.New("batch_size must be positive")
+		return nil, ValidationError("batch_size must be positive")
 	}
 	if req.ManufacturerID == "" {
-		return nil, errors.New("manufacturer_id is required")
+		return nil, ValidationError("manufacturer_id is required")
 	}
 	if req.ProductType == "" {
-		return nil, errors.New("product_type is required")
+		return nil, ValidationError("product_type is required")
 	}
 	if req.OriginCountry == "" {
-		return nil, errors.New("origin_country is required for international trade")
+		return nil, ValidationError("origin_country is required for international trade")
 	}
 	if req.DestinationCountry == "" {
-		return nil, errors.New("destination_country is required for international trade")
+		return nil, ValidationError("destination_country is required for international trade")
 	}
 
 	manufacturerUUID, err := uuid.Parse(req.ManufacturerID)
 	if err != nil {
-		return nil, errors.New("invalid manufacturer_id format")
+		return nil, ValidationError("invalid manufacturer_id format")
 	}
 
 	// 2. Dynamic Compliance & SLA Rules
 	rules, err := s.complianceRepo.GetRules(ctx, req.DestinationCountry, req.ProductType)
 	if err != nil {
-		log.Printf("Warning: failed to fetch compliance rules: %v", err)
+		// Fail closed: without the rules we cannot check mandatory certificates
+		return nil, fmt.Errorf("failed to fetch compliance rules: %w", err)
 	}
 
 	var minTemp, maxTemp *float64
@@ -68,7 +68,7 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 				}
 			}
 			if !found {
-				return nil, fmt.Errorf("mandatory certificate missing for %s: %s", req.DestinationCountry, rule.RequirementName)
+				return nil, ValidationError(fmt.Sprintf("mandatory certificate missing for %s: %s", req.DestinationCountry, rule.RequirementName))
 			}
 		}
 	}

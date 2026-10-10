@@ -7,24 +7,18 @@ export class FirebaseAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const apiKey = request.headers['x-api-key'];
-    const secretKey = process.env.INTERNAL_API_KEY;
+    const authHeader = request.headers['authorization'];
 
-    // Bypass for internal services & tests using the master API key
-    if (apiKey && secretKey && apiKey === secretKey) {
-      request['user'] = {
-        uid: 'system-admin',
-        email: 'system@gftb.local',
-        role: 'ADMIN',
-      };
-      request.headers['x-verified-role'] = 'ADMIN';
+    // No user token: the global ApiKeyGuard has already authenticated the caller as a
+    // trusted internal service. It gets the limited SERVICE role, never ADMIN, so a
+    // leaked service key cannot be used to act on behalf of users.
+    if (!authHeader) {
+      request['user'] = { uid: 'internal-service', role: 'SERVICE' };
+      request.headers['x-verified-role'] = 'SERVICE';
       return true;
     }
 
-    const authHeader = request.headers['authorization'];
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      this.logger.warn('No Bearer token found in Authorization header');
+    if (!authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing or invalid Authorization header');
     }
 
@@ -35,7 +29,8 @@ export class FirebaseAuthGuard implements CanActivate {
       request['user'] = {
         uid: decodedToken.uid,
         email: decodedToken.email,
-        role: decodedToken.role || (decodedToken.admin ? 'admin' : 'user'),
+        role: decodedToken.role || 'PENDING',
+        companyId: decodedToken.company_id || decodedToken.companyId || null,
       };
       
       // Inject verified role for downstream use if needed

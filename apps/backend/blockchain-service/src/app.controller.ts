@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Req, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { BlockchainService } from './blockchain/blockchain.service';
 import { FirebaseAuthGuard } from './auth/firebase-auth.guard';
 import { RolesGuard, Roles } from './auth/roles.guard';
@@ -12,16 +12,34 @@ export class AppController {
     @Post('notarize')
     @UseGuards(FirebaseAuthGuard, RolesGuard)
     @Roles('MANUFACTURER', 'ADMIN')
-    async notarize(@Body() body: { batchId: string; dataHash: string }) {
+    async notarize(@Body() body: { batchId: string; dataHash?: string }, @Req() req: any) {
+        const user = req.user;
+        const batch = await this.blockchainService.getPassportBatch(body.batchId).catch((e) => {
+            throw new HttpException({ status: 'error', message: `Passport lookup failed: ${e.message}` }, HttpStatus.BAD_GATEWAY);
+        });
+        if (!batch) {
+            throw new HttpException({ status: 'error', message: 'Batch not found' }, HttpStatus.NOT_FOUND);
+        }
+
+        const isAdmin = user.role?.toUpperCase() === 'ADMIN';
+        if (!isAdmin && batch.manufacturer_id !== user.companyId) {
+            throw new HttpException({ status: 'error', message: 'You can only notarize your own batches' }, HttpStatus.FORBIDDEN);
+        }
+
+        // The on-chain token URI must be the batch's own IPFS metadata, not a client-supplied value.
+        // Only admins (demo flows) may notarize a batch that has no uploaded metadata yet.
+        const tokenUri = batch.token_uri || (isAdmin ? body.dataHash : undefined);
+        if (!tokenUri) {
+            throw new HttpException({ status: 'error', message: 'Batch has no IPFS metadata; upload its documents first' }, HttpStatus.BAD_REQUEST);
+        }
+
         try {
-            // 'dataHash' is now treated as 'tokenURI' for NFT metadata
-            const txHash = await this.blockchainService.createBatch(body.batchId, body.dataHash);
+            const txHash = await this.blockchainService.createBatch(body.batchId, tokenUri);
             return { status: 'success', txHash };
         } catch (error) {
             throw new HttpException({
                 status: 'error',
                 message: error.message,
-                details: error.stack
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -84,6 +102,8 @@ export class AppController {
     }
 
     @Get('admin/status')
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('ADMIN')
     async getAdminStatus() {
         try {
             return await this.blockchainService.getAdminStatus();
@@ -91,7 +111,6 @@ export class AppController {
             throw new HttpException({
                 status: 'error',
                 message: error.message,
-                stack: error.stack
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

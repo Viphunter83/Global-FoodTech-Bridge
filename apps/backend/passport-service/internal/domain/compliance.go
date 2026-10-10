@@ -23,7 +23,6 @@ type Partner struct {
 	ID                      uuid.UUID `json:"id"`
 	Name                    string    `json:"name"`
 	VerificationRedirectURL string    `json:"verification_redirect_url"`
-	ApiKey                  *string   `json:"api_key,omitempty"`
-	CreatedAt               time.Time `json:"created_at"`
+		CreatedAt               time.Time `json:"created_at"`
 	IsActive                bool      `json:"is_active"`
 }

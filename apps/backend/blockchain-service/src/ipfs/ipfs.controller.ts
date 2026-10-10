@@ -1,6 +1,12 @@
-import { Controller, Post, UploadedFiles, Body, UseInterceptors, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, UploadedFiles, Body, UseInterceptors, UseGuards, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { IpfsService } from './ipfs.service';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { RolesGuard, Roles } from '../auth/roles.guard';
+
+const MAX_FILES = 10;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/webp']);
 
 @Controller('ipfs')
 export class IpfsController {
@@ -9,7 +15,15 @@ export class IpfsController {
     constructor(private readonly ipfsService: IpfsService) { }
 
     @Post('upload')
-    @UseInterceptors(FilesInterceptor('files')) // 'files' must match frontend field name
+    @UseGuards(FirebaseAuthGuard, RolesGuard)
+    @Roles('MANUFACTURER', 'ADMIN')
+    @UseInterceptors(FilesInterceptor('files', MAX_FILES, { // 'files' must match frontend field name
+        limits: { fileSize: MAX_FILE_SIZE, files: MAX_FILES },
+        fileFilter: (_req, file, cb) => {
+            if (ALLOWED_MIME_TYPES.has(file.mimetype)) return cb(null, true);
+            cb(new HttpException(`Unsupported file type: ${file.mimetype}`, HttpStatus.UNSUPPORTED_MEDIA_TYPE), false);
+        },
+    }))
     async uploadBatchData(
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() body: any
@@ -67,7 +81,7 @@ export class IpfsController {
             return {
                 success: true,
                 ipfsHash: metadataHash, // This is the "Token URI"
-                metadata: metadata // Return meantadata for debug
+                metadata: metadata
             };
         } catch (error) {
             this.logger.error("Upload failed", error);

@@ -41,7 +41,8 @@ services:
     environment:
       - DATABASE_URL=postgres://user:password@postgres:5432/gfb_db?sslmode=disable
       - PORT=8080
-      - INTERNAL_API_KEY=default_secret_api_key_123
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:3000
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-local_dev_only_key}
       - FIREBASE_PROJECT_ID=global-foodtech-bridge-prod
     ports:
       - "8080:8080"
@@ -60,7 +61,8 @@ services:
       - DATABASE_URL=postgres://user:password@postgres:5432/gfb_db?sslmode=disable
       - PORT=8081
       - REDIS_URL=redis://redis:6379
-      - INTERNAL_API_KEY=default_secret_api_key_123
+      - PASSPORT_SERVICE_URL=http://passport-service:8080/api/v1
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-local_dev_only_key}
       - FIREBASE_PROJECT_ID=global-foodtech-bridge-prod
     ports:
       - "8081:8081"
@@ -84,7 +86,12 @@ services:
       - LOGISTICS_KEY=${BLOCKCHAIN_LOGISTICS_KEY}
       - RETAILER_KEY=${BLOCKCHAIN_RETAILER_KEY}
       - CONTRACT_ADDRESS=0xE326362613F44383504b1bFA5Dd92C0Fc7D38471
-      - INTERNAL_API_KEY=default_secret_api_key_123
+      - CHAIN_ID=80002
+      - PASSPORT_SERVICE_URL=http://passport-service:8080
+      - IOT_SERVICE_URL=http://iot-service:8081
+      # Local dev may run without wallet keys; production refuses MOCK mode
+      - ALLOW_MOCK_MODE=true
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-local_dev_only_key}
       - FIREBASE_PROJECT_ID=global-foodtech-bridge-prod
       - REDIS_URL=redis://redis:6379
     ports:
@@ -103,7 +110,7 @@ services:
     environment:
       - PORT=3001
       - NEXT_TELEMETRY_DISABLED=1
-      - INTERNAL_API_KEY=default_secret_api_key_123
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-local_dev_only_key}
       - NEXT_PUBLIC_PASSPORT_SERVICE_URL=http://passport-service:8080/api/v1
       - NEXT_PUBLIC_IOT_SERVICE_URL=http://iot-service:8081/api/v1
       - NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL=http://blockchain-service:3000/api/v1

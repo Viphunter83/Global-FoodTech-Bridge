@@ -12,6 +12,7 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/repository/postgres"
 	"github.com/google/uuid"
 	"os"
+	"strings"
 )
 
 type CompanyService struct {
@@ -82,6 +83,8 @@ func (s *CompanyService) ApproveCompany(ctx context.Context, id uuid.UUID) error
 	if baseURL == "" {
 		baseURL = "http://localhost:3000"
 	}
+	// Accept the URL with or without the /api/v1 suffix
+	baseURL = strings.TrimSuffix(strings.TrimSuffix(baseURL, "/"), "/api/v1")
 	blockchainURL := fmt.Sprintf("%s/api/v1/admin/grant-role", baseURL)
 
 	payload := map[string]string{
@@ -95,6 +98,8 @@ func (s *CompanyService) ApproveCompany(ctx context.Context, id uuid.UUID) error
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	// Service-to-service call: blockchain-service accepts grant-role from SERVICE callers
+	req.Header.Set("x-api-key", os.Getenv("INTERNAL_API_KEY"))
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)

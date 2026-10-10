@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { getAdminBatches } from '@/lib/api';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Metadata } from 'next';
@@ -25,7 +26,8 @@ export default async function AdminDashboardPage({ params: { locale } }: PagePro
     
     // In a server component, we use the internal API key automatically via lib/api.ts
     // because isServer will be true.
-    const batches = await getAdminBatches();
+    const { token } = await requireAdmin();
+    const batches = await getAdminBatches(token);
 
     return (
         <div className="container mx-auto">

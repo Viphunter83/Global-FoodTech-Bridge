@@ -1,8 +1,10 @@
 #!/bin/bash
+: "${INTERNAL_API_KEY:?Set INTERNAL_API_KEY}"
+: "${MANUFACTURER_ID_TOKEN:?Set MANUFACTURER_ID_TOKEN (Firebase ID token)}"
 
 # 1. Create Batch
 echo "Creating Batch..."
-RESPONSE=$(curl -s -X POST http://localhost:8080/api/v1/batches \
+RESPONSE=$(curl -s -X POST -H "x-api-key: $INTERNAL_API_KEY" -H "Authorization: Bearer $MANUFACTURER_ID_TOKEN" http://localhost:8080/api/v1/batches \
   -H "Content-Type: application/json" \
   -d '{"manufacturer_id": "550e8400-e29b-41d4-a716-446655440000", "product_type": "PHO_BO_SOUP", "batch_size": 500}')
 
@@ -23,7 +25,7 @@ for i in {0..5}; do
    # Vary temp slightly
    TEMP=$(echo "-20 + $i * 0.2" | bc)
    
-   curl -s -o /dev/null -X POST http://localhost:8081/api/v1/telemetry \
+   curl -s -o /dev/null -X POST -H "x-api-key: $INTERNAL_API_KEY" http://localhost:8081/api/v1/telemetry \
     -H "Content-Type: application/json" \
     -d "{
       \"batch_id\": \"$BATCH_ID\",
