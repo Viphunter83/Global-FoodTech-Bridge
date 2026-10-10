@@ -1,156 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedUser, verifySession } from '@/lib/auth-server';
+import { forwardToBackend, matchesAny, notAllowed, targetPathOf } from '@/lib/backend-proxy';
+
+const UUID = '[0-9a-fA-F-]{36}';
+const BATCH_PATH = new RegExp(`^/batches/(${UUID})$`);
+
+// Public reads; /admin/* additionally needs a session, and the backend checks the ADMIN claim
+const PUBLIC_GET = [
+    BATCH_PATH,
+    new RegExp(`^/partners/${UUID}$`),
+    /^\/templates$/,
+    new RegExp(`^/templates/${UUID}$`),
+];
+const ADMIN_GET = [/^\/admin\/companies$/, /^\/admin\/batches$/];
+
+const MUTATIONS: Record<'POST' | 'PATCH' | 'PUT' | 'DELETE', RegExp[]> = {
+    POST: [/^\/batches$/, /^\/admin\/companies$/, /^\/admin\/templates$/],
+    PATCH: [
+        new RegExp(`^/batches/${UUID}/blockchain$`),
+        new RegExp(`^/batches/${UUID}/sensor$`),
+        new RegExp(`^/admin/companies/${UUID}/approve$`),
+    ],
+    PUT: [new RegExp(`^/admin/templates/${UUID}$`)],
+    DELETE: [new RegExp(`^/admin/templates/${UUID}$`)],
+};
 
 export async function GET(request: NextRequest) {
-    const url = new URL(request.url);
-    const searchParams = url.searchParams.toString();
-    const targetPath = request.nextUrl.pathname.replace('/api/passport', '');
-    
-    const PASSPORT_SERVICE_URL = process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL;
-    
-    if (!PASSPORT_SERVICE_URL) {
-        return NextResponse.json({ error: 'Passport service URL is not configured' }, { status: 500 });
-    }
+    const targetPath = targetPathOf(request, '/api/passport');
+    const user = await verifySession(request);
 
-    let finalUrl = '';
-    try {
-        const apiKey = process.env.INTERNAL_API_KEY;
-        const isAdminPath = targetPath.startsWith('/admin/');
-        
-        let userRole = '';
-        let userToken = '';
-        const user = await verifySession(request);
-        if (user) {
-            userRole = user.role?.toUpperCase() || '';
-            userToken = user.token || '';
-        }
-
-        if (isAdminPath && !user) {
+    if (matchesAny(targetPath, ADMIN_GET)) {
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized: Session required for administrative access' }, { status: 401 });
         }
-
-        const batchMatch = targetPath.match(/^\/batches\/([0-9a-fA-F-]{36})$/);
-        if (batchMatch) {
-            const batchId = batchMatch[1];
-            console.log(`[GFTB-PROXY] Decorating batch details with history for ID: ${batchId}`);
-            const { getBatchDetails } = await import('@/lib/api');
-            const decoratedBatch = await getBatchDetails(batchId, userToken);
-            if (decoratedBatch) {
-                return NextResponse.json(decoratedBatch);
-            }
-        }
-
-        // Standardize URL to include /api/v1 if not present
-        let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
-        if (!baseUrl.endsWith('/api/v1')) {
-            baseUrl = `${baseUrl}/api/v1`;
-        }
-        
-        finalUrl = `${baseUrl}${targetPath}?${searchParams}`;
-        console.log(`[GFTB-PROXY] GET ${finalUrl} [UserRole: ${userRole || 'Public'}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
-
-        const headers: Record<string, string> = {
-            'x-api-key': apiKey || '',
-        };
-        if (userRole) {
-            headers['X-User-Role'] = userRole;
-        }
-        if (userToken) {
-            headers['Authorization'] = `Bearer ${userToken}`;
-        }
-
-        const response = await fetch(finalUrl, { headers });
-
-        const contentType = response.headers.get('content-type') || '';
-        let data: any;
-        if (contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() };
-        }
-        return NextResponse.json(data, { status: response.status });
-    } catch (error: any) {
-        console.error('Passport Proxy Error:', error);
-        return NextResponse.json({ 
-            error: 'Failed to connect to passport service', 
-            message: error.message,
-            stack: error.stack,
-            debugUrl: finalUrl
-        }, { status: 502 });
+    } else if (!matchesAny(targetPath, PUBLIC_GET)) {
+        return notAllowed(targetPath);
     }
+
+    // Batch passports are returned decorated with blockchain history and telemetry
+    const batchMatch = targetPath.match(BATCH_PATH);
+    if (batchMatch) {
+        const { getBatchDetails } = await import('@/lib/api');
+        const decoratedBatch = await getBatchDetails(batchMatch[1], user?.token);
+        if (decoratedBatch) return NextResponse.json(decoratedBatch);
+    }
+
+    return forwardToBackend({
+        service: 'passport',
+        targetPath,
+        method: 'GET',
+        user,
+        search: request.nextUrl.searchParams.toString(),
+    });
 }
 
-async function handleMutation(request: NextRequest, method: 'POST' | 'PATCH', user: AuthenticatedUser) {
-    const targetPath = request.nextUrl.pathname.replace('/api/passport', '');
-    const PASSPORT_SERVICE_URL = process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL;
-    
-    if (!PASSPORT_SERVICE_URL) {
-        return NextResponse.json({ error: 'Passport service URL is not configured' }, { status: 500 });
-    }
+function mutation(method: keyof typeof MUTATIONS) {
+    return withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+        const targetPath = targetPathOf(request, '/api/passport');
+        if (!matchesAny(targetPath, MUTATIONS[method])) return notAllowed(targetPath);
 
-    try {
-        const apiKey = process.env.INTERNAL_API_KEY;
-        const userRole = user.role?.toUpperCase() || '';
-        const userToken = user.token || '';
-        
-        if (!apiKey) {
-            console.error(`[GFTB-PROXY] CRITICAL: INTERNAL_API_KEY missing for ${method} request.`);
-        }
-
-        // Standardize URL to include /api/v1 if not present
-        let baseUrl = PASSPORT_SERVICE_URL.replace(/\/$/, '');
-        if (!baseUrl.endsWith('/api/v1')) {
-            baseUrl = `${baseUrl}/api/v1`;
-        }
-
-        const finalUrl = `${baseUrl}${targetPath}`;
-        console.log(`[GFTB-PROXY] ${method} ${finalUrl} [Role: ${userRole}] [Key: ${apiKey ? 'Present' : 'Missing'}]`);
-
-        const contentType = request.headers.get('content-type') || '';
-        const headers: Record<string, string> = {
-            'x-api-key': apiKey || '',
-            'X-User-Role': userRole,
-            'Authorization': `Bearer ${userToken}`,
-        };
-
-        let body: any;
-
-        if (contentType.includes('application/json')) {
-            body = JSON.stringify(await request.json());
-            headers['Content-Type'] = 'application/json';
-        } else if (contentType.includes('multipart/form-data')) {
-            body = await request.formData();
-        } else {
-            body = request.body;
-        }
-
-        const response = await fetch(finalUrl, {
-            method,
-            headers,
-            body,
-            // @ts-ignore
-            duplex: 'half',
+        return forwardToBackend({
+            service: 'passport',
+            targetPath,
+            // fetch accepts any method; the union type only documents what the proxy forwards
+            method: method as 'POST',
+            user,
+            body: method === 'DELETE' ? null : await request.arrayBuffer(),
+            contentType: request.headers.get('content-type'),
         });
-
-        const resContentType = response.headers.get('content-type') || '';
-        let data: any;
-        if (resContentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() };
-        }
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        console.error(`Passport Proxy ${method} Error:`, error);
-        return NextResponse.json({ error: 'Failed to connect to passport service' }, { status: 502 });
-    }
+    });
 }
 
-export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
-    return handleMutation(request, 'POST', user);
-});
-
-export const PATCH = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
-    return handleMutation(request, 'PATCH', user);
-});
-
+export const POST = mutation('POST');
+export const PATCH = mutation('PATCH');
+export const PUT = mutation('PUT');
+export const DELETE = mutation('DELETE');

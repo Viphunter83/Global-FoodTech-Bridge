@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { fetchInfrastructureStatus } from '@/lib/railway';
 import { InfrastructureStatus } from '@/components/admin/InfrastructureStatus';
 import { Metadata } from 'next';
@@ -23,6 +24,7 @@ export async function generateMetadata({ params: { locale } }: PageProps): Promi
 
 export default async function MonitoringPage({ params: { locale } }: PageProps) {
     unstable_setRequestLocale(locale);
+    await requireAdmin();
 
     const handleRefresh = refreshMonitoringData.bind(null, locale);
 

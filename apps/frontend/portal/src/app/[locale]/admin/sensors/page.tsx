@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/admin-guard';
 import { getDevices } from '@/lib/api';
 import { SensorsClient } from './SensorsClient';
 import { Metadata } from 'next';
@@ -24,7 +25,8 @@ export default async function SensorsPage({ params: { locale } }: PageProps) {
     unstable_setRequestLocale(locale);
     
     // Fetch initial data on the server
-    const initialSensors = await getDevices();
+    const { token } = await requireAdmin();
+    const initialSensors = await getDevices(token);
 
     return (
         <SensorsClient initialSensors={initialSensors} />

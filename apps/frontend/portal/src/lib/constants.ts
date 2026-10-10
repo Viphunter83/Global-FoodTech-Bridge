@@ -5,3 +5,6 @@ export const RETAILER_ADDR = "0xB69B16B4b22e65BfCe544774DA9947E61506Fea0";
 export const DEMO_MANUFACTURER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 export const STORAGE_KEY = 'gfb_demo_state';
+
+// Block explorer of the network the contract lives on (production: Polygon Mainnet)
+export const EXPLORER_URL = process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://polygonscan.com';

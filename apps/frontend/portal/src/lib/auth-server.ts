@@ -4,7 +4,7 @@ import { adminAuth } from './firebase-admin';
 export interface AuthenticatedUser {
     uid: string;
     email?: string;
-    role?: 'manufacturer' | 'logistics' | 'retailer' | 'admin';
+    role?: 'manufacturer' | 'logistics' | 'retailer' | 'admin' | 'pending';
     token?: string;
 }
 
@@ -17,13 +17,9 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
     const authHeader = request.headers.get('authorization');
     if (authHeader?.startsWith('Bearer ')) {
         token = authHeader.split('Bearer ')[1];
-        console.log(`[AUTH-SERVER] Verifying token from Authorization Header (length: ${token.length})`);
     } else {
         // Fallback to cookie for resilience against client-side Firebase blocks
         token = request.cookies.get('gftb-session')?.value;
-        if (token) {
-            console.log(`[AUTH-SERVER] Verifying token from Cookie (length: ${token.length})`);
-        }
     }
 
     if (!token) {
@@ -32,12 +28,12 @@ export async function verifySession(request: NextRequest): Promise<Authenticated
 
     try {
         const decodedToken = await adminAuth.verifyIdToken(token);
-        console.log(`[AUTH-SERVER] Token verified for UID: ${decodedToken.uid}`);
         
-        // Custom roles: check 'role' claim or 'admin' flag
-        let role: AuthenticatedUser['role'] = 'manufacturer';
+        // Custom roles: check 'role' claim or 'admin' flag. A user without a role
+        // claim has not been approved yet and gets no privileges.
+        let role: AuthenticatedUser['role'] = 'pending';
         if (decodedToken.role) {
-            role = decodedToken.role as any;
+            role = String(decodedToken.role).toLowerCase() as AuthenticatedUser['role'];
         } else if (decodedToken.admin === true || decodedToken.admin === "true") {
             role = 'admin';
         }
@@ -68,7 +64,7 @@ export function withAuth(
             return NextResponse.json({ error: 'Unauthorized: Valid session required' }, { status: 401 });
         }
 
-        if (requiredRole && user.role !== requiredRole && user.role !== 'admin') {
+        if (requiredRole && user.role !== requiredRole.toLowerCase() && user.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
         }
 

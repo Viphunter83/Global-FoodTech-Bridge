@@ -26,7 +26,7 @@ export function NotarizeButton({ batchId }: { batchId: string }) {
             if (!token) throw new Error('No auth token available');
 
             // For MVP, we use the Batch ID itself as the hash payload, or a placeholder
-            const res = await notarizeBatch(batchId, `hash-${batchId.slice(0, 8)}`, token);
+            const res = await notarizeBatch(batchId, undefined, token);
             if (res.status === 'success') {
                 alert(`Notarization started! TX: ${res.txHash}`);
                 router.refresh(); // Refresh to show "Secured" status (once confirmed)

@@ -132,21 +132,23 @@ export interface Device {
 }
 
 import { MANUFACTURER_ADDR } from './constants';
+import { serviceBaseUrl } from './backend-proxy';
 
 const isServer = typeof window === 'undefined';
 
 // On server (SSR/API Routes), we call backend services directly.
 // On client (browser), we call our Next.js API proxies to hide keys.
+// Server URLs are normalized to `.../api/v1` the same way the proxies do it.
 const PASSPORT_URL = isServer
-    ? (process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL || 'http://localhost:8080/api/v1')
+    ? (serviceBaseUrl(process.env.NEXT_PUBLIC_PASSPORT_SERVICE_URL) || 'http://localhost:8080/api/v1')
     : '/api/passport';
 
 const IOT_URL = isServer
-    ? (process.env.NEXT_PUBLIC_IOT_SERVICE_URL || 'http://localhost:8081/api/v1')
+    ? (serviceBaseUrl(process.env.NEXT_PUBLIC_IOT_SERVICE_URL) || 'http://localhost:8081/api/v1')
     : '/api/telemetry';
 
 const BLOCKCHAIN_URL = isServer
-    ? (process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL || 'http://localhost:3000/api/v1')
+    ? (serviceBaseUrl(process.env.NEXT_PUBLIC_BLOCKCHAIN_SERVICE_URL) || 'http://localhost:3000/api/v1')
     : '/api/blockchain';
 
 // Helper for headers
@@ -154,11 +156,13 @@ const getHeaders = (isPost = false, token?: string, isJson = true) => {
     const headers: Record<string, string> = {};
     if (isPost && isJson) headers['Content-Type'] = 'application/json';
     
-    // Server-side needs the key directly. Client-side proxy will inject it.
-    // BUT the proxy itself requires a Bearer token to verify the user role.
+    // Server-side needs the key directly; client-side the proxy injects it.
+    // The user's token is always forwarded: backends derive the role from it,
+    // while the key alone only grants the limited SERVICE role.
     if (isServer) {
         headers['x-api-key'] = process.env.INTERNAL_API_KEY || '';
-    } else if (token) {
+    }
+    if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
     
@@ -261,7 +265,7 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
         // Fetch Partner Details if present
         if (data.partner_id) {
             try {
-                const partnerRes = await fetch(`${PASSPORT_URL}/partners/${data.partner_id}`, { cache: 'no-store' });
+                const partnerRes = await fetch(`${PASSPORT_URL}/partners/${data.partner_id}`, { headers: getHeaders(false, token), cache: 'no-store' });
                 if (partnerRes.ok) {
                     const partnerData = await partnerRes.json();
                     extendedData.partner_redirect_url = partnerData.verification_redirect_url;
@@ -450,7 +454,7 @@ export async function getAlerts(id: string, token?: string): Promise<Alert[]> {
     }
 }
 
-export async function notarizeBatch(batchId: string, dataHash: string = "hash", token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
+export async function notarizeBatch(batchId: string, dataHash?: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/notarize`, {
             method: 'POST',
@@ -461,7 +465,7 @@ export async function notarizeBatch(batchId: string, dataHash: string = "hash", 
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            return { status: 'error', error: errData.error || 'Notarization failed' };
+            return { status: 'error', error: errData.message || errData.error || 'Notarization failed' };
         }
 
         return await res.json();
@@ -722,7 +726,6 @@ export async function getDevices(token?: string): Promise<Device[]> {
 export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
     try {
         const headers = getHeaders(false, token);
-        headers['X-User-Role'] = 'ADMIN';
 
         const res = await fetch(`${PASSPORT_URL}/admin/batches`, {
             headers,
@@ -746,7 +749,6 @@ export async function getAdminBatches(token?: string): Promise<BatchDetails[]> {
 export async function getBlockchainAdminStatus(token?: string): Promise<any> {
     try {
         const headers = getHeaders(false, token);
-        headers['X-User-Role'] = 'ADMIN';
 
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/admin/status`, {
             headers,
@@ -763,7 +765,6 @@ export async function getBlockchainAdminStatus(token?: string): Promise<any> {
 export async function advanceBatchDemo(batchId: string, targetRole: 'LOGISTICS' | 'RETAILER', token?: string): Promise<any> {
     try {
         const headers = getHeaders(true, token);
-        headers['X-User-Role'] = 'ADMIN';
 
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/demo/advance`, {
             method: 'POST',

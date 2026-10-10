@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
 
         console.log(`[AUTH_SESSION_API] Token verified for UID: ${uid}, currentRole: ${role}`);
 
-        // 2. Self-healing: If role or companyId is missing in token, try to fetch from Firestore and sync
+        // 2. Self-healing: If role or companyId is missing in token, try to fetch from Firestore and sync.
+        // Safe only because firestore.rules make /users/{uid} writable by admins alone.
         if (!decodedToken.role || !decodedToken.company_id) {
             console.log(`[AUTH_SESSION_API] Missing claims for user ${uid}. Attempting sync from Firestore...`);
             const userDoc = await adminDb.collection('users').doc(uid).get();
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7 // 7 days
+            maxAge: 60 * 60 // matches the ID token lifetime; AuthProvider refreshes it via onIdTokenChanged
         });
 
         return response;
@@ -66,17 +67,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Token expired', code: 'EXPIRED' }, { status: 401 });
         }
         
-        return NextResponse.json({ 
-            error: 'Failed to establish session', 
-            message: error.message,
-            code: error.code,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-            debug_info: {
-                hasEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-                hasKey: !!process.env.FIREBASE_PRIVATE_KEY,
-                tokenLength: idToken?.length
-            }
-        }, { status: 401 });
+        return NextResponse.json({ error: 'Failed to establish session', code: error.code }, { status: 401 });
     }
 }
 
