@@ -34,7 +34,8 @@
     "batch_id": "Mã Lô hàng:",
     "report_issue": "Báo cáo vấn đề / Khiếu nại",
     "scan_share": "Quét để xác minh lô hàng này trên thiết bị khác",
-    "btn_download_report": "Xuất Biên bản Kiểm toán (PDF)"
+    "btn_download_report": "Xuất Biên bản Kiểm toán (PDF)",
+    "certificate": "Chứng nhận"
   },
   "Hero": {
     "title": "Tin tưởng mọi mắt xích trong chuỗi cung ứng của bạn.",
@@ -357,7 +358,14 @@
     "block_label": "Khối",
     "breach_hero_title": "Đã ghi nhận vi phạm chuỗi lạnh",
     "breach_hero_desc": "Sản phẩm là hàng thật, nhưng điều kiện bảo quản đã bị vi phạm trong quá trình vận chuyển",
-    "metadata_unavailable": "Chưa tải lên tài liệu"
+    "metadata_unavailable": "Chưa tải lên tài liệu",
+    "blockchain_records": "Bản ghi blockchain",
+    "live_iot_indicator": "IoT trực tiếp",
+    "retailer_checkpoint": "Điểm kiểm tra nhà bán lẻ",
+    "timeline_update_checkpoint": "Cập nhật điểm kiểm tra",
+    "tooltip_temp": "Nhiệt độ",
+    "tooltip_humidity": "Độ ẩm",
+    "tooltip_verified": "Vị trí đã xác minh"
   },
   "Auth": {
     "login_title": "Truy cập Bảo mật",
@@ -377,7 +385,10 @@
     "role_manufacturer": "Nhà sản xuất",
     "role_logistics": "Trung tâm Logistics",
     "role_retailer": "Nhà bán lẻ",
-    "role_persona": "Vai trò:"
+    "role_persona": "Vai trò:",
+    "error_email_already_in_use": "Email này đã được đăng ký",
+    "error_popup_blocked": "Cửa sổ đăng nhập bị chặn. Hãy cho phép cửa sổ bật lên và thử lại",
+    "verified_badge": "Đã xác minh"
   },
   "Admin": {
     "monitoring_title": "Giám sát Hạ tầng",
@@ -601,7 +612,9 @@
     "msg_approve_failed": "Failed to approve {name}.",
     "table_identity": "Identity",
     "stat_coverage": "Network Coverage",
-    "protocol_deleted_success": "Protocol deleted successfully"
+    "protocol_deleted_success": "Protocol deleted successfully",
+    "sensors_title": "Đội thiết bị IoT",
+    "sensors_description": "Giám sát và quản lý đội cảm biến IoT"
   },
   "HowItWorks": {
     "how_title": "Cách GFTB Bridge hoạt động",
@@ -698,7 +711,8 @@
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked"
+    "devices_linked": "{count} Devices Linked",
+    "max_sensors_reached": "Tối đa {count} cảm biến cho mỗi lô"
   },
   "NotFound": {
     "title": "Page Not Found",
@@ -712,6 +726,16 @@
     "verifyDescription": "Hộ chiếu số của {product} từ {country}, được xác minh bằng blockchain.",
     "blockchainVerified": "Đã xác minh bằng blockchain",
     "ogDescription": "Kiểm tra nguồn gốc, tài liệu và chuỗi lạnh của lô {id}.",
-    "scanTitle": "Quét lô hàng"
+    "scanTitle": "Quét lô hàng",
+    "scanDescription": "Kết quả quét lô hàng {id}"
+  },
+  "Batches": {
+    "notFound": "Không tìm thấy lô hàng",
+    "detailsTitle": "Lô hàng",
+    "detailsDescription": "Bảng theo dõi lô hàng {id}"
+  },
+  "Blockchain": {
+    "real_time_notary": "Công chứng thời gian thực",
+    "integrity_vault": "Kho toàn vẹn"
   }
 }

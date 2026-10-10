@@ -34,7 +34,8 @@
     "batch_id": "معرف الدفعة:",
     "report_issue": "الإبلاغ عن مشكلة / نزاع",
     "scan_share": "امسح للتحقق من هذه الدفعة على جهاز آخر",
-    "btn_download_report": "تصدير تدقيق الامتثال (PDF)"
+    "btn_download_report": "تصدير تدقيق الامتثال (PDF)",
+    "certificate": "شهادة"
   },
   "Hero": {
     "title": "ثق بسلسلة التوريد الخاصة بك.",
@@ -352,7 +353,14 @@
     "block_label": "الكتلة",
     "breach_hero_title": "تم تسجيل خرق في سلسلة التبريد",
     "breach_hero_desc": "المنتج أصلي، لكن ظروف التخزين لم تُحترم أثناء النقل",
-    "metadata_unavailable": "لم يتم تحميل المستندات بعد"
+    "metadata_unavailable": "لم يتم تحميل المستندات بعد",
+    "blockchain_records": "سجلات البلوكتشين",
+    "live_iot_indicator": "إنترنت الأشياء المباشر",
+    "retailer_checkpoint": "نقطة تفتيش بائع التجزئة",
+    "timeline_update_checkpoint": "تحديث نقطة التفتيش",
+    "tooltip_temp": "درجة الحرارة",
+    "tooltip_humidity": "الرطوبة",
+    "tooltip_verified": "موقع موثّق"
   },
   "Auth": {
     "login_title": "وصول آمن",
@@ -372,7 +380,10 @@
     "role_manufacturer": "المصنع",
     "role_logistics": "مركز اللوجستيات",
     "role_retailer": "تاجر التجزئة",
-    "role_persona": "الشخصية:"
+    "role_persona": "الشخصية:",
+    "error_email_already_in_use": "هذا البريد الإلكتروني مسجل بالفعل",
+    "error_popup_blocked": "تم حظر نافذة تسجيل الدخول. اسمح بالنوافذ المنبثقة وحاول مرة أخرى",
+    "verified_badge": "تم التحقق"
   },
   "Admin": {
     "monitoring_title": "مراقب البنية التحتية",
@@ -596,7 +607,9 @@
     "msg_approve_failed": "Failed to approve {name}.",
     "table_identity": "Identity",
     "stat_coverage": "Network Coverage",
-    "protocol_deleted_success": "Protocol deleted successfully"
+    "protocol_deleted_success": "Protocol deleted successfully",
+    "sensors_title": "أسطول إنترنت الأشياء",
+    "sensors_description": "مراقبة وإدارة أسطول مستشعرات إنترنت الأشياء"
   },
   "HowItWorks": {
     "how_title": "كيف يعمل GFTB Bridge",
@@ -698,7 +711,8 @@
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked"
+    "devices_linked": "{count} Devices Linked",
+    "max_sensors_reached": "الحد الأقصى {count} مستشعرات لكل دفعة"
   },
   "NotFound": {
     "title": "Page Not Found",
@@ -712,6 +726,16 @@
     "verifyDescription": "جواز سفر رقمي موثّق بالبلوكتشين لـ {product} من {country}.",
     "blockchainVerified": "موثّق بالبلوكتشين",
     "ogDescription": "تحقق من المنشأ والمستندات وسلسلة التبريد للدفعة {id}.",
-    "scanTitle": "مسح الدفعة"
+    "scanTitle": "مسح الدفعة",
+    "scanDescription": "نتيجة مسح الدفعة {id}"
+  },
+  "Batches": {
+    "notFound": "الدفعة غير موجودة",
+    "detailsTitle": "الدفعة",
+    "detailsDescription": "محطة تتبع الدفعة {id}"
+  },
+  "Blockchain": {
+    "real_time_notary": "التوثيق الفوري",
+    "integrity_vault": "خزنة السلامة"
   }
 }

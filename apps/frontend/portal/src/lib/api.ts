@@ -518,18 +518,20 @@ export async function updateBatchIOTConfig(
 }
 
 
-export async function initiateHandover(batchId: string, toAddress: string, token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
+// The backend maps the role to its configured custodial wallet, so the portal never
+// hardcodes chain addresses (they differ between networks and deployments).
+export async function initiateHandover(batchId: string, toRole: 'LOGISTICS' | 'RETAILER', token?: string): Promise<{ status: string; txHash?: string; error?: string }> {
     try {
         const res = await fetch(`${BLOCKCHAIN_URL}/blockchain/transfer/initiate`, {
             method: 'POST',
             headers: getHeaders(true, token),
-            body: JSON.stringify({ batchId, toAddress }),
+            body: JSON.stringify({ batchId, toRole }),
             cache: 'no-store'
         });
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            return { status: 'error', error: errData.error || 'Initiation failed' };
+            return { status: 'error', error: errData.message || errData.error || 'Initiation failed' };
         }
         return await res.json();
     } catch (e: any) {

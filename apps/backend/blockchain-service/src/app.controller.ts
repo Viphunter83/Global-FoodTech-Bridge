@@ -71,12 +71,20 @@ export class AppController {
     @Post('transfer/initiate')
     @UseGuards(FirebaseAuthGuard, RolesGuard)
     @Roles('MANUFACTURER', 'LOGISTICS', 'ADMIN')
-    async initiateTransfer(@Body() body: { batchId: string; toAddress: string }) {
-        if (!body.toAddress || !body.toAddress.startsWith('0x')) {
-            throw new HttpException('Valid toAddress (0x...) is required for transfer initiation', HttpStatus.BAD_REQUEST);
+    async initiateTransfer(@Body() body: { batchId: string; toAddress?: string; toRole?: 'LOGISTICS' | 'RETAILER' }) {
+        // Prefer a role: the service resolves it to the configured custodial wallet
+        let toAddress = body.toAddress;
+        if (body.toRole) {
+            if (!['LOGISTICS', 'RETAILER'].includes(body.toRole)) {
+                throw new HttpException('toRole must be LOGISTICS or RETAILER', HttpStatus.BAD_REQUEST);
+            }
+            toAddress = this.blockchainService.walletForRole(body.toRole);
+        }
+        if (!toAddress || !toAddress.startsWith('0x')) {
+            throw new HttpException('toRole or a valid toAddress (0x...) is required', HttpStatus.BAD_REQUEST);
         }
         try {
-            const txHash = await this.blockchainService.initiateTransfer(body.batchId, body.toAddress);
+            const txHash = await this.blockchainService.initiateTransfer(body.batchId, toAddress, body.toRole);
             return { status: 'success', txHash };
         } catch (error) {
             throw new HttpException({

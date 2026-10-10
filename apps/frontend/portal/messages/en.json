@@ -46,7 +46,8 @@
     "batch_id": "Batch ID:",
     "report_issue": "Report Issue / Dispute",
     "scan_share": "Scan to verify this batch on another device",
-    "btn_download_report": "Export Compliance Audit (PDF)"
+    "btn_download_report": "Export Compliance Audit (PDF)",
+    "certificate": "Certificate"
   },
   "Hero": {
     "title": "Trust every knot in your supply chain.",
@@ -237,7 +238,8 @@
     "pending_deployment": "Pending Deployment",
     "fleet_health": "Fleet Health",
     "syncing_devices": "Syncing {count} Devices",
-    "devices_linked": "{count} Devices Linked"
+    "devices_linked": "{count} Devices Linked",
+    "max_sensors_reached": "Maximum of {count} sensors per batch"
   },
   "Tracking": {
     "live_tracking": "Deep trust monitoring",
@@ -392,7 +394,14 @@
     "block_label": "Block",
     "breach_hero_title": "Cold-chain breach recorded",
     "breach_hero_desc": "The product is authentic, but its storage conditions were violated in transit",
-    "metadata_unavailable": "No documents uploaded yet"
+    "metadata_unavailable": "No documents uploaded yet",
+    "blockchain_records": "Blockchain records",
+    "live_iot_indicator": "Live IoT",
+    "retailer_checkpoint": "Retailer checkpoint",
+    "timeline_update_checkpoint": "Update checkpoint",
+    "tooltip_temp": "Temperature",
+    "tooltip_humidity": "Humidity",
+    "tooltip_verified": "Verified position"
   },
   "Auth": {
     "login_title": "Secure Access",
@@ -412,7 +421,10 @@
     "role_manufacturer": "Manufacturer",
     "role_logistics": "Logistics Hub",
     "role_retailer": "Retailer",
-    "role_persona": "Persona:"
+    "role_persona": "Persona:",
+    "error_email_already_in_use": "This email is already registered",
+    "error_popup_blocked": "The sign-in popup was blocked. Allow popups and try again",
+    "verified_badge": "Verified"
   },
   "Admin": {
     "monitoring_title": "Infrastructure Monitor",
@@ -636,7 +648,9 @@
     "table_created": "Created At",
     "no_operational_data": "No operational data in ledger",
     "status_active": "Active",
-    "btn_details": "View Details"
+    "btn_details": "View Details",
+    "sensors_title": "IoT Fleet",
+    "sensors_description": "Monitor and manage the IoT sensor fleet"
   },
   "HowItWorks": {
     "how_title": "How GFTB Bridge Works",
@@ -712,6 +726,16 @@
     "verifyDescription": "Blockchain-verified digital passport of {product} from {country}.",
     "blockchainVerified": "Blockchain verified",
     "ogDescription": "Check the origin, documents and cold chain of batch {id}.",
-    "scanTitle": "Batch scan"
+    "scanTitle": "Batch scan",
+    "scanDescription": "Scan result for batch {id}"
+  },
+  "Batches": {
+    "notFound": "Batch not found",
+    "detailsTitle": "Batch",
+    "detailsDescription": "Tracking terminal for batch {id}"
+  },
+  "Blockchain": {
+    "real_time_notary": "Real-time notary",
+    "integrity_vault": "Integrity vault"
   }
 }

@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { PackageCheck, AlertTriangle, Loader2, Store } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { RETAILER_ADDR } from '@/lib/constants';
 
 interface RetailerActionsProps {
     status: any;
@@ -12,7 +11,7 @@ interface RetailerActionsProps {
 
 export function RetailerActions({ status, onAccept, onReport, loading }: RetailerActionsProps) {
     const t = useTranslations('Tracking');
-    const isPendingForRetailer = status.pendingOwner === RETAILER_ADDR;
+    const isPendingForRetailer = status.pendingOwnerRole === 'RETAILER';
 
     return (
         <div className="rounded-[2rem] bg-slate-500/[0.03] p-8 border border-slate-500/10 space-y-8 shadow-xl shadow-slate-500/5 animate-in slide-in-from-right-4 duration-500">
