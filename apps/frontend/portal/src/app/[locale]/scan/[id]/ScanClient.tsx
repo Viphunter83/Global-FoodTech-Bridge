@@ -30,6 +30,7 @@ import { MerchantFunnelCTA } from '@/components/passport/MerchantFunnelCTA';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface ScanClientProps {
     batchId: string;
@@ -40,6 +41,7 @@ interface ScanClientProps {
 export function ScanClient({ batchId, initialBatch, initialStatus }: ScanClientProps) {
     const router = useRouter();
     const { role } = useAuth();
+    const tTracking = useTranslations('Tracking');
 
     const [actionLoading, setActionLoading] = useState(false);
     const [status, setStatus] = useState<BlockchainStatus>(initialStatus);
@@ -206,6 +208,15 @@ export function ScanClient({ batchId, initialBatch, initialStatus }: ScanClientP
                     <h1 className="text-5xl md:text-7xl font-serif font-black italic tracking-tighter leading-[0.8] mb-4">
                         Verified {batchDetails.product_type?.replace(/_/g, ' ')}
                     </h1>
+                    {status.violation && (
+                        <div className="inline-flex items-start gap-3 bg-amber-500/15 border border-amber-400/40 text-amber-50 px-5 py-3 rounded-2xl max-w-xl mx-auto text-left">
+                            <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-xs font-black uppercase tracking-widest">{tTracking('breach_hero_title')}</p>
+                                <p className="text-sm opacity-80">{status.violation}</p>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex items-center justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
                         <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl">
                             <span className="text-primary">ORIGIN:</span>

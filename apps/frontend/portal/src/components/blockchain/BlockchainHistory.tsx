@@ -41,6 +41,21 @@ const getEventColor = (event: string) => {
 
 export function BlockchainHistory({ history }: BlockchainHistoryProps) {
     const t = useTranslations('Tracking');
+
+    // Localize from structured fields; fall back to the backend's English text
+    const roleLabel = (role?: string | null) =>
+        role && t.has(`role_${role}`) ? t(`role_${role}`) : (role || '');
+    const eventTitle = (item: BlockchainEvent) =>
+        t.has(`history_event_${item.event}`) ? t(`history_event_${item.event}`) : String(item.stage);
+    const eventDetails = (item: BlockchainEvent) => {
+        if (!item.actorRole || !t.has(`history_desc_${item.event}`)) {
+            return typeof item.details === 'string' ? item.details : JSON.stringify(item.details);
+        }
+        return t(`history_desc_${item.event}`, {
+            to: roleLabel(item.counterpartyRole),
+            message: item.message ?? '',
+        });
+    };
     
     if (!history || history.length === 0) {
         return (
@@ -89,7 +104,7 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                             <div className="space-y-2">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                                     <h4 className={`text-sm font-black uppercase tracking-widest ${item.event === 'ViolationReported' ? 'text-destructive' : 'text-gray-900'}`}>
-                                        {String(item.stage)}
+                                        {eventTitle(item)}
                                     </h4>
                                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 font-mono font-bold bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
                                         <Clock className="h-3 w-3" />
@@ -98,13 +113,13 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                                 </div>
                                 
                                 <p className="text-xs text-muted-foreground font-bold leading-relaxed italic bg-blue-50/30 p-3 rounded-2xl border border-blue-100/50">
-                                    {typeof item.details === 'string' ? item.details : JSON.stringify(item.details)}
+                                    {eventDetails(item)}
                                 </p>
 
                                 <div className="pt-2 flex flex-wrap gap-3 items-center">
                                     <div className="bg-gray-900 px-3 py-1.5 rounded-xl text-[9px] text-white flex items-center gap-2 shadow-lg shadow-gray-200">
-                                        <span className="font-black text-gray-400 uppercase tracking-tighter">NODE:</span> 
-                                        <span className="font-mono">{item.actor}</span>
+                                        <span className="font-black text-gray-400 uppercase tracking-tighter">{t('node_label')}:</span>
+                                        <span className="font-mono">{item.actorRole ? roleLabel(item.actorRole) : item.actor}</span>
                                     </div>
                                     <a 
                                         href={`${EXPLORER_URL}/tx/${item.transactionHash}`}
@@ -112,7 +127,7 @@ export function BlockchainHistory({ history }: BlockchainHistoryProps) {
                                         rel="noopener noreferrer"
                                         className="text-[9px] font-black text-blue-600 hover:text-blue-800 underline-offset-4 decoration-wavy flex items-center gap-1.5 transition-all hover:gap-2 group/link"
                                     >
-                                        BLOCK #{item.blockNumber} 
+                                        {t('block_label').toUpperCase()} #{item.blockNumber} 
                                         <ExternalLink className="h-3 w-3 group-hover/link:rotate-12 transition-transform" />
                                     </a>
                                 </div>

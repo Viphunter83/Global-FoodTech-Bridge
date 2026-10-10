@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Package, Truck, MapPin, ChefHat, Leaf, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface TimelineEvent {
     stage: string;
@@ -25,6 +25,17 @@ const ICONS = {
 
 export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
     const t = useTranslations('Tracking');
+    const locale = useLocale();
+
+    // Values like "Tracking.produced" are translation keys; anything else (including
+    // ISO timestamps, which also contain dots) is displayed as is
+    const tr = (value: string) =>
+        value.startsWith('Tracking.') ? t(value.slice('Tracking.'.length)) : value;
+    const formatTimestamp = (value: string) => {
+        if (value.startsWith('Tracking.')) return tr(value);
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? value : date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    };
     const tCommon = useTranslations('Common');
 
     return (
@@ -56,7 +67,7 @@ export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-3 mb-2">
                                     <span className={`text-lg font-serif font-black italic tracking-tight ${event.status === 'future' ? 'text-muted-foreground/40' : 'text-foreground'}`}>
-                                        {event.stage.includes('.') ? t(event.stage.split('.')[1]) : event.stage}
+                                        {tr(event.stage)}
                                     </span>
                                     
                                     {event.status === 'current' && (
@@ -83,12 +94,12 @@ export function JourneyTimeline({ events }: { events: TimelineEvent[] }) {
                                 
                                 <div className={`flex items-center gap-2 text-sm font-medium ${event.status === 'future' ? 'text-muted-foreground/20' : 'text-muted-foreground'}`}>
                                     <MapPin size={14} className="opacity-40" />
-                                    {event.location.includes('.') ? t(event.location.split('.')[1]) : event.location}
+                                    {tr(event.location)}
                                 </div>
                                 
                                 {event.timestamp && (
                                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/30 font-mono text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                                        {event.timestamp.includes('.') ? t(event.timestamp.split('.')[1]) : event.timestamp}
+                                        {formatTimestamp(event.timestamp)}
                                     </div>
                                 )}
                             </div>

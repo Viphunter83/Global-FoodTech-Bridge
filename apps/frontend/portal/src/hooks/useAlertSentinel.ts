@@ -5,14 +5,20 @@ import { useNotifications } from '@/components/providers/NotificationProvider';
 import { toast } from 'sonner';
 import { getAlerts, getBatchDetails } from '@/lib/api';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export function useAlertSentinel() {
     const { addNotification } = useNotifications();
+    const { user, role } = useAuth();
     const t = useTranslations();
     const checkedAlerts = useRef<Set<string>>(new Set());
     const checkedServiceStatuses = useRef<Record<string, string>>({});
 
     useEffect(() => {
+        // Alerts are for signed-in operators; anonymous visitors of public pages
+        // (scan/verify) must not poll backend APIs in the background
+        if (!user) return;
+
         const checkSystem = async () => {
             if (document.hidden) return; // Save resources if tab is background
 
@@ -52,7 +58,8 @@ export function useAlertSentinel() {
                 }
             }
 
-            // 2. Check Infrastructure (Railway Proxy)
+            // 2. Check Infrastructure (Railway Proxy) — admin-only endpoint
+            if (role !== 'ADMIN') return;
             try {
                 const res = await fetch('/api/admin/infra');
                 if (res.ok) {
@@ -93,5 +100,5 @@ export function useAlertSentinel() {
         const interval = setInterval(checkSystem, 30000); // 30s poll
 
         return () => clearInterval(interval);
-    }, [addNotification, t]);
+    }, [addNotification, t, user, role]);
 }

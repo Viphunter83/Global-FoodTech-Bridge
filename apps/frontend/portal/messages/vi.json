@@ -338,7 +338,26 @@
     "status_pending": "AWAITING VERIFICATION",
     "fallback_producer": "PRODUCER",
     "fallback_premium": "PREMIUM",
-    "bc_unverified_badge": "NOT VERIFIED"
+    "bc_unverified_badge": "NOT VERIFIED",
+    "history_event_BatchCreated": "Sản xuất",
+    "history_event_TransferInitiated": "Đang vận chuyển",
+    "history_event_TransferCompleted": "Chuyển giao quyền sở hữu",
+    "history_event_ViolationReported": "Vi phạm SLA",
+    "history_desc_BatchCreated": "Lô hàng đã được tạo và công chứng trên blockchain",
+    "history_desc_TransferInitiated": "Đã bắt đầu chuyển giao cho {to}",
+    "history_desc_TransferCompleted": "{to} đã nhận quyền sở hữu",
+    "history_desc_ViolationReported": "Ghi nhận vi phạm SLA: {message}",
+    "role_MANUFACTURER": "Nhà sản xuất",
+    "role_LOGISTICS": "Đối tác vận chuyển",
+    "role_RETAILER": "Nhà bán lẻ",
+    "role_IOT": "Cổng IoT",
+    "role_PARTICIPANT": "Thành viên",
+    "role_SYSTEM": "Hệ thống",
+    "node_label": "Nút",
+    "block_label": "Khối",
+    "breach_hero_title": "Đã ghi nhận vi phạm chuỗi lạnh",
+    "breach_hero_desc": "Sản phẩm là hàng thật, nhưng điều kiện bảo quản đã bị vi phạm trong quá trình vận chuyển",
+    "metadata_unavailable": "Chưa tải lên tài liệu"
   },
   "Auth": {
     "login_title": "Truy cập Bảo mật",
@@ -685,5 +704,14 @@
     "title": "Page Not Found",
     "description": "We couldn't find the page you're looking for. It might have been moved or deleted.",
     "back_home": "Back to Home"
+  },
+  "Verify": {
+    "notFound": "Không tìm thấy sản phẩm",
+    "defaultProduct": "Sản phẩm thực phẩm",
+    "verified": "Đã xác minh",
+    "verifyDescription": "Hộ chiếu số của {product} từ {country}, được xác minh bằng blockchain.",
+    "blockchainVerified": "Đã xác minh bằng blockchain",
+    "ogDescription": "Kiểm tra nguồn gốc, tài liệu và chuỗi lạnh của lô {id}.",
+    "scanTitle": "Quét lô hàng"
   }
 }

@@ -333,7 +333,26 @@
     "status_pending": "AWAITING VERIFICATION",
     "fallback_producer": "PRODUCER",
     "fallback_premium": "PREMIUM",
-    "bc_unverified_badge": "NOT VERIFIED"
+    "bc_unverified_badge": "NOT VERIFIED",
+    "history_event_BatchCreated": "الإنتاج",
+    "history_event_TransferInitiated": "قيد النقل",
+    "history_event_TransferCompleted": "نقل الحيازة",
+    "history_event_ViolationReported": "مخالفة اتفاقية مستوى الخدمة",
+    "history_desc_BatchCreated": "تم إنشاء الدفعة وتوثيقها على البلوكتشين",
+    "history_desc_TransferInitiated": "بدأ نقل الحيازة إلى {to}",
+    "history_desc_TransferCompleted": "قَبِل {to} الحيازة",
+    "history_desc_ViolationReported": "تم تسجيل مخالفة: {message}",
+    "role_MANUFACTURER": "المُصنِّع",
+    "role_LOGISTICS": "شريك الخدمات اللوجستية",
+    "role_RETAILER": "بائع التجزئة",
+    "role_IOT": "بوابة إنترنت الأشياء",
+    "role_PARTICIPANT": "مشارك",
+    "role_SYSTEM": "النظام",
+    "node_label": "العُقدة",
+    "block_label": "الكتلة",
+    "breach_hero_title": "تم تسجيل خرق في سلسلة التبريد",
+    "breach_hero_desc": "المنتج أصلي، لكن ظروف التخزين لم تُحترم أثناء النقل",
+    "metadata_unavailable": "لم يتم تحميل المستندات بعد"
   },
   "Auth": {
     "login_title": "وصول آمن",
@@ -685,5 +704,14 @@
     "title": "Page Not Found",
     "description": "We couldn't find the page you're looking for. It might have been moved or deleted.",
     "back_home": "Back to Home"
+  },
+  "Verify": {
+    "notFound": "المنتج غير موجود",
+    "defaultProduct": "منتج غذائي",
+    "verified": "تم التحقق",
+    "verifyDescription": "جواز سفر رقمي موثّق بالبلوكتشين لـ {product} من {country}.",
+    "blockchainVerified": "موثّق بالبلوكتشين",
+    "ogDescription": "تحقق من المنشأ والمستندات وسلسلة التبريد للدفعة {id}.",
+    "scanTitle": "مسح الدفعة"
   }
 }
