@@ -23,7 +23,14 @@ const REGISTRY_ABI = [
 const EXPLORER_API_URL = 'https://api.etherscan.io/v2/api';
 const HISTORY_EVENTS = ['BatchCreated', 'TransferInitiated', 'TransferCompleted', 'ViolationReported'];
 
-interface HistoryLog {
+// Logical roles at the time of the transaction. With custodial wallets several roles
+// may share one address, so the address alone cannot tell who acted.
+interface HistoryRoles {
+    actorRole?: string;
+    counterpartyRole?: string;
+}
+
+interface HistoryLog extends HistoryRoles {
     type: string;
     logIndex: number;
     args: string[];
@@ -70,7 +77,7 @@ export class BlockchainService implements OnModuleInit {
     /**
      * Helper to execute transaction with manual nonce management (queued via Mutex)
      */
-    private async executeTransaction(signer: Wallet, contractCall: () => Promise<any>, batchId?: string): Promise<any> {
+    private async executeTransaction(signer: Wallet, contractCall: () => Promise<any>, batchId?: string, roles?: HistoryRoles): Promise<any> {
         const mutex = this.getMutexForAddress(signer.address);
         
         return await mutex.runExclusive(async () => {
@@ -83,7 +90,7 @@ export class BlockchainService implements OnModuleInit {
                 const receipt = await tx.wait();
                 this.logger.log(`[NONCE-MANAGER] TX Confirmed in block ${receipt.blockNumber}`);
                 if (batchId) {
-                    await this.recordReceipt(batchId, receipt).catch((e) =>
+                    await this.recordReceipt(batchId, receipt, roles).catch((e) =>
                         this.logger.warn(`History index update failed for ${batchId}: ${e.message}`));
                 }
                 return tx;
@@ -219,7 +226,8 @@ export class BlockchainService implements OnModuleInit {
             // Manufacturer creates batch
             const tx = await this.executeTransaction(this.manufacturerWallet, () => 
                 (this.contract.connect(this.manufacturerWallet) as any).createBatch(batchId, ipfsUri),
-                batchId
+                batchId,
+                { actorRole: 'MANUFACTURER' }
             );
             
             // Set initial logical role for single-wallet notary model
@@ -329,13 +337,14 @@ export class BlockchainService implements OnModuleInit {
 
             this.logger.log(`Initiating transfer of ${batchId} to ${toAddress}. Signer: ${signer.address}`);
 
+            const currentRole = await this.redis.get(`batch_role:${batchId}`);
             const tx = await this.executeTransaction(signer, () => 
                 (this.contract.connect(signer) as any).initiateTransfer(tokenId, toAddress),
-                batchId
+                batchId,
+                { actorRole: currentRole || 'MANUFACTURER', counterpartyRole: toRole }
             );
 
             // Single-wallet logic: record the logical role of the pending owner
-            const currentRole = await this.redis.get(`batch_role:${batchId}`);
             if (toRole) {
                 await this.redis.set(`pending_batch_role:${batchId}`, toRole);
             } else if (currentRole === 'MANUFACTURER') {
@@ -391,13 +400,14 @@ export class BlockchainService implements OnModuleInit {
 
             this.logger.log(`Signing acceptTransfer with ${signer.address}`);
 
+            const pendingRole = await this.redis.get(`pending_batch_role:${batchId}`);
             const tx = await this.executeTransaction(signer, () => 
                 (this.contract.connect(signer as any) as any).acceptTransfer(tokenId),
-                batchId
+                batchId,
+                pendingRole ? { actorRole: pendingRole, counterpartyRole: pendingRole } : undefined
             );
 
             // Single-wallet logic: finalize logical role
-            const pendingRole = await this.redis.get(`pending_batch_role:${batchId}`);
             if (pendingRole) {
                 await this.redis.set(`batch_role:${batchId}`, pendingRole);
                 await this.redis.del(`pending_batch_role:${batchId}`);
@@ -536,6 +546,11 @@ export class BlockchainService implements OnModuleInit {
                         details = `SLA breach recorded: ${message}`;
                         break;
                 }
+                // Roles recorded at write time win over the address lookup
+                if (log.actorRole) actorRole = log.actorRole;
+                if (log.counterpartyRole) counterpartyRole = log.counterpartyRole;
+                if (item.type === 'TransferInitiated') details = `Custody transfer to ${counterpartyRole} initiated`;
+                if (item.type === 'TransferCompleted') details = `Custody accepted by ${counterpartyRole}`;
                 const actor = actorRole;
 
                 return {
@@ -586,7 +601,7 @@ export class BlockchainService implements OnModuleInit {
     }
 
     /** Indexes the registry events of a transaction this service has just mined. */
-    private async recordReceipt(batchId: string, receipt: any): Promise<void> {
+    private async recordReceipt(batchId: string, receipt: any, roles?: HistoryRoles): Promise<void> {
         const contractAddress = (await this.contract.getAddress()).toLowerCase();
         const block = await this.provider.getBlock(receipt.blockNumber);
         const timestamp = block ? block.timestamp * 1000 : Date.now();
@@ -602,6 +617,7 @@ export class BlockchainService implements OnModuleInit {
                 blockNumber: receipt.blockNumber,
                 transactionHash: receipt.hash,
                 timestamp,
+                ...roles,
             });
         }
         if (logs.length) await this.mergeHistory(batchId, logs);
