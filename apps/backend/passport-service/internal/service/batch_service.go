@@ -7,6 +7,7 @@ import (
 	"github.com/global-foodtech-bridge/passport-service/internal/repository/postgres"
 	"github.com/google/uuid"
 	"fmt"
+	"strings"
 )
 
 type BatchService struct {
@@ -79,6 +80,18 @@ func (s *BatchService) CreateBatch(ctx context.Context, req domain.CreateBatchRe
 			return nil, err
 		}
 		minTemp, maxTemp = req.MinTemp, req.MaxTemp
+	}
+
+	// Certificates arrive with an ipfs:// URI from the upload step; keep the CID
+	// as the hash so the document stays linkable from the passport alone
+	for i := range req.Certificates {
+		c := &req.Certificates[i]
+		if c.Hash == "" && strings.HasPrefix(c.URI, "ipfs://") {
+			c.Hash = strings.TrimPrefix(c.URI, "ipfs://")
+		}
+		if c.URI == "" && c.Hash != "" {
+			c.URI = "ipfs://" + c.Hash
+		}
 	}
 
 	// 4. Entity Construction

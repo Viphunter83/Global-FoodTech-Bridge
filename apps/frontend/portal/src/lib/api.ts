@@ -225,7 +225,9 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
             data.partner_id ? fetchPartner(data.partner_id, token) : Promise.resolve(null),
             // The passport already stores certificates; the slow public gateway is only
             // needed for older batches registered without them
-            data.token_uri && !(data.certificates?.length > 0) ? fetchIpfsMetadata(data.token_uri) : Promise.resolve(null),
+            data.token_uri && !data.certificates?.some((c: any) => c.hash || c.uri)
+                ? fetchIpfsMetadata(data.token_uri)
+                : Promise.resolve(null),
         ]);
 
         let history: BatchDetails['history'] = [];
@@ -309,7 +311,9 @@ export async function getBatchDetails(id: string, token?: string): Promise<Batch
             // Browsers cannot open ipfs:// links; serve certificates through the gateway
             certificates: data.certificates?.map((cert: any) => ({
                 ...cert,
-                uri: typeof cert.uri === 'string' ? cert.uri.replace('ipfs://', IPFS_GATEWAY) : cert.uri,
+                uri: typeof cert.uri === 'string' && cert.uri
+                    ? cert.uri.replace('ipfs://', IPFS_GATEWAY)
+                    : (cert.hash ? `${IPFS_GATEWAY}${cert.hash}` : undefined),
             })),
         };
 
